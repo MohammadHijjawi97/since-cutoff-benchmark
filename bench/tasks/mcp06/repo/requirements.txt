@@ -1,0 +1,2 @@
+# Pinned runtime dependencies (keep in step with pyproject.toml).
+mcp==2.2.0

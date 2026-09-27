@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "oai04",
+  "task_id": "oai04-responses-draft-control",
+  "task_sha256": "376f5c9fc31ba703b51c3b682d7f7f6b963bed71f4fef3b81c67ccf381119c9c",
+  "parts_sha256": {
+    "task.toml": "c37c6199641d16778385ee481a93158e2cf6f466df034ceb5237e8c2dea1c5bf",
+    "repo": "eef9ebdd558a50f3de4c4f3483beec273416e042f50b07e76e28f0909721044e",
+    "hidden": "b238c10e9aa63cdc3175a250b5eb727d996553c91ab35e278b163ea4ac3df2ac",
+    "reference": "bbdb961fd4bf5863f2906cf3d48ce438289e9ecde46e7b2846d7acdbecc0bbde",
+    "stale": "325f92b04daccd08732dc3b0580a99268a6dc3205e509e3e7feb843672676439",
+    "any_incomplete": "d414b0e7b7d1a0d3e85c7390f438e411cf30018f09d67b1b05ae8a3fc21e2863"
+  },
+  "validated_at": "2026-09-27T19:03:33+00:00",
+  "library": "openai",
+  "pinned": "3.19.2",
+  "stale_version": "2.44.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "3.19.2",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.13,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "3 failed in 0.68s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "3.19.2",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.19,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed in 0.72s"
+    },
+    "3_stale_passes_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "3.19.2",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.2,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed in 0.71s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.44.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.57,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed in 1.00s"
+    }
+  },
+  "extra": {
+    "extra_any_incomplete_fails_at_pinned": {
+      "ok": true,
+      "solution": "any_incomplete",
+      "version": "3.19.2",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 2,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.31,
+        "timed_out": false,
+        "first_error": "AssertionError: assert True is False"
+      },
+      "summary": "1 failed, 2 passed in 0.81s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "openai-3.19.2 68ad3ab2354d",
+    "stale": "openai-2.44.0 a11b191d7312"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 6.6
+}

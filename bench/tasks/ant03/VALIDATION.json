@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "ant03",
+  "task_id": "ant03-beta-structured-output",
+  "task_sha256": "cf15547427d4bcdb748d68efb7019f1120ddc4478512f74cb382993f1f7fa719",
+  "parts_sha256": {
+    "task.toml": "c8081a30a057366163e5370611718052d56c37999c131b704e99ab3ab005efe9",
+    "repo": "98e68de2cedf5c6db318b0276db2e95d85a03b3432f151d94b46df57a7aeb08a",
+    "hidden": "2b537647a0a96c1ce3fdc32a9a88c906254b3fc18e8d13cf81ffb4194221a147",
+    "reference": "bd6104d2062f186406e383c7e5774475aeedbdf6811d7ef3d1e31ee7888c2806",
+    "stale": "d3511fd5d9cc75ac6e17cbfc040cb0809b08acf2929a74406f9b6ef502b27d8c",
+    "alt_parse": "e0068e8ea2ff984db4da5a74c270611deb2f8cfb3de5eaec8df837bd422c2597"
+  },
+  "validated_at": "2026-09-27T19:00:12+00:00",
+  "library": "anthropic",
+  "pinned": "1.8.0",
+  "stale_version": "0.115.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.86,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "2 failed in 1.28s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "1.8.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.6,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 1.09s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.87,
+        "timed_out": false,
+        "first_error": "TypeError: Messages.create() got an unexpected keyword argument 'output_format'"
+      },
+      "summary": "2 failed in 1.29s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "0.115.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.6,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed, 2 warnings in 0.81s"
+    }
+  },
+  "extra": {
+    "extra_alt_parse_passes_at_pinned": {
+      "ok": true,
+      "solution": "alt_parse",
+      "version": "1.8.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.74,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 1.18s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "anthropic-1.8.0 bfd1f69e46b2",
+    "stale": "anthropic-0.115.0 9b205092addf"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 9.0
+}

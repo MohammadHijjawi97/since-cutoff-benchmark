@@ -1,0 +1,29 @@
+$ C:/b/venvs/mcp-1.28.1/Scripts/python bench/dropped/mcp03/probe.py
+mcp 1.28.1
+  ctx.info('hello')                            error=False client got=['hello'] text='ok'
+  ctx.info({...dict...})                       error=False client got=[{'msg': 'hello', 'rows': 3}] text='ok'
+  ctx.info('hello', logger_name='importer')    error=False client got=['hello'] text='ok'
+  ctx.info('hello', extra={'rows': 3})         error=True  client got=[] text="Error executing tool t3: Context.log() got an unexpected keyword argument 'extra'"
+  ctx.info('hello', rows=3)                    error=True  client got=[] text="Error executing tool t4: Context.log() got an unexpected keyword argument 'rows'"
+  ctx.info(message='hello')                    error=False client got=['hello'] text='ok'
+  ctx.info(data='hello')                       error=True  client got=[] text="Error executing tool t6: Context.info() missing 1 required positional argument: 'message'"
+  ctx.log(level='info', message='hello')       error=False client got=['hello'] text='ok'
+  ctx.log('info', 'hello')                     error=False client got=['hello'] text='ok'
+
+$ C:/b/venvs/mcp-2.2.0/Scripts/python bench/dropped/mcp03/probe.py
+mcp 2.2.0
+  ctx.info('hello')                            error=False client got=['hello'] text='ok'
+  ctx.info({...dict...})                       error=False client got=[{'msg': 'hello', 'rows': 3}] text='ok'
+  ctx.info('hello', logger_name='importer')    error=False client got=['hello'] text='ok'
+  ctx.info('hello', extra={'rows': 3})         error=True  client got=[] text='Error executing tool t3'
+  ctx.info('hello', rows=3)                    error=True  client got=[] text='Error executing tool t4'
+  ctx.info(message='hello')                    error=True  client got=[] text='Error executing tool t5'
+  ctx.info(data='hello')                       error=False client got=['hello'] text='ok'
+  ctx.log(level='info', message='hello')       error=True  client got=[] text='Error executing tool t7'
+  ctx.log('info', 'hello')                     error=False client got=['hello'] text='ok'
+  log delivery at 2.2.0:
+    ClientSession + initialize() (1.x-style client), logging_callback only: ['step 1']
+    Client(server, logging_callback=cb)                (new API, mode='auto'): []
+    Client(server, logging_callback=cb, mode='legacy'):                      ['step 1']
+    Client(server, logging_callback=cb, log_level='info'):                   ['step 1']
+

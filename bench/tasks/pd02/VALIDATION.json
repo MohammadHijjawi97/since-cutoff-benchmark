@@ -1,0 +1,104 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "pd02",
+  "task_id": "pd02-elementwise-format",
+  "task_sha256": "0ccf461f219f27aae10323d70b90f77670dcfa2306fb1f9ea5222b834192b106",
+  "parts_sha256": {
+    "task.toml": "00ffa517edb2a663c5f556bb2dbd888c2433fe84209f0d9c55572be150bdd43b",
+    "repo": "1630d53ba63b24b9474f77116d3bdde9e267a1a97ca094fed5f3bb6bd4b0ccb3",
+    "hidden": "a699ca292ccbd07b3063165fb346f74987a43c71c1b45fb1a3442ca82def2737",
+    "reference": "2bd22d45c95c3b2302f1ebc9e09be46abd876bf5d9945c8a6d49faf10ed203ea",
+    "stale": "6e1485f0ab649b792d95ec5acde4226d662fd49e181f7b3994d0534ff0b5a61d"
+  },
+  "validated_at": "2026-09-27T19:03:51+00:00",
+  "library": "pandas",
+  "pinned": "3.0.6",
+  "stale_version": "2.3.2",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "3.0.6",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 4,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.83,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "4 failed in 0.46s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "3.0.6",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.73,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "4 passed in 0.39s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "3.0.6",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 4,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.02,
+        "timed_out": false,
+        "first_error": "AttributeError: 'DataFrame' object has no attribute 'applymap'"
+      },
+      "summary": "4 failed in 0.67s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.3.2",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.76,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "4 passed, 4 warnings in 0.36s"
+    }
+  },
+  "extra": {},
+  "leaks": [],
+  "envs": {
+    "pinned": "pandas-3.0.6 31ee49a809c2",
+    "stale": "pandas-2.3.2 e3582a58008d"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 3.6
+}

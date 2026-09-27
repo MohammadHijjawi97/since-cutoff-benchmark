@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "mcp06",
+  "task_id": "mcp06-in-memory-client",
+  "task_sha256": "4e5cf1eb1ca5899972a22ec943e2a432c3871fa392e05e0025538a16da594d15",
+  "parts_sha256": {
+    "task.toml": "3be42c1c75218ce99f6f93b7632b612b88984fef6da67fb316881686d659b0d1",
+    "repo": "3f81342ccb09eea759d5727355d02ee99cbf20320c7503ceddac51b948a5835e",
+    "hidden": "d43a158ebf9704d1b32527665fd9ecc01bd70031ed8e15aac02639745d78e7ff",
+    "reference": "ca4ac1f7eba08e355e5069f1191fbb2fe1a577bd26168d699324ee367d9d80b6",
+    "stale": "4f034adc04735cf48d361164b51854eb5b4bfa8c651b475335f35503ef0e93c6",
+    "v1_manual": "cbbc662156186fc4a39019717f310ae08b0fa853150d2939116dccb913417604"
+  },
+  "validated_at": "2026-09-27T19:02:16+00:00",
+  "library": "mcp",
+  "pinned": "2.2.0",
+  "stale_version": "1.28.1",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.25,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "2 failed in 0.74s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "2.2.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.19,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 0.68s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 2,
+        "passed": 0,
+        "failed": 0,
+        "errors": 1,
+        "skipped": 0,
+        "duration_s": 1.3,
+        "timed_out": false,
+        "first_error": "ImportError: cannot import name 'create_connected_server_and_client_session' from 'mcp.shared.memory' (C:\\b\\venvs\\mcp-2.2.0\\Lib\\site-packages\\mcp\\shared\\memory.py)"
+      },
+      "summary": "1 error in 0.73s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.28.1",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.24,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed, 1 warning in 0.53s"
+    }
+  },
+  "extra": {
+    "extra_v1_manual_fails_at_pinned": {
+      "ok": true,
+      "solution": "v1_manual",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.29,
+        "timed_out": false,
+        "first_error": "AttributeError: 'MCPServer' object has no attribute '_mcp_server'"
+      },
+      "summary": "2 failed in 0.74s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "mcp-2.2.0 deac18483270",
+    "stale": "mcp-1.28.1 c1f82f8ed8f1"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 6.6
+}

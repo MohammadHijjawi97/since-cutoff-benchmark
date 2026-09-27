@@ -1,0 +1,104 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "hf03",
+  "task_id": "hf03-list-models-name",
+  "task_sha256": "950b85c340d51ff0263f208cada3e19283e090939d0a199104bc518a2a180221",
+  "parts_sha256": {
+    "task.toml": "6ab05a6fd716616640f8ace7609e3de7f083735b9f9ffe7daebb7ded27f1f20c",
+    "repo": "fe4f8593e7871eeed17e0b58a906c0ca9ae4c968a7caf7c3c1b20ec95aaf0435",
+    "hidden": "358b87788e7efbc6ac1ba0dbbbff2c7e2d769b5bbf7a83471239dafd9a7360c9",
+    "reference": "1830e659a4798561da7b79b6373b0eba985bd390617e81be306291785498525f",
+    "stale": "3cbda3f89de6c770cf5e45e27986ca73d1ce073a83dafe4425b633143cccca91"
+  },
+  "validated_at": "2026-09-27T19:01:30+00:00",
+  "library": "huggingface-hub",
+  "pinned": "2.0.0",
+  "stale_version": "1.21.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "2.0.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.77,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "3 failed in 0.37s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "2.0.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.67,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed in 0.25s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.0.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.72,
+        "timed_out": false,
+        "first_error": "TypeError: HfApi.list_models() got an unexpected keyword argument 'model_name'"
+      },
+      "summary": "3 failed in 0.33s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.21.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.69,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed, 3 warnings in 0.30s"
+    }
+  },
+  "extra": {},
+  "leaks": [],
+  "envs": {
+    "pinned": "huggingface-hub-2.0.0 28be7943faca",
+    "stale": "huggingface-hub-1.21.0 6e24bc44abca"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 3.1
+}

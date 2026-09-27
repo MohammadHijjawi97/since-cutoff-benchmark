@@ -1,0 +1,41 @@
+# A catalogue task dropped at validation (plan B.4 / B.9: dropped tasks are published with the reason).
+schema = "since-cutoff-bench/dropped@1"
+id = "hf05-download-legacy-args"
+library = "huggingface-hub"
+pinned = "2.0.0"
+cutoff_version = "1.21.0"
+stale_version = "0.36.2"   # last 0.x release on PyPI, the last one with the arguments in the signature
+stratum = "pre-cutoff-control"
+catalogued_change = "hf_hub_download(resume_download=..., local_dir_use_symlinks=...) removed in 1.0 (2025-10-27), before the Opus 5.5 cutoff"
+catalogue_source = "plan.md B.4 catalogue ('hf05 pre-cutoff control (`resume_download`, removed in 1.0)'); bench.md section 3.1 ('wheel-checked (0.36.0 has them, 1.21.0 does not)')"
+status = "dropped"
+dropped_at = "2026-09-27"
+stage = "premise check in the wheel sources and a runtime probe, before any task files were written"
+verdict = "removed from the signature, but still accepted at run time: pre-1.0 code that passes the arguments does not break"
+reason = """
+The arguments did leave the signature in 1.0, but huggingface_hub 1.x and 2.0.0 still accept them at run time:
+`@validate_hf_hub_args` (on hf_hub_download and snapshot_download) calls smoothly_deprecate_legacy_arguments,
+which pops `resume_download`, `local_dir_use_symlinks`, `force_filename` and `proxies` from kwargs and only emits
+a UserWarning. The first three were already no-ops in 0.36.x (resume_download: FutureWarning "Downloads always
+resume when possible"; local_dir_use_symlinks: "deprecated and will be ignored"), so there is no behaviour a
+hidden test could tell apart: a stale solution behaves exactly like the reference at 2.0.0 and gate 3 (stale
+fails at pinned) cannot be met. A hidden test that failed on the warning itself would test names, not
+behaviour, so none was written.
+
+`proxies` is the one legacy argument whose behaviour changed (honoured by requests in 0.x, silently ignored in
+1.x/2.x), but a mocked-transport hidden test cannot observe proxy routing in both HTTP backends, and nothing in a
+download request would lead to it; not pursued.
+
+A replacement from the same 1.0 removal set that does break (list_models(direction=-1), no run-time shim) is in
+bench/candidates/hf05b, validated but not admitted: it is not in the pre-registered catalogue, so admitting it
+is the maintainer's decision.
+"""
+evidence = [
+  "huggingface_hub-0.36.0 wheel: file_download.py:809 hf_hub_download(..., proxies, ..., resume_download: Optional[bool] = None (828), force_filename (829), local_dir_use_symlinks = 'auto' (830)); :935-947 force_filename/resume_download only warn (FutureWarning, 'Downloads always resume when possible'); :978-985 local_dir_use_symlinks 'deprecated and will be ignored'",
+  "huggingface_hub-1.21.0 wheel: the parameters are gone from file_download.py:830 hf_hub_download and _snapshot_download.py:107 snapshot_download (no occurrence of resume_download in either file), but both are decorated with @validate_hf_hub_args (file_download.py:829, _snapshot_download.py:106)",
+  "huggingface_hub-1.21.0 wheel: utils/_validators.py:86 `kwargs = smoothly_deprecate_legacy_arguments(...)`; :151-210 pops proxies (178), resume_download (187), force_filename (195), local_dir_use_symlinks (203) with warnings.warn",
+  "huggingface_hub-2.0.0 wheel: the same shim: file_download.py:855-857 `@validate_hf_hub_args @flag_as_download_call def hf_hub_download`, _snapshot_download.py:121-123; utils/_validators.py:87 and :152-210 (pops at 178/187/195/203)",
+  "run (probe.py, probe_output.txt; offline mock Hub): hf_hub_download(..., resume_download=True, local_dir_use_symlinks=False, force_filename='x.json') succeeds at 1.21.0 and at 2.0.0 and writes a regular file in local_dir; the only effect is three UserWarnings '... is deprecated and ignored in `hf_hub_download` ...'",
+]
+probe = "C:/b/venvs/huggingface-hub-<1.21.0|2.0.0>/Scripts/python bench/dropped/hf05/probe.py (HF_TOKEN unset, HF_HOME pointing to an empty folder)"
+replacement_candidate = "bench/candidates/hf05b"

@@ -1,0 +1,44 @@
+# A catalogue task dropped at validation (plan B.4 / B.9: dropped tasks are published with the reason).
+schema = "since-cutoff-bench/dropped@1"
+id = "ant06-parse-stream"
+library = "anthropic"
+pinned = "1.8.0"
+cutoff_version = "0.115.0"
+catalogued_change = "messages.parse(stream=True) removed -> messages.stream(output_format=...)"
+catalogue_source = "https://github.com/anthropics/anthropic-sdk-python/blob/main/MIGRATION.md (via bench.md section 3.1, 'to validate')"
+status = "dropped"
+dropped_at = "2026-09-27"
+stage = "premise check in the wheel sources, before any task files were written"
+reason = """
+False premise for a benchmark task: the stale form never worked at the cutoff-era version, and the
+replacement is not new.
+
+1. At anthropic 0.115.0, Messages.parse() accepts `stream` but only copies it into the request body;
+   the request itself is always made with stream=False. When the API answers `stream: true` with
+   server-sent events, as the real API does, the SDK tries to read the event stream as one JSON
+   message and fails (AttributeError: 'str' object has no attribute 'content', probe case A). So
+   `parse(stream=True)` did not work before the cutoff either. Gate 4 (the stale solution passes at
+   0.115.0) could only pass against a mock that ignores the stream flag and returns plain JSON
+   (probe case E), and a hidden test built like that would not reflect the API.
+2. `messages.stream(output_format=<pydantic type>)` already works at 0.115.0 and still works at
+   1.8.0 (probe case B), so the code the task would expect is not a post-cutoff API.
+
+What did change: 1.x removed the `stream` parameter from parse() (TypeError at 1.8.0, probe case A),
+but that only removes something that was already broken.
+"""
+evidence = [
+  "anthropic-0.115.0 wheel: anthropic/resources/messages/messages.py:1202-1318 Messages.parse() has `stream` (:1213) and sends it in the body (:1298) but calls self._post(..., stream=False) (:1317); async parse the same (:2696-2811); beta parse the same (resources/beta/messages/messages.py:1276-1422, :3287-3432)",
+  "anthropic-0.115.0 wheel: anthropic/resources/messages/messages.py:1085-1200 Messages.stream() already takes output_format (a type or a dict, :1095, :1138-1145)",
+  "anthropic-1.0.0 and 1.8.0 wheels: Messages.parse() has no `stream` parameter (1.8.0 anthropic/resources/messages/messages.py:1140-1161; body without stream :1227-1239; _post(..., stream=False) :1248)",
+  "anthropic-1.8.0 wheel: Messages.stream() takes output_format as a type only (:1034) and rejects a dict (:1081-1083)",
+  "probe.py / probe_output.txt in this folder: the same five calls against a MockTransport that answers stream requests with SSE, run in the cached validation venvs built from envlocks/anthropic-0.115.0.json and anthropic-1.8.0.json",
+]
+probe = "probe.py"
+probe_output = "probe_output.txt"
+# A real change found while checking, NOT built as a task (it would largely repeat ant03's output_config
+# migration). The maintainer decides whether it replaces ant06 in the catalogue.
+candidate_replacement = """
+messages.stream(output_format=<dict JSON schema>): accepted at 0.115.0 (messages.py:1138-1139, merged
+into output_config.format) and a TypeError at 1.8.0 ('`output_format` must be a type; pass a schema
+dict as `output_config={'format': ...}` instead', messages.py:1081-1083). See probe case C.
+"""

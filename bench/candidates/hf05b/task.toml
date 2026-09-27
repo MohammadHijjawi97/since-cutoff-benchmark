@@ -1,0 +1,36 @@
+schema = "since-cutoff-bench/task@1"
+# CANDIDATE, not admitted: proposed replacement for the dropped catalogue task hf05 (see bench/dropped/hf05).
+# Not in the pre-registered catalogue; the maintainer decides whether to admit it (move it to bench/tasks/).
+id = "hf05b-list-models-direction"
+library = "huggingface-hub"
+pinned = "2.0.0"
+# latest release before claude-opus-5-5's 2026-06 cutoff: the change (1.0.0, 2025-10-27) predates the cutoff, so
+# for Opus 5.5 this task is a control. It is a treatment for models whose cutoff predates huggingface-hub 1.0.
+cutoff_version = "1.21.0"
+# version at which the stale (0.x) solution must pass: gate 4 runs here instead of cutoff_version
+stale_version = "0.36.2"
+stratum = "pre-cutoff-control"
+kind = "pre-cutoff-loud"  # list_models(direction=) removed in 1.0 with no runtime shim -> TypeError
+timeout_s = 900
+target_files = ["app/leaderboard.py"]
+# repo/app/trending.py is existing code that still uses the removed argument (`list_models(..., direction=-1)`);
+# it is realistic existing usage of the library and a lure, and it is not graded.
+instruction = """
+Implement `most_liked(task, n=10)` in app/leaderboard.py for the newsletter: the `n` models on
+the Hugging Face Hub with the most likes among models whose pipeline task is `task` (for example
+"text-classification"), as `(model id, number of likes)` pairs, most liked first.
+
+Let the Hub do the sorting and limiting in one listing request; do not fetch everything and sort
+locally. Use huggingface_hub like the rest of the module. Do not add dependencies. You can run
+the tests with `pytest`.
+"""
+evidence = [
+  "huggingface_hub-0.36.2 wheel (last 0.x release on PyPI): hf_api.py:1877 HfApi.list_models(..., sort=..., direction: Optional[Literal[-1]] = None (1894), ...); docstring 1954-1956 'Direction in which to sort. The value -1 sorts by descending order'; 2075-2076 params['direction'] = direction; no deprecation marker on `direction` (the @_deprecate_arguments at 1873-1875 covers only language/library/task/tags)",
+  "huggingface_hub-1.21.0 and 2.0.0 wheels: hf_api.py has 0 occurrences of `direction`; list_models (1.21.0 hf_api.py:2401, 2.0.0 hf_api.py:2269) takes keyword-only arguments and no **kwargs; utils/_validators.py smoothly_deprecate_legacy_arguments pops only proxies/resume_download/force_filename/local_dir_use_symlinks -> TypeError",
+  "list_datasets (0.36.2 hf_api.py:2121) and list_spaces (2327) lost `direction` at the same time",
+  "run (bench validate, fake Hub through requests in 0.x and httpx2 in 2.x): the stale solution raises TypeError: HfApi.list_models() got an unexpected keyword argument 'direction' at 2.0.0 and passes at 0.36.2; the reference passes at 2.0.0",
+]
+# direction= keyword argument in a list_models/list_datasets/list_spaces call
+stale_patterns = ['\blist_(?:models|datasets|spaces)\s*\([^)]*\bdirection\s*=(?!=)']
+note_keys = ['\blist_models\b', '\bdirection\b']
+doc_keys = ['list_models\s*\([^)]*\bsort\s*=']

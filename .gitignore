@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+# per-study results are private until the main run is done; commit them deliberately
+results/
+bench/notes/*.log

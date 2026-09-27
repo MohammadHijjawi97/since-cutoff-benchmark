@@ -1,0 +1,104 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "pd03",
+  "task_id": "pd03-fill-gaps",
+  "task_sha256": "26d9aaefda16579983d1fd88f8376764192fdfb6142e0629dc959d7259571031",
+  "parts_sha256": {
+    "task.toml": "b6f1796afad1f8d3156ab6fa4a5c8689b1d756db9928f2268e2a0bf021254b75",
+    "repo": "1ebc97dd3c0dd6b6f0bcc010cb3a960ec019b3cc8b50a9f0f1f5a5c13b28f970",
+    "hidden": "eb2c1479575e097e66c3daae0a30791c766730d0573d1ca82a627c897ef220af",
+    "reference": "d38a78d3aab67d2767afc0b0e6ecd59d61b0662a56442684bdf32784a6bf1837",
+    "stale": "f8ff6117f1460f98112dcde79cfdff625ced1749a6574a1fc8ef3799621e8ed9"
+  },
+  "validated_at": "2026-09-27T19:03:55+00:00",
+  "library": "pandas",
+  "pinned": "3.0.6",
+  "stale_version": "2.3.2",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "3.0.6",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 4,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.83,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "4 failed in 0.47s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "3.0.6",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.72,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "4 passed in 0.36s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "3.0.6",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 4,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.95,
+        "timed_out": false,
+        "first_error": "TypeError: NDFrame.fillna() got an unexpected keyword argument 'method'"
+      },
+      "summary": "4 failed in 0.60s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.3.2",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.75,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "4 passed, 5 warnings in 0.37s"
+    }
+  },
+  "extra": {},
+  "leaks": [],
+  "envs": {
+    "pinned": "pandas-3.0.6 31ee49a809c2",
+    "stale": "pandas-2.3.2 e3582a58008d"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 3.5
+}

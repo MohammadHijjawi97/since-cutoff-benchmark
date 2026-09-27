@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "oai02",
+  "task_id": "oai02-respx-test-double",
+  "task_sha256": "983151d679f25bb2c54ed7ae3ffa77739938dec5c8eabdee7668c303d1f54cdc",
+  "parts_sha256": {
+    "task.toml": "eda94e1023791f486bfb0b9cb5080ebdc0052d38b94122c315e43be672748d44",
+    "repo": "f2952890712043805aefd67cef6fb489655a360e746ade0865ae2471ffc9394a",
+    "hidden": "066ce86605477e74faefcb36c3a7f86c017af734d58a8f79448c8259f302ae82",
+    "reference": "3c86e1e7f74f1ba5bb1c01a1a5f4bb4f81a7960c1b4b8e508c7ae54d0d3edf8c",
+    "stale": "750875e15f6ef4f0e5495e0b60a8a69d83b7c7225f78cd5f40b208b5a46b4130",
+    "legacy_patch": "c04985cc782bd322a383a99f7315c1898efd9822b42fdf6bd04f707b278eb0d6"
+  },
+  "validated_at": "2026-09-27T19:02:29+00:00",
+  "library": "openai",
+  "pinned": "3.19.2",
+  "stale_version": "2.44.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "3.19.2",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 4,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 15.51,
+        "timed_out": false,
+        "first_error": "httpcore2.ConnectError: [WinError 10061] No connection could be made because the target machine actively refused it"
+      },
+      "summary": "4 failed in 14.92s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "3.19.2",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 3.36,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "4 passed in 2.67s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "3.19.2",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 4,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 15.48,
+        "timed_out": false,
+        "first_error": "httpcore2.ConnectError: [WinError 10061] No connection could be made because the target machine actively refused it"
+      },
+      "summary": "4 failed in 14.89s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.44.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 6.84,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "4 passed in 5.83s"
+    }
+  },
+  "extra": {
+    "extra_legacy_patch_fails_at_pinned": {
+      "ok": true,
+      "solution": "legacy_patch",
+      "version": "3.19.2",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 4,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 15.33,
+        "timed_out": false,
+        "first_error": "httpcore2.ConnectError: [WinError 10061] No connection could be made because the target machine actively refused it"
+      },
+      "summary": "4 failed in 14.80s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "openai-3.19.2-14ea3b4c fd9a9361ff23",
+    "stale": "openai-2.44.0-14ea3b4c 82e83d6c9d22"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 56.9
+}

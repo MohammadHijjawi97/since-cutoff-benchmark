@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "mcp02",
+  "task_id": "mcp02-tool-result-fields",
+  "task_sha256": "09f7ad1e904df567c562ad0964806a19f0b776048abe681fada7675eb5c4b386",
+  "parts_sha256": {
+    "task.toml": "2a0ca2e5ac0ac7b909364aba3903c4f6657c37c6d36db77b5e2f042b29bf0604",
+    "repo": "792575445d58dd2b818c83a5cd276103e3d5cdeede7a25d399c90a9afc3eb1f0",
+    "hidden": "76ed98058a51075cd7327ff5b6ef7c227365aeeafd16868f3df84255e2f02486",
+    "reference": "3c6c9c2be123e36ed5bab27068b742891b098e608afceb3a83eeaf616a81f190",
+    "stale": "bb8c36cb9d3b44dd607c28c817ea070ce0e0c5059b43a2c1dbf25e217924f31a",
+    "stale_getattr": "127d0d1d20786a3de0458f9ea730764781ad8272e22ac9d29772b6a76b6f6754"
+  },
+  "validated_at": "2026-09-27T19:01:53+00:00",
+  "library": "mcp",
+  "pinned": "2.2.0",
+  "stale_version": "1.28.1",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.11,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "3 failed in 0.62s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "2.2.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.17,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed in 0.64s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.16,
+        "timed_out": false,
+        "first_error": "AttributeError: 'CallToolResult' object has no attribute 'isError'. Did you mean: 'is_error'?"
+      },
+      "summary": "3 failed in 0.65s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.28.1",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.18,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed, 1 warning in 0.49s"
+    }
+  },
+  "extra": {
+    "extra_stale_getattr_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale_getattr",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 1,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.48,
+        "timed_out": false,
+        "first_error": "assert '{\\n  \"service\": \"api\",\\n  \"state\": \"running\",\\n  \"version\": \"4.2.0\"\\n}' == {'service': 'api', 'state': 'running', 'version': '4.2.0'}"
+      },
+      "summary": "      +------------------------------------"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "mcp-2.2.0 deac18483270",
+    "stale": "mcp-1.28.1 c1f82f8ed8f1"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 6.4
+}

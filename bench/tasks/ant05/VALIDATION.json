@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "ant05",
+  "task_id": "ant05-async-raw-parse",
+  "task_sha256": "0a4e6ef2b23580e1e0ce271121b7646e1e46cac2c1d8557fb24a77764c086e03",
+  "parts_sha256": {
+    "task.toml": "5af6634d89f1491b6dd2bd02b57c5108d2af8a7c7700a10946fdd21beaee5cbc",
+    "repo": "c33d2a78ec9bb7cbdbe670f7fabf4af3a43305616ebd8012cd979cd7957269a6",
+    "hidden": "5d7084b75c6a0326b743f91dcfbc840e3f0ed49e0288e1c991bf7e8538a4cb3c",
+    "reference": "4bba1a478382eb152af81a6eecc49aa47d9ec5917fe52e824170db977e975899",
+    "stale": "5e68ecc7f69882ad42cae5a3de2914eec246ba6e4c8dd5fca5cc36c5c5cb5de8",
+    "alt_streaming": "16236e661980c7f1ccb3f49f63cd5ca9a3dc104efe2897ff2351f3d25b329e4a"
+  },
+  "validated_at": "2026-09-27T19:00:33+00:00",
+  "library": "anthropic",
+  "pinned": "1.8.0",
+  "stale_version": "0.115.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.93,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "2 failed in 1.35s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "1.8.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.6,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 1.05s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.8,
+        "timed_out": false,
+        "first_error": "AttributeError: 'coroutine' object has no attribute 'content'"
+      },
+      "summary": "<sys>:0: RuntimeWarning: coroutine 'AsyncAPIResponse.parse' was never awaited"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "0.115.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.6,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 0.81s"
+    }
+  },
+  "extra": {
+    "extra_alt_streaming_passes_at_pinned": {
+      "ok": true,
+      "solution": "alt_streaming",
+      "version": "1.8.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.63,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 1.07s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "anthropic-1.8.0 bfd1f69e46b2",
+    "stale": "anthropic-0.115.0 9b205092addf"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 8.8
+}

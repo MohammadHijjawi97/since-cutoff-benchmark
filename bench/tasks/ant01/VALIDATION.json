@@ -1,0 +1,104 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "ant01",
+  "task_id": "ant01-sampling-params",
+  "task_sha256": "08e4200b2742edf43d24368ddcd1a23811305e0c63c98def96d87bc53b627223",
+  "parts_sha256": {
+    "task.toml": "dd5556da970a8966e471d5c710a104cb4da3b14a1380e146b60ecef1a88202d0",
+    "repo": "b1f68c547fbadadc7b42a9c74601cb705f1d6ce3ad08e9fe7952a3469acc90ed",
+    "hidden": "7f338cdd33b1141ec2d591998511b5d329774bc0e52973ee082320e7a769efa3",
+    "reference": "a3fe665a7ee50a2be0a44dbf94d12b7f1d12465c8357547b883a5a7e5ef34f76",
+    "stale": "ea449b6c46d9d6660196b31d7f3fe56c1bc3e68c7c5ea0fecee30e081942f1ca"
+  },
+  "validated_at": "2026-09-27T18:59:57+00:00",
+  "library": "anthropic",
+  "pinned": "1.8.0",
+  "stale_version": "0.115.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.67,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "2 failed in 1.21s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "1.8.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.52,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 1.07s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.69,
+        "timed_out": false,
+        "first_error": "TypeError: Messages.create() got an unexpected keyword argument 'temperature'"
+      },
+      "summary": "2 failed in 1.20s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "0.115.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.51,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 0.79s"
+    }
+  },
+  "extra": {},
+  "leaks": [],
+  "envs": {
+    "pinned": "anthropic-1.8.0 bfd1f69e46b2",
+    "stale": "anthropic-0.115.0 9b205092addf"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 6.6
+}

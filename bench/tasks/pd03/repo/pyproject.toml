@@ -1,0 +1,10 @@
+[project]
+name = "station-telemetry"
+version = "0.5.1"
+description = "Cleaning and aggregation of weather-station reports for the operations dashboard"
+requires-python = ">=3.11"
+dependencies = ["pandas==3.0.6"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

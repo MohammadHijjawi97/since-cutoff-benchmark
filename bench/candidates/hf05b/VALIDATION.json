@@ -1,0 +1,104 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "hf05b",
+  "task_id": "hf05b-list-models-direction",
+  "task_sha256": "9b65400e8f27ccfb4e9844a76ade25d0de451c47e3233f2e4ac2ecbe6353c4d8",
+  "parts_sha256": {
+    "task.toml": "e23759bf1e78f19b6cb5ceb23899cca200ef3a2d2f13afb0602aedf1e2f77be2",
+    "repo": "0f9127a7e5e8aa6c8481535019f3cb5e12b9fbb38790aa9ad3aa8ed490ec80eb",
+    "hidden": "86d701ba1a445f20ff55b1924de811864f37ebd4875026a950084864457fc902",
+    "reference": "744addee8b878e2f4f9c6c30a664a9eb43c8fdca711cd5237c238745c0a56257",
+    "stale": "805c3d1db56500d3fe5680b5d86289c75360f40c4e93bd32440af6560d67b90f"
+  },
+  "validated_at": "2026-09-27T18:22:03+00:00",
+  "library": "huggingface-hub",
+  "pinned": "2.0.0",
+  "stale_version": "0.36.2",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "2.0.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.74,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "3 failed in 0.34s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "2.0.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.63,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed in 0.24s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.0.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.74,
+        "timed_out": false,
+        "first_error": "TypeError: HfApi.list_models() got an unexpected keyword argument 'direction'"
+      },
+      "summary": "3 failed in 0.35s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "0.36.2",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.03,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed in 0.54s"
+    }
+  },
+  "extra": {},
+  "leaks": [],
+  "envs": {
+    "pinned": "huggingface-hub-2.0.0 28be7943faca",
+    "stale": "huggingface-hub-0.36.2 0e7f44917186"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 3.3
+}

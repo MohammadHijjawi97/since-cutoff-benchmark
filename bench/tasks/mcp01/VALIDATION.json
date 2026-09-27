@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "mcp01",
+  "task_id": "mcp01-server-tools",
+  "task_sha256": "dbcf153aa3fa8dd8e34e7d76cd8561270d8c787e088bc9cfe6378b3e16b6aae9",
+  "parts_sha256": {
+    "task.toml": "9422025b13c3bef82defd757db890adeb3e2c10408c30db5a5f3023b5f480ba2",
+    "repo": "87f3e44341aaaa6b473d5b0664b6d5a6dfe98a2156929cfe785cb8b0705ca03a",
+    "hidden": "d7a782ff92c04e80254fe7fd54d7af50587c16f95cdc2bd2ddf30f263bd0137c",
+    "reference": "83130d52234e495a57ec872f9fbd825dbbd2e5734d86896cd65031bb2d761e87",
+    "stale": "168217246a64ac34847d486a7a898dfef2cbff4e8b6b712995d9a5c273ff18f5",
+    "halfmigrated": "fb7ea3cd1bcfbb2fc6d409d54fe707924cab9a69a7fadf46d203a0a8b55a39b6"
+  },
+  "validated_at": "2026-09-27T19:01:46+00:00",
+  "library": "mcp",
+  "pinned": "2.2.0",
+  "stale_version": "1.28.1",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.27,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "1 failed in 0.78s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "2.2.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.41,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed in 0.89s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 2,
+        "passed": 0,
+        "failed": 0,
+        "errors": 1,
+        "skipped": 0,
+        "duration_s": 1.17,
+        "timed_out": false,
+        "first_error": "ModuleNotFoundError: No module named 'mcp.server.fastmcp'. This is mcp 2.x, where FastMCP was renamed to MCPServer (from mcp.server.mcpserver import MCPServer) and other APIs changed; see the migration guide at https://py.sdk.modelcontextprotocol.io/v2/migration/#fastmcp-renamed-to-mcpserver or pin "
+      },
+      "summary": "1 error in 0.68s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.28.1",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.12,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed, 1 warning in 0.44s"
+    }
+  },
+  "extra": {
+    "extra_halfmigrated_fails_at_pinned": {
+      "ok": true,
+      "solution": "halfmigrated",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.14,
+        "timed_out": false,
+        "first_error": "AssertionError: assert 'no such note' in 'Error executing tool word_count'"
+      },
+      "summary": "1 failed in 0.64s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "mcp-2.2.0 deac18483270",
+    "stale": "mcp-1.28.1 c1f82f8ed8f1"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 6.4
+}

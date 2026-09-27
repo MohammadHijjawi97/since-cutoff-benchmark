@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "hf04",
+  "task_id": "hf04-http-client-errors",
+  "task_sha256": "acb254c767a1036c6de6cb6a75beb7e1780fe871818ec1f37a757c7a20906576",
+  "parts_sha256": {
+    "task.toml": "67dc694c16758852a207a62733850dc4823281f17e3538d396978099cf9d0121",
+    "repo": "8e3ee1894b1739a1cf6083f65ce8f5a97ba7258452da933a1f914140bd625c14",
+    "hidden": "44ad99fa0bc06118bcfee0986226d337aebf7f728560b0378f3b79211d53d191",
+    "reference": "5e13978607d882117da5ca18cd61a500a7a869ac67fcae6c13263a5b9d8ed6c0",
+    "stale": "e0cc56dee5a70405d18026c0c8a027c375d4c6109f7df8d52c5b9c4aeff5b9fa",
+    "alt_review": "c13cb3b3333be23e3c934935825d1b160caef4bdb9de3cdc66b2627b334aa130"
+  },
+  "validated_at": "2026-09-27T19:01:34+00:00",
+  "library": "huggingface-hub",
+  "pinned": "2.0.0",
+  "stale_version": "1.21.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "2.0.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.76,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "7 failed in 0.35s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "2.0.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.61,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "7 passed in 0.23s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.0.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 2,
+        "passed": 0,
+        "failed": 0,
+        "errors": 1,
+        "skipped": 0,
+        "duration_s": 0.98,
+        "timed_out": false,
+        "first_error": "ModuleNotFoundError: No module named 'httpx'"
+      },
+      "summary": "1 error in 0.57s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.21.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.85,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "7 passed in 0.33s"
+    }
+  },
+  "extra": {
+    "extra_alt_review_passes_at_pinned": {
+      "ok": true,
+      "solution": "alt_review",
+      "version": "2.0.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.76,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "7 passed in 0.25s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "huggingface-hub-2.0.0 28be7943faca",
+    "stale": "huggingface-hub-1.21.0 6e24bc44abca"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 4.3
+}

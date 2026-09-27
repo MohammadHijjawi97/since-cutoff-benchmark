@@ -1,0 +1,10 @@
+[project]
+name = "inventory-mcp"
+version = "0.4.1"
+description = "Warehouse stock levels and reservations as an MCP server"
+requires-python = ">=3.10"
+dependencies = ["mcp==2.2.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

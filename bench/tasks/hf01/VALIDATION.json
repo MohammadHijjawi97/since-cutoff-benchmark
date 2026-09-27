@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "hf01",
+  "task_id": "hf01-tgi-stop",
+  "task_sha256": "f54a0519284c05e34d5af9658d91c29c7d1970ae8d3099ab4a8161da99ce78d1",
+  "parts_sha256": {
+    "task.toml": "0b5a8d6ea29100b396584276b517135881e9b82df54bcc590fde875678521551",
+    "repo": "bea1026bbef693cf3bd1344d7cdbf8afa856a6084077850fee16b1506dbb78dc",
+    "hidden": "8cebfcb79fe8341c651994874bad67599151c9cf9f5d5b5d4dd0ce88f1e3d445",
+    "reference": "3bdbd0e750233cd87de580d1f5e5ed27ffa89bb2a620b6fe0fd8f8ba1e34d474",
+    "stale": "cb2ee9cbe88ea5248dec2dc5dda79f4ec73e547a0f357eb43ec144bfb3efb1c4",
+    "alt_review": "1df9d5f32e282647ac48a8da0e9b312be485dc9aa997688361b4856dd93c915a"
+  },
+  "validated_at": "2026-09-27T19:00:42+00:00",
+  "library": "huggingface-hub",
+  "pinned": "2.0.0",
+  "stale_version": "1.21.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "2.0.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.81,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "1 failed in 0.40s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "2.0.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.72,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed in 0.31s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.0.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.8,
+        "timed_out": false,
+        "first_error": "TypeError: InferenceClient.text_generation() got an unexpected keyword argument 'stop_sequences'"
+      },
+      "summary": "1 failed in 0.39s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.21.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.89,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed, 1 warning in 0.42s"
+    }
+  },
+  "extra": {
+    "extra_alt_review_passes_at_pinned": {
+      "ok": true,
+      "solution": "alt_review",
+      "version": "2.0.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.72,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed in 0.32s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "huggingface-hub-2.0.0 28be7943faca",
+    "stale": "huggingface-hub-1.21.0 6e24bc44abca"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 4.2
+}

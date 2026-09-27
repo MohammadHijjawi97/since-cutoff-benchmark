@@ -1,0 +1,47 @@
+# A catalogue task dropped at validation (plan B.4 / B.9: dropped tasks are published with the reason).
+schema = "since-cutoff-bench/dropped@1"
+id = "mcp03-ctx-info-signature"
+library = "mcp"
+pinned = "2.2.0"
+cutoff_version = "1.28.1"
+stratum = "post-cutoff"
+catalogued_change = "Context.info(message, **extra) -> Context.info(data, *, logger_name=None) (also debug/warning/error/log)"
+catalogue_source = "bench.md section 3.1 ('wheel-checked (fastmcp/server.py:1344 vs mcpserver/context.py:372)'); https://py.sdk.modelcontextprotocol.io/migration/ ('MCPServer's Context logging: message renamed to data, extra removed')"
+status = "dropped"
+dropped_at = "2026-09-27"
+stage = "premise check in the wheel sources and a runtime probe, before any task files were written"
+verdict = "signature change is real, but cutoff-era code does not break: no realistic stale solution can pass gate 4 and fail gate 3"
+reason = """
+The signatures did change, but the change breaks no realistic 1.x code (probe.py, probe_output.txt):
+
+1. The documented 1.x idiom is positional (`ctx.info(f"Processing {x}")` in the 1.28.1 docstrings) and
+   so is sending structured data (`ctx.info({...})`, which already reached the client as `data` in 1.x).
+   Both run unchanged at 2.2.0, as does `ctx.info("...", logger_name=...)`. A task built on them would
+   be a no-change task: the stale solution passes at the pinned version (gate 3 fails).
+2. The `**extra` that 2.x removed never worked in 1.x: info() forwarded it to log(), which has no
+   **extra, so `ctx.info("...", extra={...})` or `ctx.info("...", rows=3)` raises TypeError at 1.28.1
+   too (the migration guide says the same). A stale solution using it fails gate 4.
+3. The only forms that pass at 1.28.1 and fail at 2.2.0 are keyword calls with the old parameter
+   name: `ctx.info(message="...")` and `ctx.log(level="info", message="...")`. Nothing in the task's
+   request would lead to them. Using them as the stale solution would satisfy the four gates only
+   on paper: the task would measure whether the agent happens to use a keyword argument, not
+   whether it knows the post-cutoff API.
+
+Also checked, and not a replacement: in 2.2.0 log messages reach the client only on request when the
+connection negotiated the 2026-07-28 protocol and the client did not opt in with Client(log_level=...)
+(mcp/server/session.py:151-160, mcp/client/client.py log_level). That affects only the new `Client`
+class in its default mode='auto'. A 1.x-style client (ClientSession + initialize(), the legacy
+handshake) still receives every log message at 2.2.0 (probe part 2), so stale code keeps working
+there too.
+"""
+evidence = [
+  "mcp-1.28.1 wheel: mcp/server/fastmcp/server.py:1263-1284 Context.log(level, message, *, logger_name=None) (no **extra, although the docstring lists it); :1340-1354 debug/info/warning/error(self, message: str, **extra) forward **extra to log()",
+  "mcp-1.28.1 wheel: mcp/server/fastmcp/server.py:479 and :1110-1111 docstring examples use the positional form ctx.info(f\"Processing {x}\"), ctx.debug(\"Debug info\")",
+  "mcp-2.2.0 wheel: mcp/server/mcpserver/context.py:257-279 Context.log(level, data, *, logger_name=None); :366-384 debug/info/warning/error(self, data: Any, *, logger_name=None); all @deprecated(..., category=MCPDeprecationWarning) (SEP-2577)",
+  "mcp-2.2.0 wheel: mcp/server/session.py:142-171 send_log_message: 'On 2026-07-28+ delivery is a per-request opt-in ... Handshake versions send unconditionally'",
+  "https://py.sdk.modelcontextprotocol.io/migration/ ('Note that extra never worked at runtime in v1 (the kwargs were forwarded to log(), which did not accept them, raising TypeError)'; 'Positional calls (await ctx.info(\"hello\")) are unaffected')",
+  "runtime (probe_output.txt, cached validation venvs from envlocks/mcp-1.28.1.json and mcp-2.2.0.json): positional str/dict and logger_name= work at both versions; extra= and **extra fail at both; message= works at 1.28.1 and fails at 2.2.0; data= fails at 1.28.1 and works at 2.2.0",
+]
+probe = "C:/b/venvs/mcp-1.28.1/Scripts/python bench/dropped/mcp03/probe.py  (and the same with C:/b/venvs/mcp-2.2.0)"
+probe_output = "probe_output.txt"
+replacement_candidate = "none found for this change; the log-delivery opt-in (above) does not break 1.x-style clients"

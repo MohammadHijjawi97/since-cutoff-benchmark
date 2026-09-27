@@ -1,0 +1,2 @@
+# Pinned runtime dependencies (keep in step with pyproject.toml).
+anthropic==1.8.0

@@ -1,0 +1,9 @@
+[[case]]
+tool = "add"
+arguments = { a = 2, b = 3 }
+expect = "5"
+
+[[case]]
+tool = "greet"
+arguments = { name = "Ada" }
+expect = "Hello, Ada!"

@@ -1,0 +1,9 @@
+[project]
+name = "invoice-desk"
+version = "0.3.0"
+requires-python = ">=3.10"
+dependencies = ["anthropic==1.8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

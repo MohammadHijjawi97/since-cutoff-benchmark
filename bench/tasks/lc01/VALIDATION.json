@@ -1,0 +1,104 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "lc01",
+  "task_id": "lc01-retriever-context",
+  "task_sha256": "fe71bf7dd9d72a5375965800693759ac04198e1e29baafa700bda9b7b862db77",
+  "parts_sha256": {
+    "task.toml": "aa15770a2040069720aaa6dee928a89d0a9597f25d165ab44fa0e79f58890724",
+    "repo": "ca4cb2b756cbd8a9494f68d78799a2df05a86737f67ed7843e7adc2d8be6a2c5",
+    "hidden": "393e536936f20d6d559b83a8143db4dcc45cc7d116aaf94bac0eeabbfb7b4092",
+    "reference": "cfbe28f0f70a634a3c75bafd1b85dfc3f1d202eb731e86ff8d542c0b7a9d799a",
+    "stale": "bf02227f9fcf50c97478de7078fabd24820ef016ff1fff5c7bbb32fc04c94e46"
+  },
+  "validated_at": "2026-09-27T19:01:38+00:00",
+  "library": "langchain-core",
+  "pinned": "1.6.5",
+  "stale_version": "0.3.86",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "1.6.5",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 4,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.14,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "4 failed in 0.31s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "1.6.5",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.87,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "4 passed in 0.19s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.6.5",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 4,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.0,
+        "timed_out": false,
+        "first_error": "AttributeError: 'SpyRetriever' object has no attribute 'get_relevant_documents'"
+      },
+      "summary": "4 failed in 0.30s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "0.3.86",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.88,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "4 passed, 1 warning in 0.17s"
+    }
+  },
+  "extra": {},
+  "leaks": [],
+  "envs": {
+    "pinned": "langchain-core-1.6.5 f770cd74d6c8",
+    "stale": "langchain-core-0.3.86 0eb6b0519313"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 4.2
+}

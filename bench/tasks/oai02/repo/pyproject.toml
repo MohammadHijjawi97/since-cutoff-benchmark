@@ -1,0 +1,12 @@
+[project]
+name = "support-digest"
+version = "0.3.0"
+requires-python = ">=3.10"
+dependencies = ["openai==3.19.2"]
+
+[project.optional-dependencies]
+test = ["pytest==8.4.2", "respx==0.23.1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

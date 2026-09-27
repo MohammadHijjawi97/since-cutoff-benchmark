@@ -1,0 +1,12 @@
+$ C:/b/venvs/huggingface-hub-1.21.0/Scripts/python bench/dropped/hf05/probe.py
+huggingface_hub 1.21.0: call succeeded, regular file in local_dir: True
+  UserWarning: The `resume_download` argument is deprecated and ignored in `hf_hub_download`. Downloads always resume whenever possible.
+  UserWarning: The `force_filename` argument is deprecated and ignored in `hf_hub_download`. Filename is always the same as on the Hub.
+  UserWarning: The `local_dir_use_symlinks` argument is deprecated and ignored in `hf_hub_download`. Downloading to a local directory does not use symlinks anymore.
+
+$ C:/b/venvs/huggingface-hub-2.0.0/Scripts/python bench/dropped/hf05/probe.py
+huggingface_hub 2.0.0: call succeeded, regular file in local_dir: True
+  UserWarning: The `resume_download` argument is deprecated and ignored in `hf_hub_download`. Downloads always resume whenever possible.
+  UserWarning: The `force_filename` argument is deprecated and ignored in `hf_hub_download`. Filename is always the same as on the Hub.
+  UserWarning: The `local_dir_use_symlinks` argument is deprecated and ignored in `hf_hub_download`. Downloading to a local directory does not use symlinks anymore.
+

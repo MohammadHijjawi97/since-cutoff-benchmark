@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "ant02",
+  "task_id": "ant02-raw-response",
+  "task_sha256": "dfb6f85c9a7eb39f5a744676468eb08595de5ba25cccb1f87858782199b1348f",
+  "parts_sha256": {
+    "task.toml": "0d692a536f569bc26a1bc9d07e7f873f59c174027b1dc3b75aa50ccdb6aa58a1",
+    "repo": "14ad696c9ba0790b8dd246cab1111829fcee5389c434c333e329438d28ed45b4",
+    "hidden": "ea3b5ec7ad69adeca50812a3f458d83b46e6b2f1401b2e0e9b1120945d98689e",
+    "reference": "e0d1003167cec301c77cc173e22ac0822346a1e22e7eaec70f5b2420512156af",
+    "stale": "77193a84f95ea307a0bf4ceaff382512de2ef93811ef7bdc28aaac7f3f135255",
+    "alt_review": "9deba5ce6e0d6c287780275d58a7819d6406691b7068805c0b3d71a747f354df"
+  },
+  "validated_at": "2026-09-27T19:00:03+00:00",
+  "library": "anthropic",
+  "pinned": "1.8.0",
+  "stale_version": "0.115.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.79,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "1 failed in 1.24s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "1.8.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.6,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed in 1.08s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.79,
+        "timed_out": false,
+        "first_error": "assert False"
+      },
+      "summary": "1 failed in 1.22s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "0.115.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.6,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed in 0.83s"
+    }
+  },
+  "extra": {
+    "extra_alt_review_passes_at_pinned": {
+      "ok": true,
+      "solution": "alt_review",
+      "version": "1.8.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.55,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed in 1.03s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "anthropic-1.8.0 bfd1f69e46b2",
+    "stale": "anthropic-0.115.0 9b205092addf"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 8.6
+}

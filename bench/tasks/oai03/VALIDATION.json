@@ -1,0 +1,143 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "oai03",
+  "task_id": "oai03-stream-transport-errors",
+  "task_sha256": "980cf8ea638ef7f08038907b1206c2a8db4e7c9019a58c0c866415dba8dc3d45",
+  "parts_sha256": {
+    "task.toml": "2d43e88f5c8255c7f7157c1f3efcca416e33fb8dea51bfeee11a4fc8fb2227b3",
+    "repo": "fd092bc30d921f754aa7adc473aad0760d2dbef442db16deb76c8860d5edc3dc",
+    "hidden": "eaaf6d50818dda5ac7cba96ee7501897b0781a4a8bff710e0575bbf0b82111ef",
+    "reference": "6c23818d86995ad971853ffb32d5075702450caa5a0a5768ab3d6e1c450aa3d8",
+    "stale": "a6d2548a545076614a424324a244c33742656628ca02afb4e43c3891c9eea8ab",
+    "halfmigrated": "c90272bbb4e664f95575b9157c6371428567d4767f75632bdbd5e3a94293851a",
+    "alt_review": "6642c54408123a12e98cc12db8776d81c620607a516d647b70f334cc96463cfe"
+  },
+  "validated_at": "2026-09-27T19:03:26+00:00",
+  "library": "openai",
+  "pinned": "3.19.2",
+  "stale_version": "2.44.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "3.19.2",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 6,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.13,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "6 failed in 0.72s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "3.19.2",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 6,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.03,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "6 passed in 0.61s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "3.19.2",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 2,
+        "passed": 0,
+        "failed": 0,
+        "errors": 1,
+        "skipped": 0,
+        "duration_s": 1.14,
+        "timed_out": false,
+        "first_error": "ModuleNotFoundError: No module named 'httpx'"
+      },
+      "summary": "1 error in 0.70s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.44.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 6,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.4,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "6 passed in 0.89s"
+    }
+  },
+  "extra": {
+    "extra_halfmigrated_fails_at_pinned": {
+      "ok": true,
+      "solution": "halfmigrated",
+      "version": "3.19.2",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 4,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.21,
+        "timed_out": false,
+        "first_error": "AssertionError: ['answer attempt 1/3 failed: Connection error.']"
+      },
+      "summary": "2 failed, 4 passed in 0.74s"
+    },
+    "extra_alt_review_passes_at_pinned": {
+      "ok": true,
+      "solution": "alt_review",
+      "version": "3.19.2",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 6,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.08,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "6 passed in 0.64s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "openai-3.19.2 68ad3ab2354d",
+    "stale": "openai-2.44.0 a11b191d7312"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 7.3
+}

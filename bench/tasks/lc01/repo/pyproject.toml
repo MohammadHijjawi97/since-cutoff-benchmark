@@ -1,0 +1,10 @@
+[project]
+name = "kb-assistant"
+version = "0.2.0"
+description = "Answers staff questions from the team knowledge base"
+requires-python = ">=3.11"
+dependencies = ["langchain-core==1.6.5"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

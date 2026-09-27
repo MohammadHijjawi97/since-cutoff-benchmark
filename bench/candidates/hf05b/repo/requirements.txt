@@ -1,0 +1,2 @@
+# Pinned runtime dependencies (keep in step with pyproject.toml).
+huggingface-hub==2.0.0

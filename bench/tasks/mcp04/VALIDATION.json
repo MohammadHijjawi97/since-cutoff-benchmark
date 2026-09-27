@@ -1,0 +1,143 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "mcp04",
+  "task_id": "mcp04-http-host-port",
+  "task_sha256": "e16167d6779630a7d73bd5cc0256542477a322166f485a966cc9e8d9a75826e0",
+  "parts_sha256": {
+    "task.toml": "57558f59580ef19abf0ee661bcff18fab053f3f887186335f458b3bb042df77c",
+    "repo": "bf15535a5ca0b90f472396ce9d11462948b7e8c76dba2633007a8467a13fed43",
+    "hidden": "7f898ceada88850a77c74ac3f59aad3a895903e747408b2a0ce7eb5b82a58eaa",
+    "reference": "edabc3452312f260455e45a487128896445ef7a4269298e1ffd7a2b45e476370",
+    "stale": "18fb9704425ea1386b334c7ba6009bfe76fbd24cf22da7ea950b232bbfaf5624",
+    "halfmigrated": "ceb1af397c507584dc2bd1ec5dee9f77091c1dbd69771562aaac9d533e0162d3",
+    "halfmigrated_ctor": "2c2581f2823ef5a55ce8a850d1ecc3167295953176a9f8edf53c6cbd15ecc4e6"
+  },
+  "validated_at": "2026-09-27T19:01:59+00:00",
+  "library": "mcp",
+  "pinned": "2.2.0",
+  "stale_version": "1.28.1",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.23,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "1 failed in 0.76s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "2.2.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.55,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed in 1.09s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 2,
+        "passed": 0,
+        "failed": 0,
+        "errors": 1,
+        "skipped": 0,
+        "duration_s": 1.16,
+        "timed_out": false,
+        "first_error": "ModuleNotFoundError: No module named 'mcp.server.fastmcp'. This is mcp 2.x, where FastMCP was renamed to MCPServer (from mcp.server.mcpserver import MCPServer) and other APIs changed; see the migration guide at https://py.sdk.modelcontextprotocol.io/v2/migration/#fastmcp-renamed-to-mcpserver or pin "
+      },
+      "summary": "1 error in 0.69s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.28.1",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.78,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed, 1 warning in 1.05s"
+    }
+  },
+  "extra": {
+    "extra_halfmigrated_fails_at_pinned": {
+      "ok": true,
+      "solution": "halfmigrated",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.53,
+        "timed_out": false,
+        "first_error": "ValueError: \"Settings\" object has no field \"host\""
+      },
+      "summary": "1 failed in 1.08s"
+    },
+    "extra_halfmigrated_ctor_fails_at_pinned": {
+      "ok": true,
+      "solution": "halfmigrated_ctor",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.11,
+        "timed_out": false,
+        "first_error": "TypeError: MCPServer.__init__() got an unexpected keyword argument 'host'"
+      },
+      "summary": "1 failed in 0.65s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "mcp-2.2.0 deac18483270",
+    "stale": "mcp-1.28.1 c1f82f8ed8f1"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 8.8
+}

@@ -1,0 +1,2 @@
+# Direct runtime dependencies (keep in sync with pyproject.toml).
+langchain-core==1.6.5

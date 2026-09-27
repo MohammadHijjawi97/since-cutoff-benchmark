@@ -1,0 +1,30 @@
+######## venv anthropic-0.115.0 (C:/b/venvs, built from envlocks/anthropic-0.115.0.json)
+anthropic 0.115.0 http lib httpx
+A) messages.parse(stream=True, output_format=Ticket)
+  request body keys: ['max_tokens', 'messages', 'model', 'output_config', 'stream'] stream: True output_config: {'format': {'schema': {'type': 'object', 'title': 'Ticket', 'properties': {'title': {'type': 'string', 'title': 'Title'}, 'priority': {'type': 'integer', 'title': 'Priority'}}, 'additionalProperties': False, 'required': ['title', 'priority']}, 'type': 'json_schema'}}
+  RAISED AttributeError 'str' object has no attribute 'content'
+B) messages.stream(output_format=Ticket)
+  request body keys: ['max_tokens', 'messages', 'model', 'output_config', 'stream'] stream: True output_config: {'format': {'schema': {'type': 'object', 'title': 'Ticket', 'properties': {'title': {'type': 'string', 'title': 'Title'}, 'priority': {'type': 'integer', 'title': 'Priority'}}, 'additionalProperties': False, 'required': ['title', 'priority']}, 'type': 'json_schema'}}
+  chunks ['{"title": "Fix log', 'in", "priority": 2}'] parsed_output: title='Fix login' priority=2
+C) messages.stream(output_format=<dict schema>)
+  request body keys: ['max_tokens', 'messages', 'model', 'output_config', 'stream'] stream: True output_config: {'format': {'type': 'json_schema', 'schema': {'properties': {'title': {'title': 'Title', 'type': 'string'}, 'priority': {'title': 'Priority', 'type': 'integer'}}, 'required': ['title', 'priority'], 'title': 'Ticket', 'type': 'object', 'additionalProperties': False}}}
+  chunks ['{"title": "Fix log', 'in", "priority": 2}']
+D) messages.create(stream=True) + output_config
+  request body keys: ['max_tokens', 'messages', 'model', 'output_config', 'stream'] stream: True output_config: {'format': {'type': 'json_schema', 'schema': {'properties': {'title': {'title': 'Title', 'type': 'string'}, 'priority': {'title': 'Priority', 'type': 'integer'}}, 'required': ['title', 'priority'], 'title': 'Ticket', 'type': 'object', 'additionalProperties': False}}}
+  events ['message_start', 'content_block_start', 'content_block_delta', 'content_block_delta', 'content_block_stop', 'message_delta', 'message_stop']
+E) parse(stream=True) when the mock always returns JSON (ignores stream flag)
+  returned ParsedMessage[TypeVar] parsed_output: title='Fix login' priority=2
+######## venv anthropic-1.8.0 (C:/b/venvs, built from envlocks/anthropic-1.8.0.json)
+anthropic 1.8.0 http lib httpx2
+A) messages.parse(stream=True, output_format=Ticket)
+  RAISED TypeError Messages.parse() got an unexpected keyword argument 'stream'
+B) messages.stream(output_format=Ticket)
+  request body keys: ['max_tokens', 'messages', 'model', 'output_config', 'stream'] stream: True output_config: {'format': {'schema': {'type': 'object', 'title': 'Ticket', 'properties': {'title': {'type': 'string', 'title': 'Title'}, 'priority': {'type': 'integer', 'title': 'Priority'}}, 'additionalProperties': False, 'required': ['title', 'priority']}, 'type': 'json_schema'}}
+  chunks ['{"title": "Fix log', 'in", "priority": 2}'] parsed_output: title='Fix login' priority=2
+C) messages.stream(output_format=<dict schema>)
+  RAISED TypeError `output_format` must be a type; pass a schema dict as `output_config={'format': ...}` instead
+D) messages.create(stream=True) + output_config
+  request body keys: ['max_tokens', 'messages', 'model', 'output_config', 'stream'] stream: True output_config: {'format': {'type': 'json_schema', 'schema': {'properties': {'title': {'title': 'Title', 'type': 'string'}, 'priority': {'title': 'Priority', 'type': 'integer'}}, 'required': ['title', 'priority'], 'title': 'Ticket', 'type': 'object', 'additionalProperties': False}}}
+  events ['message_start', 'content_block_start', 'content_block_delta', 'content_block_delta', 'content_block_stop', 'message_delta', 'message_stop']
+E) parse(stream=True) when the mock always returns JSON (ignores stream flag)
+  RAISED TypeError Messages.parse() got an unexpected keyword argument 'stream'

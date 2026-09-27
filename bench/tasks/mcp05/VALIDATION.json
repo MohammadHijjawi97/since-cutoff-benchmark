@@ -1,0 +1,143 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "mcp05",
+  "task_id": "mcp05-streamable-http-client",
+  "task_sha256": "bed6093ad955d1f974bb4876a0900fff369546c2c9cc0b66dd0f121e2a6a0e5c",
+  "parts_sha256": {
+    "task.toml": "45fb93d1147fe1959be3154dd2bbad5a077175bed3d26ed48dc93b14ca2e71e8",
+    "repo": "0303a9c0680aa7b072307162d5c265686024c209548204032ce10c4366a56dc3",
+    "hidden": "e176a27db9216dcaf7955c9fc940e9f90e217b1251f6996fb4b557e2837bb360",
+    "reference": "1b3fb101b1ecf0b695cab6251aae99111f9bf602e417ef755eb45fb403b9e7db",
+    "stale": "8e6d9533bc2311b31c40e6ce2fa7fb68ef563ae1838ff2d64d4e86f27d42b657",
+    "halfmigrated": "04b60d60d6ffc8a0867b002de8e695f3b291dfc14fb81ee6b2f5ce45267cd7ee",
+    "late_v1": "e0f97c928df0cd5a4d0feea77974d54b79c643f9963e3a177c653c0f328074f4"
+  },
+  "validated_at": "2026-09-27T19:02:08+00:00",
+  "library": "mcp",
+  "pinned": "2.2.0",
+  "stale_version": "1.28.1",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.14,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "1 failed in 0.63s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "2.2.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.47,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed in 0.95s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 2,
+        "passed": 0,
+        "failed": 0,
+        "errors": 1,
+        "skipped": 0,
+        "duration_s": 1.29,
+        "timed_out": false,
+        "first_error": "ImportError: cannot import name 'streamablehttp_client' from 'mcp.client.streamable_http' (C:\\b\\venvs\\mcp-2.2.0\\Lib\\site-packages\\mcp\\client\\streamable_http.py)"
+      },
+      "summary": "1 error in 0.77s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.28.1",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.76,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "1 passed, 3 warnings in 1.05s"
+    }
+  },
+  "extra": {
+    "extra_halfmigrated_fails_at_pinned": {
+      "ok": true,
+      "solution": "halfmigrated",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.18,
+        "timed_out": false,
+        "first_error": "TypeError: streamable_http_client() got an unexpected keyword argument 'headers'"
+      },
+      "summary": "1 failed in 0.66s"
+    },
+    "extra_late_v1_fails_at_pinned": {
+      "ok": true,
+      "solution": "late_v1",
+      "version": "2.2.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 2,
+        "passed": 0,
+        "failed": 0,
+        "errors": 1,
+        "skipped": 0,
+        "duration_s": 0.63,
+        "timed_out": false,
+        "first_error": "ModuleNotFoundError: No module named 'httpx'"
+      },
+      "summary": "1 error in 0.23s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "mcp-2.2.0 deac18483270",
+    "stale": "mcp-1.28.1 c1f82f8ed8f1"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 7.8
+}

@@ -1,0 +1,104 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "lc02",
+  "task_id": "lc02-chat-summary",
+  "task_sha256": "9cd81b080c3fa6074fe90aa4e30f80f78bfc9894649e5ea32f46092a311c0a89",
+  "parts_sha256": {
+    "task.toml": "d0df4ab1930305fba57cd4f8486551bdb4710755e95063de530dbf25b16e0815",
+    "repo": "53e6110906af0f123247f48369a38eeed73a35498490794ad3111f80e73f16b1",
+    "hidden": "0ed21f49646753ad7ee173576a1f75a5955e16340312dc3597f5acac9493977f",
+    "reference": "a1fb1fd6f66f98223d75edc27044f8baa4595e7425dcfdf187780a37c769869e",
+    "stale": "d4e6bb310ce585a50aa19173ebc7590e64cfa1b73ea9952036d4a72360daa564"
+  },
+  "validated_at": "2026-09-27T19:01:42+00:00",
+  "library": "langchain-core",
+  "pinned": "1.6.5",
+  "stale_version": "0.3.86",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "1.6.5",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.05,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "3 failed in 0.35s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "1.6.5",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.9,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed in 0.18s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.6.5",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.02,
+        "timed_out": false,
+        "first_error": "TypeError: 'SpyChat' object is not callable"
+      },
+      "summary": "3 failed in 0.28s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "0.3.86",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 0.88,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "3 passed, 1 warning in 0.15s"
+    }
+  },
+  "extra": {},
+  "leaks": [],
+  "envs": {
+    "pinned": "langchain-core-1.6.5 f770cd74d6c8",
+    "stale": "langchain-core-0.3.86 0eb6b0519313"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 4.1
+}

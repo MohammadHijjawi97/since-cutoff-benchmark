@@ -1,0 +1,288 @@
+# since-cutoff head-to-head benchmark: protocol (DRAFT, not yet tagged)
+
+Status: draft written with the harness on 2026-09-27. It becomes the pre-registration when it is committed and tagged
+together with `bench/HASHES.json` (`python -m bench hashes --write`), the frozen notes (`bench/notes/MANIFEST.json`)
+and the analysis code, **before the first main-run session**. Any later change is listed under "Deviations" with its
+date and reason. Source design: `since-cutoff-0.4/plan.md` section B and the benchmark report `bench.md`.
+
+## 1. Question
+
+On the same tasks, does Claude Code finish correctly more often, or with fewer correction attempts, less time and less
+cost, with (A) its usual tools, (B) plus Context7, (C) plus since-cutoff's notes, or (D) both?
+
+## 2. Conditions
+
+| | CLAUDE.md (project root) | `--mcp-config` | extra `--allowedTools` |
+|---|---|---|---|
+| A | base block | `{"mcpServers":{}}` | – |
+| B | base block + Context7 rule | context7 (stdio, `@upstash/context7-mcp` 4.1.1) | `mcp__context7` |
+| C | base block + frozen since-cutoff notes | `{"mcpServers":{}}` | – |
+| D | base block + rule + notes | context7 | `mcp__context7` |
+
+- Base block: `claude_md/base.md` (pins in `pyproject.toml`, installed in `.venv`, run `pytest -q`, do not install or
+  upgrade packages). Every condition has it, so having a CLAUDE.md is controlled for.
+- Context7 rule, verbatim (`claude_md/context7_rule.md`): "Always use Context7 when I need library/API documentation,
+  code generation, setup or configuration steps without me having to explicitly ask."
+- Notes: the since-cutoff block produced by `since-cutoff==0.4.0rc1 sync --model anthropic:claude-opus-5-5
+  --target CLAUDE.md` in a scratch copy of each task's `repo/` (the command template is in `bench.toml [notes]`). The
+  tool gets no model credentials and never sees `hidden/`, `reference/` or `stale/`. Blocks are stored as
+  `notes/<task>.md`, hashed in `notes/MANIFEST.json`, and frozen (`python -m bench notes --freeze`); runs refuse
+  unfrozen or changed notes. An empty block is valid (C then equals A for that task) and is reported.
+- Composition order is fixed: base, blank line, rule, blank line, notes.
+- Results for C apply to 0.4.0 diff notes only, not to `run`-improved notes.
+
+## 3. Agent setup (fixed for every session)
+
+Command (prompt on stdin, cwd = the run's project folder):
+
+```
+<claude.exe> -p --model claude-opus-5-5 --effort medium --output-format stream-json --verbose
+  --max-turns 40 --max-budget-usd 3 --permission-mode dontAsk
+  --tools Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill
+  --settings <runs>/<study>/_harness/claude_settings.json
+  --strict-mcp-config --mcp-config <mcp_none.json | mcp_context7.json | inline JSON, see below>
+  [B, D] --allowedTools mcp__context7
+  --no-session-persistence
+```
+
+- Claude Code version pinned in `bench.toml` (2.1.283); checked before a study starts and against every run's
+  `system/init.claude_code_version`.
+- `claude_settings.json`: exactly plan B.2 (dontAsk, `blockReadsOutsideWorkingDirectories`, allow Read/Edit/Write/
+  Glob/Grep/TodoWrite/Skill and `pytest`/`python` Bash forms; deny WebFetch, WebSearch, pip, uv, curl, wget, npm,
+  npx, git push).
+- Environment, built from scratch (nothing inherited from the shell): Windows system variables only; `PATH` =
+  `<project>\.venv\Scripts` + system folders; `VIRTUAL_ENV`; a fresh `CLAUDE_CONFIG_DIR` per run
+  (`C:\b\claude-config\<study>\<run>`); `USERPROFILE`/`HOME`/`APPDATA`/`LOCALAPPDATA` in an empty per-run folder
+  (`claude.isolate_home`, so no user settings, plugins, hooks, memory or dotfiles are read); `TEMP`/`TMP` per run;
+  `CLAUDE_CODE_OAUTH_TOKEN` copied from the harness environment; `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`,
+  `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`, `DISABLE_AUTOUPDATER=1`, `ENABLE_TOOL_SEARCH=false`, `MCP_TIMEOUT=60000`,
+  `PYTEST_ADDOPTS=--allow-hosts=127.0.0.1,::1`, `CLAUDE_CODE_GIT_BASH_PATH` (the Bash tool on Windows).
+  Never present: `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_EFFORT_LEVEL`, HTTP(S) proxies,
+  `CONTEXT7_API_KEY`.
+- Context7: `node.exe <npm root>\@upstash\context7-mcp\dist\index.js --transport stdio`. When `CONTEXT7_API_KEY` is
+  set in the harness environment the config is passed as an inline JSON string whose server `env` holds the key,
+  so the key reaches only the MCP server: it is not in the claude environment (the agent cannot print it), not in
+  any file, and redacted in the recorded argv. Without a key Context7 runs anonymously (rate-limited).
+- Projects live in `C:\b\runs\<study>\<run_id>`; the harness refuses to run when a `CLAUDE.md`, `AGENTS.md` or
+  `CLAUDE.local.md` exists in any parent folder.
+- Each project gets a fresh `.venv` built offline from the locked wheels (section 5).
+- Wall-clock limit 900 s per session; on expiry the process tree is killed with `taskkill /PID <pid> /T /F`.
+
+## 4. Tasks
+
+Admission: `python -m bench validate` must pass for the task's current files (`tasks/<key>/VALIDATION.json`, bound to
+the task sha256):
+1. the unmodified repo fails the hidden tests at the pinned version;
+2. `reference/` passes at the pinned version;
+3. `stale/` fails at the pinned version;
+4. `stale/` passes at the cutoff-era version (`stale_version`, default `cutoff_version`);
+for a no-change control gate 3 is inverted to `3_stale_passes_at_pinned` (the cutoff-era solution in `stale/` passes at
+the pinned version too), and for a pinned-behind task `stale/` holds the too-new solution and `stale_version` is the
+newer release it was written for;
+plus declared extra solutions (mcp01 `halfmigrated/` must fail at the pinned version), and the leak check: no answer
+token (global list in `bench.toml [leak]` minus the task's `leak_allow`, plus the task's `answer_tokens`) in any
+`repo/` file or in the instruction.
+
+Task format (`task.toml`, schema `since-cutoff-bench/task@1`): `id, library, pinned, cutoff_version, [stale_version],
+stratum, kind, timeout_s, target_files, instruction, evidence[], stale_patterns[], note_keys[], doc_keys[],
+[answer_tokens[]], [leak_allow[]], [extra_requirements[]], [extra_solutions]`. Folders `repo/ hidden/ reference/ stale/`.
+`task_sha256` = sha256 over `task.toml`, `repo/`, `hidden/` (CRLF normalised to LF, caches and venvs skipped).
+
+Strata for claude-opus-5-5: post-cutoff (primary endpoint), pre-cutoff-control, no-change-control, pinned-behind.
+Admitted after `bench validate` and the independent review of every task and hidden test (2026-09-27, `REVIEW.md`
+in the repository root): 24 tasks.
+- post-cutoff, the primary endpoint (17): ant01-ant05 (anthropic 1.8.0; cutoff era 0.115.0), oai01-oai03 (openai
+  3.19.2; 2.44.0), hf01-hf04 (huggingface-hub 2.0.0; 1.21.0), mcp01, mcp02, mcp04, mcp05, mcp06 (mcp 2.2.0; 1.28.1);
+- pre-cutoff controls (5): pd01-pd03 (pandas 3.0.6; `cutoff_version` 3.0.3, gate 4 at `stale_version` 2.3.2) and
+  lc01, lc02 (langchain-core 1.6.5; `cutoff_version` 1.4.8, gate 4 at `stale_version` 0.3.86);
+- no-change control (1): oai04 (Responses API; gate 3 inverted, see section 12);
+- pinned-behind (1): oai05 (oai01 with the project pinned to openai 2.44.0; `stale/` is the 3.x answer and passes at
+  3.19.2).
+Dropped at the premise check, each published with the reason and a runtime probe in `bench/dropped/<key>/`: ant06
+(`messages.parse(stream=True)` never worked at 0.115.0, and `messages.stream(output_format=)` is not new), mcp03 (no
+realistic cutoff-era `ctx.info` call passes at 1.28.1 and fails at 2.2.0) and hf05 (huggingface-hub 1.x/2.0 still
+accept the removed `hf_hub_download` arguments at run time, with a warning). `bench/candidates/hf05b`
+(`list_models(direction=)`) passes the gates but is not in the pre-registered catalogue and is not admitted.
+With ant06 and mcp03 dropped, the primary endpoint has 17 tasks (plan B.6 assumed 19): the sign-flip test runs over
+2^17 sign patterns and the detectable effect is somewhat larger than the plan's 20-25 points.
+
+Hidden tests stay out of any public repository until the main run is done; only their sha256 (`hidden_sha256` in
+`HASHES.json`) is published with this protocol.
+
+## 5. Environments
+
+- Python 3.13.14 (`bench.toml [python].base`); test tooling pytest 8.4.2 and pytest-socket 0.8.1 in every venv.
+- One environment per (library, version): `<library>==<version>` + test tooling (+ `extra_requirements`).
+- `prepare --download` fetches wheels only (`--only-binary=:all:`) from PyPI into the wheelhouse; each environment is
+  then resolved from the wheelhouse alone and frozen in `envlocks/<env_id>.json` with every wheel's sha256. Venvs are
+  built with `pip install --no-index --no-deps --require-hashes` from that lock. The lock hashes are part of
+  `HASHES.json`.
+
+## 6. Grading and validity
+
+- After the session, the project (without `.venv`, `.git`, caches) is copied into a fresh grade folder, a pristine
+  venv is built from the task's pinned lock, and the hidden tests run with
+  `pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1` plus harness-owned options
+  `-c <grade>/bench_pytest.ini --rootdir <grade>/proj --confcutdir <grade>/proj/_bench_hidden --junitxml ...`, so
+  the agent's pytest configuration and `conftest.py` files cannot change the hidden run. Environment: system
+  variables only, then every `*KEY*`, `*TOKEN*`, `*SECRET*`, `ANTHROPIC*`, `OPENAI*`, `HF_*`, `CLAUDE*`, `CONTEXT7*`
+  name removed, `HTTP(S)_PROXY=http://127.0.0.1:9`, `HOME`/`TEMP` inside the grade folder. Visible tests are also
+  run with the project's own configuration and recorded, not scored.
+- **A run passes** when every hidden test passes and the pins are unchanged. "Pins changed" (`lock_modified`) = any
+  lock/requirements file (`bench.toml [grade].lock_files`) added, removed or changed, or any of `project.dependencies`,
+  `project.optional-dependencies`, `project.requires-python`, `dependency-groups`, `build-system`, `tool.uv`,
+  `tool.poetry`, `tool.pdm` changed in `pyproject.toml` (or it no longer parses). `venv_modified` (a `pip list` diff of
+  the agent's venv) is recorded, not scored.
+- Runs that hit `--max-turns`, `--max-budget-usd` or the wall-clock limit are graded as they stand.
+- **Invalid (infrastructure) runs** are recorded, never graded, and re-queued up to 3 attempts: `spawn_failed`,
+  `no_init_event`, `auth`, `usage_limit`, `api_error`, `api_retry_exhausted`, `api_retry_timeout` (killed while the
+  stream ended in an API retry), `mcp_not_connected` (B/D: context7 not `connected` or `mcp_server_errors` present),
+  `unexpected_mcp_servers` (A/C), `model_mismatch`, `api_key_billing` (`apiKeySource` not `none`),
+  `version_mismatch`, `no_result_event` (crash), `harness_error`. `auth` and `usage_limit` stop the study; it is
+  resumed with `run --resume`. A re-queued run goes to the end of the queue (it leaves its block); its record keeps
+  its block id and attempt number.
+- Every attempt, valid or invalid, is kept in `results/<study>/runs.jsonl` (schema `since-cutoff-bench/run@1`) with
+  its `stream.jsonl`, `stderr.log`, `final.diff`, `CLAUDE.md`, `prompt.txt` and `grade.log`.
+
+## 7. Endpoints and analysis (unchanged from plan B.6; code in `stats.py`, `report.py`)
+
+- Unit of analysis: the task. p(t,c) = passes / valid graded runs; the first valid attempt of each planned run counts.
+- Primary: Δ(C−A) = mean over post-cutoff tasks of p(t,C) − p(t,A); 95% CI by task-cluster bootstrap (10,000
+  resamples, percentile, seed `bench.toml [analysis].bootstrap_seed`); p by exact sign-flip permutation over all 2^n
+  sign patterns (two-sided).
+- Secondary contrasts D−B, B−A, D−C; Holm across the four (primary included). C−B is reported for claim 3 only.
+- Headline counts: exact McNemar on each task's majority outcome (≥ 2 of 3 passes): "fixed N tasks, broke M".
+- Cost, total tokens, output tokens, turns, wall time: per-task medians; geometric-mean paired ratios with task-bootstrap
+  CIs; cost per solved task = total cost / total passes (failed runs' cost counts).
+- `pytest_runs`, `failing_pytest_runs`, `edits_after_first_failure`: exact Wilcoxon signed-rank on per-task medians
+  (zeros dropped, average ranks for ties); ratios use a +1 offset because counts can be 0.
+- Controls: non-inferiority, one-sided 95% lower bound (bootstrap) of Δ(C−A) ≥ −10 points.
+- Flakiness: share of tasks with mixed outcomes across reps, per condition.
+- Robustness: logistic GLMM `y ~ condition + (1|task)` fitted outside the harness (lme4 or statsmodels) from
+  `runs.csv`; the harness is standard-library only.
+- Process metrics from the stream (`transcript.py`): `pytest_runs` (Bash commands matching `\bpytest\b`, denied calls
+  excluded), `failing_pytest_runs` (non-zero exit, or "N failed"/"N error(s)" in the output), `py_edits`,
+  `edits_after_first_failure`, `stale_in_first_edit` (stale patterns on the first Edit/Write of a target file; `None`
+  when never edited), `stale_in_final` (on the added lines of the final diff, CLAUDE.md excluded), `site_packages_reads`
+  (Read/Grep/Glob on `.venv`/`site-packages`), `introspection_cmds`, `context7_calls`, `doc_hit` (all `doc_keys`
+  found in the Context7 results), `skills`, `network_like_cmds`, `api_retries`. Stale patterns ignore Python comments.
+- Pilot runs (`plan --pilot`: ant01 and mcp01 × 4 × 2) are excluded from every analysis.
+
+## 8. Decision rules (plan B.8, applied automatically in report section (h))
+
+| claim | evidence required |
+|---|---|
+| notes reduce stale-API failures on post-cutoff changes | Δ(C−A) CI lower bound > 0, Holm p < .05, and a lower `stale_in_first_edit` rate in C |
+| notes add value on top of documentation access | Δ(D−B) CI lower bound > 0 |
+| notes are cheaper than documentation lookups for the same success | Δ(C−B) CI within ±10 points and C/B cost-ratio CI upper bound < 1 |
+| notes and Context7 complement each other | D ≥ max(B, C) on pass rate and D/B cost ratio ≤ 1 |
+| notes don't hurt | non-inferiority on the controls (incl. no-change and pinned-behind tasks) |
+| notes reduce correction attempts / time / cost | a C/A ratio CI (failing pytest runs, turns, wall time or cost) entirely below 1 |
+
+- Ceiling: if A passes ≥ 90% of post-cutoff tasks, no pass-rate claim (the first four rows); cost, turns and
+  correction attempts only.
+- Low Context7 use (B call rate < 80%): a C-vs-B result compares notes with an unused tool; only a B-forced arm speaks
+  to Context7's content.
+- Per-task coverage decides the wording ("static-diff notes help with removed or renamed APIs" if C wins only where
+  the notes covered the change).
+- Anything that meets no rule is published as inconclusive.
+
+## 9. Go / no-go after the pilot
+
+Context7 connected in 100% of B/D pilot runs (else fix infrastructure first); B's Context7 call rate below 80% → add the
+B-forced arm; median cost above about $1.5 or time above 8 minutes per session → 2 reps, stated here before the main
+run; A passes every pilot run → expect the ceiling rule.
+
+## 10. Operating procedure
+
+```
+python -m bench validate                                  # four gates + leak check for every task
+python -m bench prepare --download [--install-context7]   # offline preflight (no model call)
+#   the maintainer sets CLAUDE_CODE_OAUTH_TOKEN (claude setup-token) and CONTEXT7_API_KEY in the shell
+python -m bench prepare --allow-calls                     # + the 6 model-call checks (about 6 short sessions)
+python -m bench notes --tool since-cutoff==0.4.0rc1 --freeze
+python -m bench hashes --write                            # then commit and tag: protocol, hashes, notes, code
+python -m bench plan --pilot --study-id pilot-<date> --seed <N>
+python -m bench run pilot-<date> --workers 2 && python -m bench report pilot-<date>
+python -m bench plan --study-id main-<date> --seed <N>    # seed fixed and written here before the run
+python -m bench run main-<date> --workers 3 [--resume] [--max-sessions N]
+python -m bench grade main-<date>                          # only for runs made with --no-grade, or --regrade
+python -m bench report main-<date>
+```
+
+Seeds: pilot `<to be fixed>`, main `<to be fixed>` (recorded here before tagging).
+
+## 11. Known gaps
+
+- The Claude Code sandbox does not run on native Windows: the agent's `python -c` could open sockets. Mitigated by
+  the deny rules, `PYTEST_ADDOPTS=--allow-hosts`, the transcript scan (`network_like_cmds`) and grading in a pristine,
+  offline venv. WSL2 with the sandbox is the stronger option.
+- The anthropic tasks start with first-party documentation in every condition (bundled `/claude-api` skill); that
+  stratum is reported separately and `Skill` calls are logged.
+- Context7 serves default-branch documentation for these libraries (no version tags).
+- `tokens_est` for notes is characters / 4.
+
+## 12. Deviations from plan B (decided while building the harness, before any session)
+
+- Grading adds harness-owned pytest options (`-c`, `--rootdir`, `--confcutdir`, `--junitxml`) to the plan's command so
+  the agent cannot alter the hidden run through its own pytest config or `conftest.py`.
+- `HOME`/`USERPROFILE`/`APPDATA` point to an empty per-run folder, and `CLAUDE_CONFIG_DIR` is per run
+  (`C:\b\claude-config\<study>\<run>`), not one shared folder. Preflight check 2 confirms Claude Code runs this way;
+  if it does not, set `claude.isolate_home = false` and record it here.
+- `CONTEXT7_API_KEY` is passed inline in `--mcp-config` (not through the claude environment), so preflight check 3
+  (no secret variables in the agent's subprocesses) holds in B and D too.
+- pd01 carries `cutoff_version = 3.0.3` (Opus 5.5) and `stale_version = 2.3.2` (gate 4), stratum pre-cutoff-control.
+- pd02, pd03, lc01 and lc02 (pre-cutoff controls, validated 2026-09-27) use the same versions as pd01 for pandas
+  (3.0.3 is the cutoff version because 3.0.4 is yanked). For langchain-core the pin is 1.6.5, `cutoff_version` is 1.4.8
+  (the highest final release on or before 2026-06-30), and `stale_version` is 0.3.86. That is the last 0.3.x release
+  before the cutoff, and the removed methods are still there, deprecated. Each repo also has a `requirements.txt`
+  (its non-target module that used the old API was removed in the review, see below). The langchain
+  `requirements.txt` pins only the
+  direct dependency, because the full dependency set includes `httpx2` (via langsmith 0.14.1), which is a global
+  answer token.
+- Gates by stratum (`bench/validate.py` `gates_for`). A no-change control has nothing stale, so plan B.4's gate 3
+  ("stale fails at pinned") cannot apply: for oai04 it is inverted to `3_stale_passes_at_pinned` (a cutoff-era
+  solution passes at both 2.44.0 and 3.19.2), which is the evidence that nothing the task needs changed. For the
+  pinned-behind task (oai05) the gates are unchanged, but `stale/` is the too-new 3.x solution and `stale_version` is
+  3.19.2; its `stale_patterns` flag 3.x code and its `doc_keys` flag documentation of the pinned 2.x API.
+- oai02's instruction says the fix stays in `tests/fakes.py` and the pytest configuration is not changed. respx
+  registers a pytest plugin that imports `httpx` at start-up, so `httpx2.alias_httpx()` only works with `-p no:respx`,
+  and the grader ignores the project's pytest configuration; without that sentence such a fix would pass locally and
+  fail grading.
+- hf01's instruction: the prototype's TOML basic string turned `("\n\n")` into two real line breaks; the task now
+  shows the literal `"\n\n"` as the benchmark report intended. No agent had run on the prototype.
+- Wall-clock timeouts are valid runs (graded as they stand) unless the stream ended in an API retry.
+- `leak_allow` (task.toml, `bench/tasks.py`): a task may exempt global answer tokens that are not its answer and that
+  its repo must contain. Only mcp04 uses it (`MCPServer`, `mcpserver`): its repo is a server already on mcp 2.x, which
+  cannot be written without the 2.x class name (mcp01's answer, protected by mcp01's own `answer_tokens`). A task's own
+  `answer_tokens` always apply, and a token may not be both allowed and an answer token (schema error).
+- mcp04 and mcp05 hidden tests use loopback sockets: mcp04 runs `serve_http()` in a daemon thread on a free 127.0.0.1
+  port, and mcp05 runs the SDK's Streamable HTTP app under uvicorn inside the test's event loop. Both remove the
+  grader's dead `HTTP(S)_PROXY` and set `NO_PROXY=127.0.0.1,localhost,::1` for the test only (monkeypatch), so the
+  SDK's default httpx2 client reaches 127.0.0.1 directly. pytest-socket's `--allow-hosts=127.0.0.1,::1` still blocks
+  every other host.
+- mcp repos' existing library use is working 1.x-style code that still runs at 2.2.0 (`stdio_client` +
+  `ClientSession` + `initialize()`, checked against a real 2.2.0 stdio server), not code that uses the changed API.
+- Review (2026-09-27, by someone other than the task authors, as plan B.4 requires; details in `REVIEW.md`):
+  - Existing library use in `repo/` is working code at the pinned version. Seven repos (hf02, hf03, hf04, pd02, pd03,
+    lc01, lc02) had a non-target module that used the old API and was broken at the pinned version (a lure). They
+    were removed (lc02's `translate.py` was rewritten to working `chat.batch(...)` use): in a post-cutoff task such a
+    module shows the agent the stale answer and is exactly what used-scope notes flag, which favours C; it is not
+    what bench.md 3.3 describes ("a working `summarize()`"); and the other 17 repos had none. The removed files are
+    kept in `review/removed_lures/`; `tests/test_tasks_conditions.py::test_repos_hold_no_old_api_lure` enforces the
+    rule.
+  - The six prototypes and oai05 gained one small module of working library use (plan B.4: "each repo contains
+    realistic existing use of the library"), so used-scope notes can see the changed API where a static diff can:
+    ant01 `app/summaries.py` (`messages.create` without sampling parameters, bench.md 3.3's example), hf01
+    `app/titles.py` (`text_generation` without a stop sequence), ant02 `app/assistant.py`, oai01 and oai05
+    `app/search.py` (identical, so the pair stays matched), pd01 `app/load.py`, mcp01 `app/smoke.py` (a stdio client
+    that lists the server's tools). Hidden tests do not import them. mcp01 still has no use of the renamed server
+    class, which cannot be written at 2.2.0 without giving the answer.
+  - hf01's hidden test counted TGI requests with a handler that crashed (JSONDecodeError, swallowed by
+    huggingface_hub) on the hub's own `GET https://huggingface.co/api/agent-harnesses`; it now answers requests to
+    other hosts with 404 and records only the TGI host. Same assertions, no longer dependent on that crash.
+  - ant03's instruction now says the answer must not go through a tool call: strict tool use is also "structured
+    outputs" in Anthropic's documentation, and the hidden test checks the JSON-output format.
+  - Nine tasks declare the reviewer's alternative correct answer as `alt_review = "pass"` in `[extra_solutions]`
+    (ant02, ant04, hf01, hf02, hf04, oai01, oai03, oai05, pd01), so `bench validate` keeps checking that the hidden
+    tests accept an approach other than the reference's.

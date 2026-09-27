@@ -1,0 +1,162 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "ant04",
+  "task_id": "ant04-custom-http-client",
+  "task_sha256": "8e27245455c111cad75178aa3e724877876b8c9726065ccf5330706c9689c310",
+  "parts_sha256": {
+    "task.toml": "73a00540e2f4fffee6f49322e9894b4c8e86126932c1a23af9e63025f28ab1b6",
+    "repo": "bdb30e98c9bb6b9c2db57adff15d859383550484adf7cb28449c04790047e3e3",
+    "hidden": "8ad6cf8d842da154e8f08cd839e7645d599e7e448dc3c47832c5ac41371ad86c",
+    "reference": "e1489726c689cb1715cea2c9df2e1eeda40a9898b3ef52df99abca6f89d9e7a2",
+    "stale": "512d6454131c076bd3060342ea754788cc58bc0c5069edee2e2eb9fbf6714af5",
+    "alt_direct": "8026f1d9b6eae643cf7f3e32467686eee4d893ee7278ef6bace7c2756c0fbb6c",
+    "halfmigrated": "426c2ac4b7fc3af5914aaf402b388e10103ebdd0f975e873b32e69b5ba22a033",
+    "alt_review": "b151e7a8e5e48551f513bfacdf0d1b8846535176c347d8ea2e4b89b038c884e8"
+  },
+  "validated_at": "2026-09-27T19:00:21+00:00",
+  "library": "anthropic",
+  "pinned": "1.8.0",
+  "stale_version": "0.115.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.93,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "2 failed in 1.38s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "1.8.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.67,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 1.10s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.94,
+        "timed_out": false,
+        "first_error": "TypeError: Invalid `http_client` argument; `httpx.Client` is from the `httpx` package, but this SDK uses `httpx2`. Use `httpx2.Client` instead."
+      },
+      "summary": "2 failed in 1.37s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "0.115.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.58,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 0.85s"
+    }
+  },
+  "extra": {
+    "extra_alt_direct_passes_at_pinned": {
+      "ok": true,
+      "solution": "alt_direct",
+      "version": "1.8.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.6,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 1.09s"
+    },
+    "extra_halfmigrated_fails_at_pinned": {
+      "ok": true,
+      "solution": "halfmigrated",
+      "version": "1.8.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 1,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.82,
+        "timed_out": false,
+        "first_error": "AssertionError: {'connect': Timeout(connect=5.0, read=60.0, write=60.0, pool=60.0), 'pool': Timeout(connect=5.0, read=60.0, write=60.0...imeout(connect=5.0, read=60.0, write=60.0, pool=60.0), 'write': Timeout(connect=5.0, read=60.0, write=60.0, pool=60.0)}"
+      },
+      "summary": "1 failed, 1 passed in 1.27s"
+    },
+    "extra_alt_review_passes_at_pinned": {
+      "ok": true,
+      "solution": "alt_review",
+      "version": "1.8.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.59,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 1.05s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "anthropic-1.8.0-5fadf5f6 5c5b2ab57452",
+    "stale": "anthropic-0.115.0-5fadf5f6 9b205092addf"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 12.6
+}

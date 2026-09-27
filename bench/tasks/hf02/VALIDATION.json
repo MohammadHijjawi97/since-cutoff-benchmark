@@ -1,0 +1,124 @@
+{
+  "schema": "since-cutoff-bench/validation@1",
+  "task": "hf02",
+  "task_id": "hf02-large-folder-upload",
+  "task_sha256": "3a4056f5fe26b57b9a16c3aa801ab51ec3059b5355551a815abcaeceaad2ac6a",
+  "parts_sha256": {
+    "task.toml": "934202bb0541be6482ee87111b67f1725e1564c6863cf8780ea50841c5ead080",
+    "repo": "bfd151192e5f0076c6e6ffdcf54e4d96b041bc119b7f605faa3523cca2738dad",
+    "hidden": "4fc763b559bf48b11038bcf82c29b080bca82c32cfd5d3ed9de83f3c839c361e",
+    "reference": "71881df73023828467528a37a7a1429cd1f8f7c9c7b09431f37386598bdec491",
+    "stale": "3f42895043e3c26f74c0bb06c49acc1a051825abd1d841d175134401a181ff2d",
+    "alt_review": "6290752c065f0322bda3f05ac285d1eb22e25f29a1225a44e6f0008c4814b946"
+  },
+  "validated_at": "2026-09-27T19:00:46+00:00",
+  "library": "huggingface-hub",
+  "pinned": "2.0.0",
+  "stale_version": "1.21.0",
+  "gates": {
+    "1_repo_fails_at_pinned": {
+      "ok": true,
+      "solution": "repo",
+      "version": "2.0.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.29,
+        "timed_out": false,
+        "first_error": "NotImplementedError"
+      },
+      "summary": "2 failed in 0.88s"
+    },
+    "2_reference_passes_at_pinned": {
+      "ok": true,
+      "solution": "reference",
+      "version": "2.0.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 10.56,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 10.13s"
+    },
+    "3_stale_fails_at_pinned": {
+      "ok": true,
+      "solution": "stale",
+      "version": "2.0.0",
+      "expected": "fail",
+      "observed": "fail",
+      "pytest": {
+        "exit_code": 1,
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 1.3,
+        "timed_out": false,
+        "first_error": "AttributeError: 'HfApi' object has no attribute 'upload_large_folder'"
+      },
+      "summary": "2 failed in 0.88s"
+    },
+    "4_stale_passes_at_cutoff": {
+      "ok": true,
+      "solution": "stale",
+      "version": "1.21.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 25.18,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 24.73s"
+    }
+  },
+  "extra": {
+    "extra_alt_review_passes_at_pinned": {
+      "ok": true,
+      "solution": "alt_review",
+      "version": "2.0.0",
+      "expected": "pass",
+      "observed": "pass",
+      "pytest": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_s": 5.52,
+        "timed_out": false,
+        "first_error": null
+      },
+      "summary": "2 passed in 5.12s"
+    }
+  },
+  "leaks": [],
+  "envs": {
+    "pinned": "huggingface-hub-2.0.0 28be7943faca",
+    "stale": "huggingface-hub-1.21.0 6e24bc44abca"
+  },
+  "ok": true,
+  "python": "3.13.14",
+  "test_requirements": [
+    "pytest==8.4.2",
+    "pytest-socket==0.8.1"
+  ],
+  "duration_s": 44.1
+}

@@ -1,0 +1,10 @@
+[project]
+name = "pnl-report"
+version = "0.3.0"
+description = "Monthly profit-and-loss report built from the accounting ledger export"
+requires-python = ">=3.11"
+dependencies = ["pandas==3.0.6"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
