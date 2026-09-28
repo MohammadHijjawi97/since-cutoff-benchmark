@@ -63,6 +63,82 @@ def study(tmp_path):
     return cfg
 
 
+def test_pilot_study_is_described_with_go_no_go(tmp_path):
+    cfg = toy_config(tmp_path)
+    d = cfg.results / "pil"
+    d.mkdir(parents=True)
+    plan, runs = [], []
+    for cond in CONDS:
+        for rep in (1, 2):
+            plan.append({"run_id": f"t1_{cond}_r{rep}", "task": "t1", "condition": cond, "rep": rep})
+            r = rec("t1", cond, rep, cond != "A" or rep == 1, pilot=True)
+            if cond in "BD":
+                r["mcp"] = {"servers": [{"name": "context7", "status": "connected" if rep == 1 else "failed"}]}
+            if cond == "B" and rep == 2:
+                r["process"]["context7_calls"] = 0
+            runs.append(r)
+    (d / "plan.jsonl").write_text("".join(json.dumps(e) + "\n" for e in plan))
+    (d / "runs.jsonl").write_text("".join(json.dumps(r) + "\n" for r in runs))
+    util.write_json(d / "plan.meta.json", {"conditions": CONDS, "seed": 1, "reps": 2, "pilot": True,
+                                            "strata": {"t1": "post-cutoff"}})
+    rep = report.build(cfg, "pil")
+    assert rep["pilot_study"] and rep["counts"]["analysed"] == 8 and rep["missing_runs"] == []
+    rules = {g["rule"].split(" ")[0] + g["rule"].split(" ")[1]: g for g in rep["go_no_go"]}
+    assert rules["Context7connected"]["value"] == "2/4" and rules["Context7connected"]["fires"] is True
+    assert rules["B'sContext7"]["value"] == "1/2" and rules["B'sContext7"]["fires"] is True
+    assert rules["mediancost"]["fires"] is False and rules["mediantime"]["fires"] is False
+    assert rules["Apasses"]["value"] == "1/2" and rules["Apasses"]["fires"] is False
+    md = report.to_markdown(rep)
+    assert "## Go / no-go (PROTOCOL.md section 9)" in md and "| **yes** |" in md
+
+
+def test_pilot_runs_stay_out_of_a_main_study(study):
+    rep = report.build(study, "syn")
+    assert not rep["pilot_study"] and "go_no_go" not in rep
+    assert "pilot_1" not in {r for r in rep["missing_runs"]} and rep["counts"]["pilot"] == 1
+
+
+def test_forced_arm_e_gets_extra_contrasts_and_a_claim(tmp_path):
+    cfg = toy_config(tmp_path)
+    d = cfg.results / "fe"
+    d.mkdir(parents=True)
+    conds = CONDS + ["E"]
+    plan, runs = [], []
+    for task in ("t1", "t2", "t3"):
+        for cond in conds:
+            for rep in (1, 2, 3):
+                plan.append({"run_id": f"{task}_{cond}_r{rep}", "task": task, "condition": cond, "rep": rep})
+                r = rec(task, cond, rep, cond != "A")
+                if cond == "E":
+                    r["result"]["total_cost_usd"] = 1.2
+                    r["process"]["context7_calls"] = 3
+                runs.append(r)
+    (d / "plan.jsonl").write_text("".join(json.dumps(e) + "\n" for e in plan))
+    (d / "runs.jsonl").write_text("".join(json.dumps(r) + "\n" for r in runs))
+    util.write_json(d / "plan.meta.json", {"conditions": conds, "seed": 1, "reps": 3,
+                                            "strata": {t: "post-cutoff" for t in ("t1", "t2", "t3")}})
+    rep = report.build(cfg, "fe")
+    assert set(rep["extra_contrasts"]) == {"C-B", "C-E", "E-B"}
+    assert "E-B" not in rep["contrasts"]  # extras are not Holm-adjusted with the pre-registered four
+    assert rep["cost"]["cost_usd"]["ratios"]["C/E"]["ratio"] < 1
+    claim = next(c for c in rep["claims"] if "B-forced" in c["rule"])
+    assert claim["met"] is True and "E Context7 call rate 100.0%" in claim["evidence"]
+    md = report.to_markdown(rep)
+    assert "| C-E (extra) |" in md and "| C/E | E/B |" in md
+
+
+def test_exclude_tasks_writes_a_separate_sensitivity_report(study):
+    full = report.build(study, "syn")
+    rep = report.build(study, "syn", exclude=("t1", "t2"))
+    assert rep["excluded_tasks"] == ["t1", "t2"]
+    assert {row["task"] for row in rep["table"]} == {row["task"] for row in full["table"]} - {"t1", "t2"}
+    assert not any(r.startswith(("t1_", "t2_")) for r in rep["missing_runs"])
+    paths = report.write(study, "syn", ("t2", "t1"))
+    assert paths["md"].name == "report.without-t1-t2.md" and paths["json"].exists()
+    assert "**Sensitivity analysis:** tasks t1, t2 are left out" in paths["md"].read_text(encoding="utf-8")
+    assert not (paths["md"].parent / "report.md").exists()  # the full report is not overwritten
+
+
 def test_report_numbers(study):
     rep = report.build(study, "syn")
     assert rep["counts"] == {"records": 98, "valid": 97, "invalid": 1, "analysed": 96, "ungraded": 0, "pilot": 1}

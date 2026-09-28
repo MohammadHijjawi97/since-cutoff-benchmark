@@ -143,7 +143,8 @@ def cmd_grade(cfg, a) -> int:
 
 
 def cmd_report(cfg, a) -> int:
-    paths = report.write(cfg, a.study_id)
+    exclude = tuple(t.strip() for t in (a.exclude_tasks or "").split(",") if t.strip())
+    paths = report.write(cfg, a.study_id, exclude)
     for p in paths.values():
         print(p)
     return 0
@@ -222,6 +223,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("report", help="write the report")
     s.add_argument("study_id")
+    s.add_argument("--exclude-tasks", help="comma-separated task keys to leave out (sensitivity analysis); "
+                                           "writes report.without-<keys>.md/.json next to the full report")
     s.set_defaults(fn=cmd_report)
 
     s = sub.add_parser("hashes", help="print hashes for PROTOCOL.md")

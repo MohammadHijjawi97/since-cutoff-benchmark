@@ -5,6 +5,9 @@
     | B    | base + Context7 rule              | context7     | mcp__context7  |
     | C    | base + frozen since-cutoff notes  | none.json    | -              |
     | D    | base + rule + notes               | context7     | mcp__context7  |
+    | E    | base + forced Context7 rule       | context7     | mcp__context7  |
+
+E (B-forced) was added after the pilot, as PROTOCOL.md section 9 requires when B's Context7 call rate is below 80%.
 
 Context7 runs as `<node.exe> <npm root>/@upstash/context7-mcp/dist/index.js --transport stdio`. The key file on
 disk never holds a key: when CONTEXT7_API_KEY is set in the harness environment, the runner passes the config as an
@@ -36,6 +39,7 @@ class Condition:
     name: str
     context7: bool
     notes: bool
+    forced: bool = False  # E: the CLAUDE.md rule tells the agent to look the API up before writing code
 
     @property
     def mcp(self) -> str:
@@ -47,6 +51,8 @@ CONDITIONS = {
     "B": Condition("B", context7=True, notes=False),
     "C": Condition("C", context7=False, notes=True),
     "D": Condition("D", context7=True, notes=True),
+    # added after the pilot (PROTOCOL.md 12.z): B's Context7 call rate was below 80%
+    "E": Condition("E", context7=True, notes=False, forced=True),
 }
 
 
@@ -66,8 +72,9 @@ def base_block() -> str:
     return (BENCH_DIR / "claude_md" / "base.md").read_text(encoding="utf-8").strip() + "\n"
 
 
-def context7_rule() -> str:
-    return (BENCH_DIR / "claude_md" / "context7_rule.md").read_text(encoding="utf-8").strip() + "\n"
+def context7_rule(forced: bool = False) -> str:
+    name = "context7_forced_rule.md" if forced else "context7_rule.md"
+    return (BENCH_DIR / "claude_md" / name).read_text(encoding="utf-8").strip() + "\n"
 
 
 def compose_claude_md(base: str, rule: str | None, notes: str | None) -> str:
@@ -81,7 +88,7 @@ def compose_claude_md(base: str, rule: str | None, notes: str | None) -> str:
 
 def claude_md(cfg: Config, task: Task, cond: Condition, manifest: dict[str, Any] | None) -> str:
     notes = notes_for(cfg, task, manifest) if cond.notes else None
-    return compose_claude_md(base_block(), context7_rule() if cond.context7 else None, notes)
+    return compose_claude_md(base_block(), context7_rule(cond.forced) if cond.context7 else None, notes)
 
 
 # -- notes -----------------------------------------------------------------------------------------

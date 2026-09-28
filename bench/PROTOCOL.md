@@ -18,6 +18,7 @@ cost, with (A) its usual tools, (B) plus Context7, (C) plus since-cutoff's notes
 | B | base block + Context7 rule | context7 (stdio, `@upstash/context7-mcp` 4.1.1) | `mcp__context7` |
 | C | base block + frozen since-cutoff notes | `{"mcpServers":{}}` | – |
 | D | base block + rule + notes | context7 | `mcp__context7` |
+| E | base block + forced Context7 rule (B-forced, added after the pilot, section 12.z) | context7 | `mcp__context7` |
 
 - Base block: `claude_md/base.md` (pins in `pyproject.toml`, installed in `.venv`, run `pytest -q`, do not install or
   upgrade packages). Every condition has it, so having a CLAUDE.md is controlled for.
@@ -177,6 +178,7 @@ Hidden tests stay out of any public repository until the main run is done; only 
 | notes are cheaper than documentation lookups for the same success | Δ(C−B) CI within ±10 points and C/B cost-ratio CI upper bound < 1 |
 | notes and Context7 complement each other | D ≥ max(B, C) on pass rate and D/B cost ratio ≤ 1 |
 | notes don't hurt | non-inferiority on the controls (incl. no-change and pinned-behind tasks) |
+| notes are cheaper than documentation that is looked up (E, added in 12.z before the main run) | Δ(C−E) CI within ±10 points and C/E cost-ratio CI upper bound < 1 |
 | notes reduce correction attempts / time / cost | a C/A ratio CI (failing pytest runs, turns, wall time or cost) entirely below 1 |
 
 - Ceiling: if A passes ≥ 90% of post-cutoff tasks, no pass-rate claim (the first four rows); cost, turns and
@@ -318,3 +320,52 @@ so mcp01's notes do not cover its change. since-cutoff 0.4.1 changes that rankin
 run's notes will be generated with the released 0.4.1 and frozen before the main run, with
 the scope recorded here then. The pilot measures cost, time, turns, Context7 use and
 infrastructure failures, and checks the go/no-go rules of section 9.
+
+### 12.z Pilot outcome and decisions (2026-09-28, before the main run)
+
+`python -m bench report pilot-2026-09-28` (the report now describes a pilot study on its own
+and prints the section 9 table): 16 sessions, 16 valid, no timeouts, no lockfile or venv
+changes.
+
+| section 9 rule | pilot value | fires |
+|---|---|---|
+| Context7 connected in 100% of B/D runs | 8/8 | no |
+| B's Context7 call rate below 80% | 2/4 (mcp01 2/2, ant01 0/2) | **yes** |
+| median cost per session above $1.5 | $0.26 | no |
+| median time per session above 8 minutes | 54 s | no |
+| A passes every pilot run | 2/4 | no |
+
+Decisions:
+
+1. **B-forced arm E.** The call-rate rule fired, so the main run adds condition E: the same
+   MCP config and allow rule as B, with the Context7 rule replaced by
+   `claude_md/context7_forced_rule.md`, verbatim: "Before you write or change code that calls
+   a third-party library, look up that library's API with Context7: call
+   `resolve-library-id` for the library, then `query-docs` for the classes, functions and
+   parameters you are going to use. Do this even when you think you know the API." B keeps
+   Context7's own recommended rule. The pre-registered contrasts and their Holm family are
+   unchanged; C−E, E−B and C−B are reported as extra, unadjusted contrasts, and the claim
+   row added to section 8 uses C−E.
+2. **Reps stay at 3.** Cost and time are far below the section 9 limits. The main run is
+   24 tasks × 5 conditions × 3 reps = 360 sessions, run in batches (`--max-sessions`).
+3. **A tool change made after seeing a pilot task.** In ant01 (anthropic 1.8.0 removed
+   `temperature`, `top_k` and `top_p` from `Messages.create()`; the task needs temperature
+   0), the 0.4.0 note said "`Messages.create()` no longer accepts `temperature`, `top_k` or
+   `top_p`; do not pass them." Every C and D run followed it: no stale code (stale first
+   edit 0/4 vs 2/4 in A and B) and no temperature at all, so the hidden test failed (C 0/2,
+   D 0/2; A 0/2, B 1/2). "do not pass them" is advice the diff does not support: the
+   parameters left the signature, the request field did not necessarily go away, and the
+   pinned `create()` has an `extra_body` argument for request fields that are not
+   parameters. since-cutoff 0.4.1 states the removal without that advice and, where the
+   pinned signature has `extra_body`, says so; the rule is generic (any method with an
+   `extra_body` parameter, as in every Stainless-generated SDK: anthropic, openai and
+   others), not written for ant01. Because the change was made after seeing ant01's pilot
+   runs, ant01 and mcp01 are **pilot-exposed**: the main report is published twice, with all
+   tasks and with `--exclude-tasks ant01,mcp01`, and a claim is reported as supported only
+   if it holds in both.
+4. **mcp01 is at the ceiling in the pilot** (8/8 in every condition, including A, which
+   reads the installed package's source). It stays in the task set; per-task results show it.
+
+Pilot observations that are descriptive only (two tasks, excluded from every analysis):
+C/A cost ratio 0.51 [0.32, 0.81] and total tokens 0.52; ant01 cost per session was A
+$0.51–0.53, B $0.48–0.61, C $0.16–0.17 and D $0.10–0.18 (the reason is not analysed here).

@@ -126,9 +126,14 @@ def test_compose_claude_md_per_condition(tmp_path):
     manifest = conditions.freeze_manifest(cfg)
     base = conditions.base_block()
     rule = conditions.context7_rule()
-    texts = {c: conditions.claude_md(cfg, task, conditions.get(c), manifest) for c in "ABCD"}
+    texts = {c: conditions.claude_md(cfg, task, conditions.get(c), manifest) for c in "ABCDE"}
     assert texts["A"] == base
     assert texts["B"] == base + "\n" + rule
+    forced = conditions.context7_rule(forced=True)
+    assert texts["E"] == base + "\n" + forced and forced != rule
+    assert "`resolve-library-id`" in forced and "`query-docs`" in forced
+    e = conditions.get("e")
+    assert e.context7 and not e.notes and e.forced and e.mcp == "context7"
     assert texts["C"] == base + "\n" + notes
     assert texts["D"] == base + "\n" + rule + "\n" + notes
     assert rule.strip() == ("Always use Context7 when I need library/API documentation, code generation, setup or "
@@ -154,6 +159,7 @@ def test_extract_block_and_empty_notes(tmp_path):
 
 def test_base_block_and_rule_hold_no_answer_tokens():
     assert conditions.claude_md_leaks(REAL, conditions.base_block() + conditions.context7_rule()) == []
+    assert conditions.claude_md_leaks(REAL, conditions.context7_rule(forced=True)) == []
 
 
 def test_settings_file_is_plan_b2():

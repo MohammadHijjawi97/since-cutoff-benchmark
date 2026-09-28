@@ -23,6 +23,8 @@ CONTROL_STRATA = ("pre-cutoff-control", "no-change-control", "pinned-behind")
 COST_METRICS = {"cost_usd": ("result", "total_cost_usd"), "turns": ("result", "num_turns"), "wall_s": ("wall_s",),
                 "output_tokens": ("result", "usage", "output_tokens"), "total_tokens": None}
 COUNT_METRICS = ("pytest_runs", "failing_pytest_runs", "edits_after_first_failure")
+EXTRA_CONTRASTS = (("C", "B"), ("C", "E"), ("E", "B"))  # E = B-forced (PROTOCOL.md 12.z)
+CONTEXT7_CONDS = ("B", "D", "E")
 
 
 def _get(rec: dict[str, Any], path: tuple[str, ...]) -> Any:
@@ -72,10 +74,11 @@ def fmt(x: Any, nd: int = 3) -> str:
     return str(x)
 
 
-def build(cfg: Config, study_id: str) -> dict[str, Any]:
+def build(cfg: Config, study_id: str, exclude: tuple[str, ...] = ()) -> dict[str, Any]:
+    """``exclude``: task keys left out of every section (a sensitivity analysis declared in PROTOCOL.md)."""
     d = study_dir(cfg, study_id)
-    records = util.read_jsonl(d / "runs.jsonl")
-    plan = util.read_jsonl(d / "plan.jsonl")
+    records = [r for r in util.read_jsonl(d / "runs.jsonl") if r.get("task") not in exclude]
+    plan = [e for e in util.read_jsonl(d / "plan.jsonl") if e.get("task") not in exclude]
     meta = json.loads((d / "plan.meta.json").read_text(encoding="utf-8")) if (d / "plan.meta.json").exists() else {}
     an = cfg.analysis
     B, alpha, seed = int(an["bootstrap_resamples"]), float(an["alpha"]), int(an["bootstrap_seed"])
@@ -88,7 +91,9 @@ def build(cfg: Config, study_id: str) -> dict[str, Any]:
         if strata_of[key] is None:
             strata_of[key] = (meta.get("strata") or {}).get(key)
 
-    valid = [r for r in records if r.get("valid") and not r.get("pilot")]
+    # A pilot study (plan --pilot) is described on its own; pilot runs never enter a main study's analysis.
+    pilot_study = bool(meta.get("pilot"))
+    valid = [r for r in records if r.get("valid") and (pilot_study or not r.get("pilot"))]
     invalid = [r for r in records if not r.get("valid")]
     # one valid record per run_id (the first valid attempt)
     seen: set[str] = set()
@@ -112,6 +117,7 @@ def build(cfg: Config, study_id: str) -> dict[str, Any]:
     post = tasks_in((POST,))
     controls = tasks_in(CONTROL_STRATA)
     out: dict[str, Any] = {"study_id": study_id, "generated_at": util.now_iso(), "meta": meta,
+                           "excluded_tasks": sorted(exclude),
                            "counts": {"records": len(records), "valid": sum(1 for r in records if r.get("valid")),
                                       "invalid": len(invalid),
                                       "analysed": len(analysed), "ungraded": len(ungraded),
@@ -138,15 +144,20 @@ def build(cfg: Config, study_id: str) -> dict[str, Any]:
     adj = stats.holm({k: c.p for k, c in contrasts.items()})
     for k, c in contrasts.items():
         c.p_holm = adj[k]
-    extra_cb = stats.paired_contrast(post_rates, "C", "B", resamples=B, alpha=alpha, seed=seed)
+    # extra contrasts: descriptive, not Holm-adjusted; C-E and E-B only when the study has the B-forced arm E
+    extras = [[t, c] for t, c in EXTRA_CONTRASTS if t in conds and c in conds]
+    extra = {f"{t}-{c}": stats.paired_contrast(post_rates, t, c, resamples=B, alpha=alpha, seed=seed)
+             for t, c in extras}
+    extra_cb = extra.get("C-B") or stats.paired_contrast(post_rates, "C", "B", resamples=B, alpha=alpha, seed=seed)
     majority = int(an["majority"])
     mcn = {}
-    for treat, ctrl in [*an["contrasts"], ["C", "B"]]:
+    for treat, ctrl in [*an["contrasts"], *extras]:
         pairs = [(sum(passed(r) for r in by_tc[t][treat]) >= majority, sum(passed(r) for r in by_tc[t][ctrl]) >= majority)
                  for t in post if by_tc[t].get(treat) and by_tc[t].get(ctrl)]
         mcn[f"{treat}-{ctrl}"] = asdict(stats.mcnemar([p[0] for p in pairs], [p[1] for p in pairs]))
     out["contrasts"] = {k: asdict(c) for k, c in contrasts.items()}
     out["contrast_C-B"] = asdict(extra_cb)
+    out["extra_contrasts"] = {k: asdict(c) for k, c in extra.items()}
     out["mcnemar_majority"] = mcn
 
     # (c) cost, tokens, turns, wall
@@ -161,7 +172,7 @@ def build(cfg: Config, study_id: str) -> dict[str, Any]:
     for m in COST_METRICS:
         row = {c: stats.median([med[m][t][c] for t in post if c in med[m].get(t, {})]) for c in conds}
         ratios = {}
-        for treat, ctrl in [*an["contrasts"], ["C", "B"]]:
+        for treat, ctrl in [*an["contrasts"], *extras]:
             pairs = [(med[m][t][treat], med[m][t][ctrl]) for t in post
                      if treat in med[m].get(t, {}) and ctrl in med[m].get(t, {})]
             ratios[f"{treat}/{ctrl}"] = asdict(stats.geometric_mean_ratio(pairs, resamples=B, alpha=alpha, seed=seed))
@@ -201,7 +212,7 @@ def build(cfg: Config, study_id: str) -> dict[str, Any]:
             "flakiness": stats.flakiness({t: [passed(r) for r in by_tc[t].get(c, [])] for t in post}),
         }
     wil = {}
-    for treat, ctrl in [*an["contrasts"], ["C", "B"]]:
+    for treat, ctrl in [*an["contrasts"], *extras]:
         for m in ("pytest_runs", "edits_after_first_failure", "failing_pytest_runs"):
             diffs = [med[m][t][treat] - med[m][t][ctrl] for t in post
                      if treat in med[m].get(t, {}) and ctrl in med[m].get(t, {})]
@@ -231,7 +242,7 @@ def build(cfg: Config, study_id: str) -> dict[str, Any]:
         entry = (manifest.get("tasks") or {}).get(t) or {}
         row["notes_covered"] = entry.get("covered")
         row["notes_coverage"] = entry.get("coverage")
-        c7 = [r for c in ("B", "D") for r in by_tc.get(t, {}).get(c, []) if (r["process"].get("context7_calls") or 0) > 0]
+        c7 = [r for c in CONTEXT7_CONDS for r in by_tc.get(t, {}).get(c, []) if (r["process"].get("context7_calls") or 0) > 0]
         row["doc_hit"] = f"{sum(1 for r in c7 if r['process'].get('doc_hit'))}/{len(c7)}"
         table.append(row)
     out["table"] = table
@@ -247,7 +258,49 @@ def build(cfg: Config, study_id: str) -> dict[str, Any]:
 
     # (h) claim checks
     out["claims"] = claims(out, cfg, post, by_tc)
+    out["pilot_study"] = pilot_study
+    if pilot_study:
+        out["go_no_go"] = go_no_go(analysed, cfg)
     return out
+
+
+def go_no_go(runs: list[dict[str, Any]], cfg: Config) -> list[dict[str, Any]]:
+    """PROTOCOL.md section 9, checked on a pilot's graded valid runs. ``action`` is what the rule asks for when it
+    fires; ``fires`` is None when there are no runs to decide on."""
+    pilot_cfg = cfg.raw.get("pilot") or {}
+    max_cost = float(pilot_cfg.get("max_median_cost_usd", 1.5))
+    max_wall = float(pilot_cfg.get("max_median_wall_s", 480))
+    min_c7 = float(pilot_cfg.get("min_b_context7_call_rate", 0.8))
+
+    def servers(r: dict[str, Any]) -> list[dict[str, Any]]:
+        return list((r.get("mcp") or {}).get("servers") or [])
+
+    bd = [r for r in runs if r.get("condition") in CONTEXT7_CONDS]
+    connected = [r for r in bd if any(s.get("name") == "context7" and s.get("status") == "connected"
+                                      for s in servers(r))]
+    b = [r for r in runs if r.get("condition") == "B"]
+    b_calls = [r for r in b if ((r.get("process") or {}).get("context7_calls") or 0) > 0]
+    costs = [v for v in (metric(r, "cost_usd") for r in runs) if v is not None]
+    walls = [v for v in (metric(r, "wall_s") for r in runs) if v is not None]
+    a = [r for r in runs if r.get("condition") == "A"]
+    med_cost = stats.median(costs) if costs else math.nan
+    med_wall = stats.median(walls) if walls else math.nan
+
+    def rule(name: str, value: str, fires: bool | None, action: str) -> dict[str, Any]:
+        return {"rule": name, "value": value, "fires": fires, "action": action}
+
+    return [
+        rule("Context7 connected in 100% of B/D runs", f"{len(connected)}/{len(bd)}",
+             (len(connected) < len(bd)) if bd else None, "fix the infrastructure before the main run"),
+        rule(f"B's Context7 call rate below {min_c7:.0%}", f"{len(b_calls)}/{len(b)}",
+             (len(b_calls) / len(b) < min_c7) if b else None, "add the B-forced arm"),
+        rule(f"median cost per session above ${max_cost:.2f}", f"${fmt(med_cost, 3)} (n={len(costs)})",
+             (med_cost > max_cost) if costs else None, "2 reps, stated in PROTOCOL.md before the main run"),
+        rule(f"median time per session above {max_wall / 60:.0f} minutes", f"{fmt(med_wall, 1)} s (n={len(walls)})",
+             (med_wall > max_wall) if walls else None, "2 reps, stated in PROTOCOL.md before the main run"),
+        rule("A passes every pilot run", f"{sum(passed(r) for r in a)}/{len(a)}",
+             (all(passed(r) for r in a)) if a else None, "expect the ceiling rule"),
+    ]
 
 
 def claims(out: dict[str, Any], cfg: Config, post: list[str], by_tc) -> list[dict[str, Any]]:
@@ -280,6 +333,16 @@ def claims(out: dict[str, Any], cfg: Config, post: list[str], by_tc) -> list[dic
         res.append({"rule": "notes are cheaper than doc lookups for the same success: C-B CI within +-10 pp and C/B cost CI upper < 1",
                     "met": met, "evidence": f"C-B [{fmt_pp(cb['ci_lo'])}, {fmt_pp(cb['ci_hi'])}]; C/B cost "
                                             f"{fmt(cost_cb.get('ratio'), 2)} [{fmt(cost_cb.get('lo'), 2)}, {fmt(cost_cb.get('hi'), 2)}]"})
+    ce = (out.get("extra_contrasts") or {}).get("C-E")
+    cost_ce = out["cost"]["cost_usd"]["ratios"].get("C/E") or {}
+    if ce:
+        e_rate = (out["process"].get("E") or {}).get("context7_call_rate", math.nan)
+        met = (not ceiling and ce["ci_lo"] >= -0.10 and ce["ci_hi"] <= 0.10 and (cost_ce.get("hi") or math.inf) < 1)
+        res.append({"rule": "notes are cheaper than documentation that is looked up (B-forced arm E) for the same "
+                            "success: C-E CI within +-10 pp and C/E cost CI upper < 1",
+                    "met": met, "evidence": f"C-E [{fmt_pp(ce['ci_lo'])}, {fmt_pp(ce['ci_hi'])}]; C/E cost "
+                                            f"{fmt(cost_ce.get('ratio'), 2)} [{fmt(cost_ce.get('lo'), 2)}, "
+                                            f"{fmt(cost_ce.get('hi'), 2)}]; E Context7 call rate {fmt_pct(e_rate)}"})
     d_rate = (pr.get("D") or {}).get("mean", math.nan)
     b_rate = (pr.get("B") or {}).get("mean", math.nan)
     c_rate = (pr.get("C") or {}).get("mean", math.nan)
@@ -331,9 +394,21 @@ def to_markdown(rep: dict[str, Any]) -> str:
     L.append(f"Generated {rep['generated_at']}. Plan seed {meta.get('seed')}, reps {meta.get('reps')}, "
              f"conditions {', '.join(meta.get('conditions') or [])}, harness {str(meta.get('code_sha256', ''))[:12]}.\n")
     c = rep["counts"]
+    if rep.get("excluded_tasks"):
+        L.append(f"**Sensitivity analysis:** tasks {', '.join(rep['excluded_tasks'])} are left out of every section.\n")
     L.append(f"Records: {c['records']} (valid {c['valid']}, invalid {c['invalid']}, pilot {c['pilot']}); "
              f"analysed {c['analysed']}; ungraded {c['ungraded']}. A run passes when every hidden test passes and "
              "the lockfile is unchanged.\n")
+    if rep.get("pilot_study"):
+        L.append("**Pilot study.** Its runs are described here and excluded from every main-study analysis "
+                 "(PROTOCOL.md section 8); the sections below use the pilot's own runs, for the go/no-go rules.\n")
+        L.append("## Go / no-go (PROTOCOL.md section 9)\n")
+        L.append("| rule | pilot value | fires | if it fires |")
+        L.append("|---|---|---|---|")
+        for g in rep.get("go_no_go") or []:
+            fires = {True: "**yes**", False: "no", None: "n/a"}[g["fires"]]
+            L.append(f"| {g['rule']} | {g['value']} | {fires} | {g['action']} |")
+        L.append("")
     conds = meta.get("conditions") or ["A", "B", "C", "D"]
     L.append("## (a) Pass rate per condition, by stratum (task-bootstrap 95% CI)\n")
     L.append("| stratum | " + " | ".join(conds) + " |")
@@ -345,19 +420,21 @@ def to_markdown(rep: dict[str, Any]) -> str:
     L.append("\n## (b) Paired contrasts, post-cutoff tasks\n")
     L.append("| contrast | tasks | delta | 95% CI | sign-flip p | Holm p | McNemar (majority): fixed / broke, p |")
     L.append("|---|---|---|---|---|---|---|")
-    for k, cst in list(rep["contrasts"].items()) + [("C-B (extra)", rep["contrast_C-B"])]:
+    extra_rows = [(f"{k} (extra)", c) for k, c in (rep.get("extra_contrasts") or {"C-B": rep["contrast_C-B"]}).items()]
+    for k, cst in list(rep["contrasts"].items()) + extra_rows:
         m = rep["mcnemar_majority"].get(k.split(" ")[0], {})
         L.append(f"| {k} | {cst['n_tasks']} | {fmt_pp(cst['delta'])} | [{fmt_pp(cst['ci_lo'])}, {fmt_pp(cst['ci_hi'])}] | "
                  f"{fmt(cst['p'])} | {fmt(cst.get('p_holm'))} | {m.get('fixed', 'n/a')} / {m.get('broke', 'n/a')}, {fmt(m.get('p'))} |")
     L.append("\n## (c) Cost, tokens, turns, wall time (post-cutoff; per-task medians)\n")
-    L.append("| metric | " + " | ".join(conds) + " | C/A | D/B | B/A | D/C | C/B |")
-    L.append("|---|" + "---|" * (len(conds) + 5))
+    ratio_keys = ["C/A", "D/B", "B/A", "D/C", "C/B"] + [k for k in ("C/E", "E/B") if k in rep["cost"]["cost_usd"]["ratios"]]
+    L.append("| metric | " + " | ".join(conds) + " | " + " | ".join(ratio_keys) + " |")
+    L.append("|---|" + "---|" * (len(conds) + len(ratio_keys)))
     for m, blk in rep["cost"].items():
         if m == "cost_per_solved_task":
             continue
         row = [fmt(blk["median_of_task_medians"].get(k), 2) for k in conds]
         rats = []
-        for key in ("C/A", "D/B", "B/A", "D/C", "C/B"):
+        for key in ratio_keys:
             r = blk["ratios"].get(key) or {}
             rats.append(f"{fmt(r.get('ratio'), 2)} [{fmt(r.get('lo'), 2)}, {fmt(r.get('hi'), 2)}]")
         L.append(f"| {m} | " + " | ".join(row + rats) + " |")
@@ -386,7 +463,7 @@ def to_markdown(rep: dict[str, Any]) -> str:
         L.append(f"- {k}: {ni['n_tasks']} tasks, delta {fmt_pp(ni['delta'])}, lower bound {fmt_pp(ni['lower'])} -> "
                  f"{'non-inferior' if ni['non_inferior'] else 'not shown'}")
     L.append("\n## (e) Task x condition (passes / valid runs) and (f) coverage\n")
-    L.append("| task | stratum | " + " | ".join(conds) + " | notes covered | Context7 doc_hit (B+D runs with calls) |")
+    L.append("| task | stratum | " + " | ".join(conds) + " | notes covered | Context7 doc_hit (B/D/E runs with calls) |")
     L.append("|---|---|" + "---|" * len(conds) + "---|---|")
     for row in rep["table"]:
         L.append(f"| {row['task']} | {row['stratum']} | " + " | ".join(row[k] for k in conds)
@@ -412,10 +489,12 @@ def to_markdown(rep: dict[str, Any]) -> str:
     return "\n".join(L) + "\n"
 
 
-def write(cfg: Config, study_id: str) -> dict[str, Path]:
-    rep = build(cfg, study_id)
+def write(cfg: Config, study_id: str, exclude: tuple[str, ...] = ()) -> dict[str, Path]:
+    rep = build(cfg, study_id, exclude)
     d = study_dir(cfg, study_id)
-    paths = {"md": d / "report.md", "json": d / "report.json", "per_task": d / "per_task.csv", "runs": d / "runs.csv"}
+    stem = "report" + (f".without-{'-'.join(sorted(exclude))}" if exclude else "")
+    paths = {"md": d / f"{stem}.md", "json": d / f"{stem}.json", "per_task": d / f"{stem}.per_task.csv"
+             if exclude else d / "per_task.csv", "runs": d / "runs.csv"}
     paths["md"].write_text(to_markdown(rep), encoding="utf-8")
     util.write_json(paths["json"], rep)
     conds = (rep.get("meta") or {}).get("conditions") or ["A", "B", "C", "D"]
