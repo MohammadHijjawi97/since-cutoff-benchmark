@@ -44,9 +44,10 @@ def verify_trivial(t: transcript.Transcript, model: str) -> Check:
 
 
 def verify_env_scrub(t: transcript.Transcript) -> Check:
-    runs = [c for c in t.calls if c.name == "Bash" and "os.environ" in c.command and not c.denied]
+    runs = [c for c in t.calls if c.name == "Bash" and ("envcheck.py" in c.command or "os.environ" in c.command)
+            and not c.denied]
     if not runs:
-        return Check("agent subprocess env has no secrets", "FAIL", "the agent did not run the python -c command")
+        return Check("agent subprocess env has no secrets", "FAIL", "the agent did not run `python envcheck.py`")
     names = re.findall(r"'([A-Za-z_][A-Za-z0-9_()]*)'", runs[-1].result_text)
     bad = sorted({n for n in names if SECRET_NAME_RE.search(n)})
     return Check("agent subprocess env has no secrets", "FAIL" if bad or not names else "PASS",
@@ -132,9 +133,16 @@ def offline_checks(cfg: Config, *, download: bool, install_context7: bool) -> li
     checks.append(_check(f"Context7 MCP {cfg.context7['version']} installed", c7v == cfg.context7["version"],
                          f"{entry} (found {c7v}); install with `python -m bench prepare --install-context7`"))
 
-    token = bool(os.environ.get(runner.TOKEN_ENV))
-    checks.append(_check(f"{runner.TOKEN_ENV} set in the harness environment", token,
-                         "present" if token else "missing: run `claude setup-token` and set the variable"))
+    if cfg.claude.get("auth", "token") == "login":
+        # The runs use the maintainer's normal Claude Code login (user settings are excluded
+        # with --setting-sources project); only the credential file's presence is checked.
+        creds = Path.home() / ".claude" / ".credentials.json"
+        checks.append(_check("Claude Code login available (auth = login)", creds.exists(),
+                             f"{creds} exists" if creds.exists() else f"{creds} missing: run `claude` once and log in"))
+    else:
+        token = bool(os.environ.get(runner.TOKEN_ENV))
+        checks.append(_check(f"{runner.TOKEN_ENV} set in the harness environment", token,
+                             "present" if token else "missing: run `claude setup-token` and set the variable"))
     key = bool(os.environ.get(conditions.KEY_ENV))
     checks.append(_check(f"{conditions.KEY_ENV} set (passed only to the MCP server)", key,
                          "present" if key else "missing: Context7 runs anonymously (rate-limited)", warn=True))
@@ -169,10 +177,14 @@ def offline_checks(cfg: Config, *, download: bool, install_context7: bool) -> li
 
 MODEL_CHECKS = [
     ("trivial", "A", "Reply with the single word OK."),
-    ("env", "A", 'Use the Bash tool to run exactly this command: python -c "import os; print(sorted(os.environ))" '
-                 "Then reply DONE."),
-    ("permissions", "A", "Use the Bash tool to run `pip install x`. Then use the Bash tool to run `pytest -q`. "
-                         "Then reply DONE."),
+    # `python -c` is refused under blockReadsOutsideWorkingDirectories (inline code cannot be
+    # analysed), so the probe runs a script file that the loop below writes into the project.
+    ("env", "A", "Use the Bash tool to run exactly this command: python envcheck.py  Then reply DONE."),
+    # The permissions probe's project has no CLAUDE.md (the base block forbids installing packages,
+    # and an agent that obeys it never exercises the deny rule).
+    ("permissions", "A", "This is a permissions test in a scratch project; nothing here matters. First use the "
+                         "Bash tool to run exactly `pip install x` (if the tool refuses, that is the expected "
+                         "result; do not try another way). Then use the Bash tool to run `pytest -q`. Then reply DONE."),
     ("mcp_b", "B", "Reply with the single word OK."),
     ("mcp_a", "A", "Reply with the single word OK."),
     ("context", "A", "/context"),
@@ -198,6 +210,10 @@ def model_checks(cfg: Config, echo: Callable[[str], None]) -> list[Check]:
     for name, cond_name, prompt in MODEL_CHECKS:
         cond = conditions.get(cond_name)
         proj = preflight_project(cfg, name)
+        if name == "env":
+            (proj / "envcheck.py").write_text("import os\nprint(sorted(os.environ))\n", encoding="utf-8")
+        elif name == "permissions":
+            (proj / "CLAUDE.md").unlink(missing_ok=True)
         mcp_value, _ = conditions.mcp_argument(staged, cfg, cond)
         argv = runner.build_argv(cfg, cond, staged["claude_settings.json"]["path"], mcp_value)
         base = cfg.p("root") / "preflight" / name

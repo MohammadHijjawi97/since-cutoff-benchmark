@@ -1,0 +1,671 @@
+{
+  "schema": "since-cutoff-bench/notes@1",
+  "tool": "since-cutoff==0.4.0",
+  "model": "anthropic:claude-opus-5-5",
+  "source": "generated",
+  "created_at": "2026-09-28T00:20:06+00:00",
+  "frozen": false,
+  "tasks": {
+    "ant01": {
+      "file": "ant01.md",
+      "sha256": "0037fc6ae92b5eb733e6b3b8209f34c88ed81f4561fe52aafdd69d9cb5bb5ed5",
+      "bytes": 1640,
+      "tokens_est": 410,
+      "empty": false,
+      "note_keys": [
+        "\\btemperature\\b"
+      ],
+      "note_keys_found": [
+        "\\btemperature\\b"
+      ],
+      "coverage": 1.0,
+      "covered": true,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "ant02": {
+      "file": "ant02.md",
+      "sha256": "0037fc6ae92b5eb733e6b3b8209f34c88ed81f4561fe52aafdd69d9cb5bb5ed5",
+      "bytes": 1640,
+      "tokens_est": 410,
+      "empty": false,
+      "note_keys": [
+        "\\.text\\(\\)|\\btext\\b[^\\n]{0,80}\\bmethod\\b"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "ant03": {
+      "file": "ant03.md",
+      "sha256": "19cfec7ee1eb6cf46c9227b279babe8c01fdf87cfacdc92af95e3cba67037dbb",
+      "bytes": 1701,
+      "tokens_est": 425,
+      "empty": false,
+      "note_keys": [
+        "\\boutput_format\\b"
+      ],
+      "note_keys_found": [
+        "\\boutput_format\\b"
+      ],
+      "coverage": 1.0,
+      "covered": true,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "ant04": {
+      "file": "ant04.md",
+      "sha256": "e52488e16f76d8e8bb8503a89e68b0aa2ee8fb5930496d5c0d3343556a6b8438",
+      "bytes": 1640,
+      "tokens_est": 410,
+      "empty": false,
+      "note_keys": [
+        "httpx2"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "ant05": {
+      "file": "ant05.md",
+      "sha256": "6eddf7b576a1f1bc2e114ce752893846bda19de887b0934369ea10703d0c61b1",
+      "bytes": 1602,
+      "tokens_est": 400,
+      "empty": false,
+      "note_keys": [
+        "\\bparse\\b[^\\n]{0,160}\\b(?:await|coroutine|async)\\b|\\b(?:await|coroutine|async)\\b[^\\n]{0,160}\\bparse\\b"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "hf01": {
+      "file": "hf01.md",
+      "sha256": "89c18f3b0237096266e848d779f4bddcf58e056bae6626a2596b46d0960fed39",
+      "bytes": 1874,
+      "tokens_est": 468,
+      "empty": false,
+      "note_keys": [
+        "stop_sequences"
+      ],
+      "note_keys_found": [
+        "stop_sequences"
+      ],
+      "coverage": 1.0,
+      "covered": true,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "hf02": {
+      "file": "hf02.md",
+      "sha256": "1687aa7b6145f1e41830580e343203e853c75ebcc5a37b30c1af1888536befb5",
+      "bytes": 1732,
+      "tokens_est": 433,
+      "empty": false,
+      "note_keys": [
+        "\\bupload_large_folder\\b"
+      ],
+      "note_keys_found": [
+        "\\bupload_large_folder\\b"
+      ],
+      "coverage": 1.0,
+      "covered": true,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "hf03": {
+      "file": "hf03.md",
+      "sha256": "63611f5c3bcea484605851c95d20f3c1979a091fe6bb4e6cf2be2bae0aca429b",
+      "bytes": 1721,
+      "tokens_est": 430,
+      "empty": false,
+      "note_keys": [
+        "\\blist_models\\b",
+        "\\bmodel_name\\b"
+      ],
+      "note_keys_found": [
+        "\\blist_models\\b",
+        "\\bmodel_name\\b"
+      ],
+      "coverage": 1.0,
+      "covered": true,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "hf04": {
+      "file": "hf04.md",
+      "sha256": "1687aa7b6145f1e41830580e343203e853c75ebcc5a37b30c1af1888536befb5",
+      "bytes": 1732,
+      "tokens_est": 433,
+      "empty": false,
+      "note_keys": [
+        "httpx2"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "lc01": {
+      "file": "lc01.md",
+      "sha256": "c2c59541cf4532f4bb69a0754590693a932f533b5d93cb7252afe87502487fb2",
+      "bytes": 1141,
+      "tokens_est": 285,
+      "empty": false,
+      "note_keys": [
+        "get_relevant_documents"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "lc02": {
+      "file": "lc02.md",
+      "sha256": "c2c59541cf4532f4bb69a0754590693a932f533b5d93cb7252afe87502487fb2",
+      "bytes": 1141,
+      "tokens_est": 285,
+      "empty": false,
+      "note_keys": [
+        "\\bpredict\\b|__call__"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "mcp01": {
+      "file": "mcp01.md",
+      "sha256": "d6a01f6da048b1d5eefc9f333cc98c4f5d0121b00e0fff048e99752181c31772",
+      "bytes": 1578,
+      "tokens_est": 394,
+      "empty": false,
+      "note_keys": [
+        "FastMCP|MCPServer",
+        "ToolError"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "mcp02": {
+      "file": "mcp02.md",
+      "sha256": "d6a01f6da048b1d5eefc9f333cc98c4f5d0121b00e0fff048e99752181c31772",
+      "bytes": 1578,
+      "tokens_est": 394,
+      "empty": false,
+      "note_keys": [
+        "isError|is_error",
+        "structuredContent|structured_content"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "mcp04": {
+      "file": "mcp04.md",
+      "sha256": "f5c722ac1a98a18fa165edea5c7c5a31d8f069ef7d9650e1168d04673bb1138c",
+      "bytes": 1533,
+      "tokens_est": 383,
+      "empty": false,
+      "note_keys": [
+        "\\b(?:host|port)\\b[^\\n]{0,160}\\b(?:run|__init__|constructor|MCPServer|FastMCP)\\b|\\b(?:run|__init__|constructor|MCPServer|FastMCP)\\b[^\\n]{0,160}\\b(?:host|port)\\b"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "mcp05": {
+      "file": "mcp05.md",
+      "sha256": "b7cd57ae0636c1a06abace1639e1bdece4612743c8b5ab3ccdd8d6761482a24d",
+      "bytes": 1579,
+      "tokens_est": 395,
+      "empty": false,
+      "note_keys": [
+        "streamablehttp_client"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "mcp06": {
+      "file": "mcp06.md",
+      "sha256": "b7cd57ae0636c1a06abace1639e1bdece4612743c8b5ab3ccdd8d6761482a24d",
+      "bytes": 1579,
+      "tokens_est": 395,
+      "empty": false,
+      "note_keys": [
+        "create_connected_server_and_client_session"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "oai01": {
+      "file": "oai01.md",
+      "sha256": "10d4faf12d15666ae6ad12758b7e715d8964de0aae4dd1a084a547cd6fe2b632",
+      "bytes": 1658,
+      "tokens_est": 414,
+      "empty": false,
+      "note_keys": [
+        "httpx2"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "oai02": {
+      "file": "oai02.md",
+      "sha256": "ff6dda425cf2b824758891c3257f5f277fff9a8bb0c4f8e802b0447f630c5fe4",
+      "bytes": 1658,
+      "tokens_est": 414,
+      "empty": false,
+      "note_keys": [
+        "httpx2"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "oai03": {
+      "file": "oai03.md",
+      "sha256": "10d4faf12d15666ae6ad12758b7e715d8964de0aae4dd1a084a547cd6fe2b632",
+      "bytes": 1658,
+      "tokens_est": 414,
+      "empty": false,
+      "note_keys": [
+        "httpx2",
+        "(?i)stream[^\\n]{0,160}(APIConnectionError|APITimeoutError)|(APIConnectionError|APITimeoutError)[^\\n]{0,160}stream"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "oai04": {
+      "file": "oai04.md",
+      "sha256": "10d4faf12d15666ae6ad12758b7e715d8964de0aae4dd1a084a547cd6fe2b632",
+      "bytes": 1658,
+      "tokens_est": 414,
+      "empty": false,
+      "note_keys": [],
+      "note_keys_found": [],
+      "coverage": null,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "oai05": {
+      "file": "oai05.md",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "tokens_est": 0,
+      "empty": true,
+      "note_keys": [],
+      "note_keys_found": [],
+      "coverage": null,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "pd01": {
+      "file": "pd01.md",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "tokens_est": 0,
+      "empty": true,
+      "note_keys": [
+        "\\bstr\\b[^\\n]{0,60}dtype|string dtype|StringDtype",
+        "Copy-on-Write|inplace"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "pd02": {
+      "file": "pd02.md",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "tokens_est": 0,
+      "empty": true,
+      "note_keys": [
+        "\\bapplymap\\b"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    },
+    "pd03": {
+      "file": "pd03.md",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "tokens_est": 0,
+      "empty": true,
+      "note_keys": [
+        "\\bfillna\\b",
+        "\\bmethod\\b"
+      ],
+      "note_keys_found": [],
+      "coverage": 0.0,
+      "covered": false,
+      "exit_code": 0,
+      "command": [
+        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "-m",
+        "since_cutoff",
+        "sync",
+        "--yes",
+        "--scope",
+        "imported",
+        "--model",
+        "anthropic:claude-opus-5-5",
+        "--target",
+        "CLAUDE.md"
+      ]
+    }
+  }
+}

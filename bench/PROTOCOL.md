@@ -286,3 +286,22 @@ Seeds: pilot `<to be fixed>`, main `<to be fixed>` (recorded here before tagging
   - Nine tasks declare the reviewer's alternative correct answer as `alt_review = "pass"` in `[extra_solutions]`
     (ant02, ant04, hf01, hf02, hf04, oai01, oai03, oai05, pd01), so `bench validate` keeps checking that the hidden
     tests accept an approach other than the reference's.
+
+### 12.x Findings from the first model-call preflight (2026-09-28, Claude Code 2.1.283)
+
+- **Inline Python is refused in every condition.** With `blockReadsOutsideWorkingDirectories`
+  on, a `python -c "..."` command cannot be analysed by the permission system and is denied
+  (`-p` mode cannot ask). Scripts (`python file.py`) and `pytest` run normally. All four
+  conditions share this restriction; transcripts record such denials in `permission_denials`.
+- **`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1` forces the permission mode to `default`** (the CLI
+  prints "Permission mode forced to default"). In headless mode this behaves like `dontAsk`
+  for everything the settings allow-list names, which is every tool the runs use; anything
+  else is denied without a prompt. The recorded argv keeps `--permission-mode dontAsk`.
+- **Login mode.** Runs use the maintainer's normal Claude Code login (`apiKeySource=none`,
+  model `claude-opus-5-5` confirmed) with `--setting-sources project`, so user settings,
+  hooks and plugins are not loaded; the maintainer's config had no user CLAUDE.md, no hooks
+  and no enabled plugins at the time (recorded in `bench prepare`).
+- **Probe design.** The env probe runs `python envcheck.py` (a script written into the probe
+  project) rather than `python -c`; the permissions probe runs in a project without the base
+  CLAUDE.md block, because an agent that obeys "do not install packages" never exercises the
+  `pip` deny rule.

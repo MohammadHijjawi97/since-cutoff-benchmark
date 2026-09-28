@@ -66,11 +66,11 @@ lock_files = ["uv.lock", "poetry.lock", "pdm.lock", "Pipfile", "Pipfile.lock", "
 answer_tokens = ["extra_body", "httpx2", "Httpx2", "MCPServer", "mcpserver", "ToolError", ".text()"]
 
 [notes]
-tool = "since-cutoff==0.4.0rc1"
+tool = "since-cutoff==0.4.0"
 model = "anthropic:claude-opus-5-5"
 target = "CLAUDE.md"
 # run in a scratch copy of each task's repo/; {python} is the tool venv's python
-command = ["{python}", "-m", "since_cutoff", "sync", "--model", "{model}", "--target", "{target}"]
+command = ["{python}", "-m", "since_cutoff", "sync", "--yes", "--scope", "imported", "--model", "{model}", "--target", "{target}"]
 start_marker = "<!-- since-cutoff:start -->"
 end_marker = "<!-- since-cutoff:end -->"
 

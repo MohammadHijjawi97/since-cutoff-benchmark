@@ -1,0 +1,9 @@
+$ C:\b\tools\since-cutoff==0.4.0\Scripts\python.exe -m since_cutoff sync --yes --model anthropic:claude-opus-5-5 --target CLAUDE.md
+exit 0
+
+• Model claude-opus-5-5, training cutoff 2026-06-30 (from models.dev)
+• Checking 1 dependency on PyPI
+• Diffing the API of 1 package released after its cutoff version
+
+CLAUDE.md: no notes to write; your code uses none of the APIs that changed after claude-opus-5-5's training cutoff (2026-06-30). For the changes most likely to matter in the packages your code imports: `since-cutoff sync --scope imported`. Nothing written.
+
