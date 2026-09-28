@@ -3,8 +3,8 @@
   "tool": "since-cutoff==0.4.0",
   "model": "anthropic:claude-opus-5-5",
   "source": "generated",
-  "created_at": "2026-09-28T00:20:06+00:00",
-  "frozen": false,
+  "created_at": "2026-09-28T01:02:48+00:00",
+  "frozen": true,
   "tasks": {
     "ant01": {
       "file": "ant01.md",
@@ -667,5 +667,7 @@
         "CLAUDE.md"
       ]
     }
-  }
+  },
+  "frozen_at": "2026-09-28T01:02:48+00:00",
+  "manifest_sha256": "f0795703d6318fac17a3fc05670de29405a3811e0267e5d7ee77f3e8285de16c"
 }

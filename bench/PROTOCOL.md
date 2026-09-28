@@ -210,7 +210,7 @@ python -m bench grade main-<date>                          # only for runs made 
 python -m bench report main-<date>
 ```
 
-Seeds: pilot `<to be fixed>`, main `<to be fixed>` (recorded here before tagging).
+Seeds: pilot `20260928`, main `<to be fixed>` (recorded here before tagging).
 
 ## 11. Known gaps
 
@@ -305,3 +305,16 @@ Seeds: pilot `<to be fixed>`, main `<to be fixed>` (recorded here before tagging
   project) rather than `python -c`; the permissions probe runs in a project without the base
   CLAUDE.md block, because an agent that obeys "do not install packages" never exercises the
   `pip` deny rule.
+
+### 12.y Pilot notes (2026-09-28)
+
+The pilot (excluded from every analysis, section 8) uses notes from since-cutoff 0.4.0 with
+`sync --yes --scope imported`, frozen before the pilot. With the default `used` scope, 0.4.0
+wrote notes covering 4 of the 17 post-cutoff tasks, because the task repositories contain
+working uses of each library but none of the changed APIs (by design, section 4); with
+`--scope imported`, 5 of 17. The notes are ranked by a rule that put `ClientSession`
+parameter removals ahead of the `mcp.server.fastmcp` package move and the `FastMCP` rename,
+so mcp01's notes do not cover its change. since-cutoff 0.4.1 changes that ranking; the main
+run's notes will be generated with the released 0.4.1 and frozen before the main run, with
+the scope recorded here then. The pilot measures cost, time, turns, Context7 use and
+infrastructure failures, and checks the go/no-go rules of section 9.
