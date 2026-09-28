@@ -389,3 +389,15 @@ five slots go to `ClientSession` changes because its code uses `ClientSession` (
 project uses rank first), which leaves `streamablehttp_client` sixth. Empty blocks: oai05,
 pd01–pd03 (no API change after the cutoff), so C equals A there. The report's per-task
 coverage column carries this into the wording rule of section 8.
+
+### 12.v Noted during the main run (infrastructure only; no outcome was looked at to decide it)
+
+- Batch 1 (60 sessions): 60 valid, no timeouts, no API retries, Context7 connected in every
+  B/D/E run with 0 errors, E called Context7 in 12 of 12 runs. Three runs of mcp04 (B, D, E)
+  flagged `network_like_cmds`: each started its own server and probed `127.0.0.1:8765`; no
+  host other than localhost was contacted. Runs of the same task can overlap across the 3
+  workers, so an agent's own self-check could reach another run's local server on the same
+  port. Grading is unaffected (hidden tests run afterwards in their own venv, and orphaned
+  processes are killed at the end of each session; none were left on 8765 after the batch);
+  the confound is limited to what an agent sees while checking its work, and is reported as
+  a known gap rather than changed mid-run.
