@@ -423,3 +423,32 @@ list` is unchanged, so `venv_modified` is unaffected); records made after this c
 `python_isolation`. The two transcripts were redacted in place (`<REDACTED:hf-token>`), a rescan
 finds nothing, and the maintainer was asked to revoke the token. The report lists the hf-task
 runs made before and after the change.
+
+### 12.t Post-run notes (written after the main run, 2026-09-28; nothing here changes the frozen rules)
+
+- **Context7 monthly quota.** All B/D/E sessions ran Context7 without an API key. From the
+  session that started at 2026-09-28T06:25:53Z (the 215th of 360 by start time) every Context7
+  call returned "Monthly quota exceeded" instead of documentation. The harness counted these as
+  successful tool calls (they are not tool errors), so `context7_errors` stayed 0 and the
+  between-batch checks did not catch it; it was found in the transcripts while the results page
+  was written. Documentation actually received: B 14 of the 23 sessions that called Context7
+  (post-cutoff 9), D 8 of 13 (post-cutoff 1), E 42 of 72 (post-cutoff 34 of 51). The
+  pre-registered notes-vs-agent-alone contrasts (C-A, the efficiency claim, the controls) do not
+  involve Context7 and are unaffected. Comparisons with B, D and E understate what Context7 can
+  do; E especially. Exploratory, not pre-registered: on the 34 post-cutoff blocks where E
+  received documentation, C and E both passed 34 of 34; session-level C/E ratios (bootstrap over
+  sessions, seed 20261001): turns 0.79 [0.71, 0.89], cost 0.86 [0.69, 1.04], wall time 0.81.
+  A re-run of the affected B/D/E sessions with a Context7 key is the clean fix and would be
+  reported as a separate, labelled study.
+- **Protocol header.** The first line of this file still says "DRAFT, not yet tagged"; the
+  frozen version is the one at tag `main-freeze-2026-09-28` (created before the first main
+  session), and the tag is unsigned and was local until publication.
+- **Authentication as run.** Sessions used the maintainer's normal Claude Code login with the
+  real user folder (`auth = "login"`, `isolate_home = false`, recorded in 12.x), not the token and
+  per-run home described in section 3; this is how the saved Hugging Face token was readable
+  (12.u).
+- **12.u follow-up.** The hf-task sessions before and after the credential fix: 40 before (the
+  first 181 sessions, harness 9227ebaf60e2) and 20 after (179 sessions, harness 90165f07c60f);
+  all 60 passed.
+- **Section 7 robustness check.** The mixed-model (GLMM) check was not run; with the pass-rate
+  ceiling met it would not change any claim.
