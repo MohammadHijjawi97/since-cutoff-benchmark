@@ -1,0 +1,54 @@
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -1,7 +1,31 @@
+ """Cleaning step of the orders ETL."""
+ 
+ import pandas as pd
++from pandas.api.types import is_object_dtype, is_string_dtype
++
++
++def _strip_text(s: pd.Series) -> pd.Series:
++    """Strip whitespace from the strings in ``s`` and blank out empty ones.
++
++    Non-string values in object columns are left untouched (``Series.str``
++    would turn them into NaN).
++    """
++    if is_object_dtype(s.dtype):
++        stripped = s.map(lambda v: v.strip() if isinstance(v, str) else v)
++        empty = stripped.map(lambda v: isinstance(v, str) and v == "").astype(bool)
++    else:
++        stripped = s.str.strip()
++        empty = stripped.eq("").fillna(False).astype(bool)
++    return stripped.mask(empty)
+ 
+ 
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A cleaned copy of the orders frame; ``df`` itself is not modified."""
++    out = df.copy()
++    for col in out.columns:
++        dtype = out[col].dtype
++        if is_object_dtype(dtype) or (is_string_dtype(dtype) and not isinstance(dtype, pd.CategoricalDtype)):
++            out[col] = _strip_text(out[col])
++    if "qty" in out.columns:
++        out["qty"] = out["qty"].fillna(0)
++    return out
+--- /dev/null
++++ b/scratch_check.py
+@@ -0,0 +1,16 @@
++import io
++import pandas as pd
++from app.clean import clean_orders
++from app.load import load_orders
++
++csv = "sku,qty,note,price\n  A1 ,2, hi ,1.5\nB2,,   ,2.0\n,3,,\n C ,1,x,3\n"
++df = load_orders(io.StringIO(csv))
++before = df.copy()
++out = clean_orders(df)
++print(df.dtypes.to_dict()); print(out.dtypes.to_dict()); print(out.to_dict("list"))
++pd.testing.assert_frame_equal(df, before)
++
++mixed = pd.DataFrame({"a": pd.Series([" x ", 5, None, "  "], dtype=object), "qty": [1, None, 2, None],
++                      "s": pd.Series([" y", pd.NA, "", "z"], dtype="string")})
++m = clean_orders(mixed)
++print(m.dtypes.to_dict()); print(m.to_dict("list"))

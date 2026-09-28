@@ -1,0 +1,93 @@
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -5,6 +5,7 @@
+ from typing import Any
+ 
+ from mcp import ClientSession
++from mcp.types import CallToolResult, TextContent
+ 
+ 
+ class ToolCallFailed(Exception):
+@@ -16,5 +17,16 @@
+         self.message = message
+ 
+ 
++def _text(result: CallToolResult) -> str:
++    """The result's text blocks joined with newlines."""
++    return "\n".join(block.text for block in result.content if isinstance(block, TextContent))
++
++
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    """Call tool `name` and return its structured output, or else its text."""
++    result = await session.call_tool(name, arguments)
++    if result.is_error:
++        raise ToolCallFailed(name, _text(result))
++    if result.structured_content is not None:
++        return result.structured_content
++    return _text(result)
+--- /dev/null
++++ b/tests/test_calls.py
+@@ -0,0 +1,62 @@
++import anyio
++import pytest
++from mcp import Client
++from mcp.server import MCPServer
++from mcp.server.mcpserver.exceptions import ToolError
++from pydantic import BaseModel
++
++from opsbot.calls import ToolCallFailed, run_tool
++
++
++class Status(BaseModel):
++    service: str
++    healthy: bool
++
++
++server = MCPServer("ops")
++
++
++@server.tool()
++def status(service: str) -> Status:
++    return Status(service=service, healthy=True)
++
++
++@server.tool(structured_output=False)
++def greet(name: str) -> str:
++    return f"hello {name}"
++
++
++@server.tool()
++def deploy(version: str) -> str:
++    raise ToolError(f"no such version {version}")
++
++
++def call(name, arguments):
++    # Catch ToolCallFailed inside the client context, as the CLI does, so it is
++    # not wrapped in the session task group's ExceptionGroup on exit.
++    async def go():
++        async with Client(server) as client:
++            try:
++                return await run_tool(client.session, name, arguments)
++            except ToolCallFailed as exc:
++                return exc
++
++    result = anyio.run(go)
++    if isinstance(result, ToolCallFailed):
++        raise result
++    return result
++
++
++def test_structured_output():
++    assert call("status", {"service": "api"}) == {"service": "api", "healthy": True}
++
++
++def test_text_output():
++    assert call("greet", {"name": "ops"}) == "hello ops"
++
++
++def test_failure():
++    with pytest.raises(ToolCallFailed) as info:
++        call("deploy", {"version": "9.9"})
++    assert info.value.tool == "deploy"
++    assert info.value.message == "Error executing tool deploy: no such version 9.9"

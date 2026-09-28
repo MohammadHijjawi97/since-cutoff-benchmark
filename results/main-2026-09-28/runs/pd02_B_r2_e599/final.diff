@@ -1,0 +1,60 @@
+--- a/app/report.py
++++ b/app/report.py
+@@ -5,5 +5,17 @@
+ import pandas as pd
+ 
+ 
++def _accounting(value: object) -> str:
++    """Format one amount in accounting style: 1,234.50 / (1,234.50) / - / empty."""
++    if pd.isna(value):
++        return ""
++    amount = round(float(value), 2)
++    if amount == 0:
++        return "-"
++    text = f"{abs(amount):,.2f}"
++    return f"({text})" if amount < 0 else text
++
++
+ def format_for_display(table: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Return a copy of the account x month table with every cell formatted as an accounting string."""
++    return table.map(_accounting)
+--- /dev/null
++++ b/tests/test_report.py
+@@ -0,0 +1,36 @@
++from pathlib import Path
++
++import numpy as np
++import pandas as pd
++
++from app.ledger import load_ledger, monthly_pnl
++from app.report import format_for_display
++
++DATA = Path(__file__).parent / "data" / "ledger.csv"
++
++
++def test_format_for_display_accounting_style():
++    table = pd.DataFrame(
++        {"2026-07": [12500.0, -634.2, 0.0], "2026-08": [np.nan, 1234567.891, -0.001]},
++        index=pd.Index(["Revenue", "Refunds", "Travel"], name="account"),
++    )
++    shown = format_for_display(table)
++    assert shown.loc["Revenue", "2026-07"] == "12,500.00"
++    assert shown.loc["Refunds", "2026-07"] == "(634.20)"
++    assert shown.loc["Travel", "2026-07"] == "-"
++    assert shown.loc["Revenue", "2026-08"] == ""
++    assert shown.loc["Refunds", "2026-08"] == "1,234,567.89"
++    assert shown.loc["Travel", "2026-08"] == "-"
++
++
++def test_format_for_display_keeps_shape_and_input():
++    table = monthly_pnl(load_ledger(DATA))
++    before = table.copy()
++    shown = format_for_display(table)
++    pd.testing.assert_frame_equal(table, before)
++    assert shown.index.equals(table.index)
++    assert shown.columns.equals(table.columns)
++    assert all(isinstance(v, str) for v in shown.to_numpy().ravel())
++    assert shown.loc["Revenue", "2026-07"] == "12,500.00"
++    assert shown.loc["Salaries", "2026-08"] == "(8,200.00)"
++    assert shown.loc["Travel", "2026-07"] == ""

@@ -1,0 +1,268 @@
+{
+  "schema": "since-cutoff-bench/run@1",
+  "study_id": "main-2026-09-28",
+  "run_id": "oai02_A_r2_7a9e",
+  "attempt": 1,
+  "attempt_id": "oai02_A_r2_7a9e",
+  "task_id": "oai02-respx-test-double",
+  "task": "oai02",
+  "task_sha256": "983151d679f25bb2c54ed7ae3ffa77739938dec5c8eabdee7668c303d1f54cdc",
+  "library": "openai",
+  "pinned": "3.19.2",
+  "cutoff_version": "2.44.0",
+  "stratum": "post-cutoff",
+  "kind": "post-cutoff-silent",
+  "condition": "A",
+  "rep": 2,
+  "block_id": "oai02#2",
+  "order_index": 310,
+  "pilot": false,
+  "condition_config": {
+    "condition": "A",
+    "claude_md_sha256": "aee74955cc1cd6431365ad7254ae7ce515eec2d415fc115ae9629fab72aaeacf",
+    "notes_sha256": null,
+    "notes_tokens": 0,
+    "notes_covered": null,
+    "mcp": "none",
+    "mcp_config_sha256": "1e0fe4707a42d1cce5d4e89af209cc6317e979348f1a1a3e1eda481a1467821e",
+    "context7_key": null,
+    "settings_sha256": "08f1b1cc94823f762daa4df2882c07fe013ba553efef38ab128b5cddc95f5694",
+    "allowed_tools_extra": null
+  },
+  "agent": {
+    "claude_code_version": "2.1.283",
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "argv": [
+      "C:\\Users\\Mohammad Hijjawi\\.local\\bin\\claude.exe",
+      "-p",
+      "--model",
+      "claude-opus-5-5",
+      "--effort",
+      "medium",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--max-turns",
+      "40",
+      "--max-budget-usd",
+      "3",
+      "--permission-mode",
+      "dontAsk",
+      "--tools",
+      "Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill",
+      "--settings",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\claude_settings.json",
+      "--setting-sources",
+      "project",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\mcp_none.json",
+      "--no-session-persistence"
+    ],
+    "env": {
+      "ALLUSERSPROFILE": "C:\\ProgramData",
+      "APPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Roaming",
+      "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+      "CLAUDE_CODE_GIT_BASH_PATH": "C:\\Program Files\\Git\\bin\\bash.exe",
+      "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
+      "COMMONPROGRAMFILES": "C:\\Program Files\\Common Files",
+      "COMMONPROGRAMFILES(X86)": "C:\\Program Files (x86)\\Common Files",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "DISABLE_AUTOUPDATER": "1",
+      "ENABLE_TOOL_SEARCH": "false",
+      "HF_HOME": "C:\\b\\tmp\\main-2026-09-28\\oai02_A_r2_7a9e\\hf",
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "<set>",
+      "HOMEDRIVE": "C:",
+      "HOMEPATH": "\\Users\\Mohammad Hijjawi",
+      "LOCALAPPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Local",
+      "MCP_TIMEOUT": "60000",
+      "NUMBER_OF_PROCESSORS": "32",
+      "OS": "Windows_NT",
+      "PATH": "C:\\b\\runs\\main-2026-09-28\\oai02_A_r2_7a9e\\.venv\\Scripts;C:\\WINDOWS\\System32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0",
+      "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC",
+      "PROCESSOR_ARCHITECTURE": "AMD64",
+      "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+      "PROGRAMDATA": "C:\\ProgramData",
+      "PROGRAMFILES": "C:\\Program Files",
+      "PROGRAMFILES(X86)": "C:\\Program Files (x86)",
+      "PROGRAMW6432": "C:\\Program Files",
+      "PYTEST_ADDOPTS": "--allow-hosts=127.0.0.1,::1",
+      "SYSTEMDRIVE": "C:",
+      "SYSTEMROOT": "C:\\WINDOWS",
+      "TEMP": "C:\\b\\tmp\\main-2026-09-28\\oai02_A_r2_7a9e",
+      "TMP": "C:\\b\\tmp\\main-2026-09-28\\oai02_A_r2_7a9e",
+      "USERPROFILE": "C:\\Users\\Mohammad Hijjawi",
+      "VIRTUAL_ENV": "C:\\b\\runs\\main-2026-09-28\\oai02_A_r2_7a9e\\.venv",
+      "WINDIR": "C:\\WINDOWS"
+    },
+    "init_model": "claude-opus-5-5",
+    "init_version": "2.1.283",
+    "api_key_source": "none"
+  },
+  "harness": {
+    "code_sha256": "90165f07c60f304b318a125d3ba40d4a72da1acdfb24293eaebf9ca1dc5c4342"
+  },
+  "python_isolation": "_hf_isolation.pth",
+  "started_at": "2026-09-28T09:17:53+00:00",
+  "ended_at": "2026-09-28T09:20:08+00:00",
+  "wall_s": 134.6,
+  "exit": {
+    "code": 0,
+    "timed_out": false,
+    "subtype": "success",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "orphans_killed": 1
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 35,
+    "duration_ms": 133292,
+    "duration_api_ms": 100629,
+    "total_cost_usd": 0.6038301999999999,
+    "usage": {
+      "input_tokens": 50,
+      "cache_creation_input_tokens": 38773,
+      "cache_read_input_tokens": 642531,
+      "output_tokens": 8247,
+      "output_tokens_details": {
+        "thinking_tokens": 1876
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 38773,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 700,
+          "cache_read_input_tokens": 44763,
+          "cache_creation_input_tokens": 413,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 413
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 50,
+        "outputTokens": 8247,
+        "cacheReadInputTokens": 642531,
+        "cacheCreationInputTokens": 38773,
+        "webSearchRequests": 0,
+        "costUSD": 0.6038301999999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1876,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": 10,
+    "permission_denied_tools": [
+      "Bash"
+    ],
+    "terminal_reason": "completed",
+    "result_text": "`mock_openai()` works again and both digest tests pass (`pytest -q`: 2 passed). The only file changed is `tests/fakes.py`.\n\n**Cause:** openai 3.19.2 no longer sends requests through `httpx`. It uses a separate package, `httpx2` (with `httpcore2` underneath). respx 0.23.1 only patches `httpx`, so it never saw those requests, and since nothing was checking, they quietly went to the real network.\n\n**Fix:** Inside `mock_openai()`, a new helper `_route_httpx2_through(router)` replaces `httpx2.HTTPTransport.handle_request` for the length of the `with` block. It converts each request into an `httpx.Request`, sends it through the same respx router as before, and converts the reply back into an `httpx2.Response`. Because the patch is on the class rather than on one client, it catches:\n- clients created before the block, including app.digest's cached `get_client()`;\n- clients created inside the block;\n- clients given a plain `httpx.Client` as `http_client` (openai still accepts that), which respx itself still covers.\n\n`mock.patch.object` undoes the patch when the block exits. Unmatched requests still raise respx's `AllMockedAssertionError`, as they used to. The helper's interface and docstring are unchanged.\n\n**Checks:** I also ran a throwaway script that confirmed:\n- a client created before the block, one created inside it, and one using a plain `httpx.Client` each got their canned reply;\n- a fourth request got the 400 error;\n- all four request bodies were recorded.\n\nThe script ran outside pytest, where there is network access. After the block ended, the next request reached the real API and got a 401 for the dummy key, which shows nothing is intercepted afterwards.\n\nI didn't use `httpx2.alias_httpx()`. It changes the imports for the whole process, can't be undone, and fails anyway because `httpx` is already imported.\n\n**Cleanup needed:** deleting the scratch file `_scratch_check.py` in the project root needed your approval, so it's still there. Please delete it."
+  },
+  "mcp": {
+    "servers": [],
+    "errors": [],
+    "calls": {},
+    "doc_hit": false,
+    "doc_keys_found": []
+  },
+  "process": {
+    "tool_calls": {
+      "Bash": 14,
+      "Edit": 2,
+      "Glob": 2,
+      "Grep": 6,
+      "Read": 9,
+      "Write": 1
+    },
+    "denied_calls": 10,
+    "pytest_runs": 2,
+    "failing_pytest_runs": 1,
+    "py_edits": 3,
+    "edits_after_first_failure": 3,
+    "stale_in_first_edit": false,
+    "stale_first_edit_patterns": [],
+    "site_packages_reads": 12,
+    "introspection_cmds": 3,
+    "context7_calls": 0,
+    "context7_calls_by_tool": {},
+    "context7_errors": 0,
+    "doc_hit": false,
+    "doc_keys_found": [],
+    "skills": [],
+    "network_like_cmds": 0,
+    "network_like_examples": [],
+    "api_retries": 0,
+    "bad_stream_lines": 0,
+    "stale_in_final": false,
+    "files_changed": [
+      "_scratch_check.py",
+      "tests/fakes.py"
+    ]
+  },
+  "venv": {
+    "added": {},
+    "removed": {},
+    "changed": {},
+    "modified": false
+  },
+  "grade": {
+    "passed": true,
+    "hidden_passed": true,
+    "hidden": {
+      "exit_code": 0,
+      "passed": 4,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 16.39,
+      "timed_out": false
+    },
+    "visible_passed": true,
+    "visible": {
+      "exit_code": 0,
+      "passed": 2,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 2.86,
+      "timed_out": false
+    },
+    "lock_modified": false,
+    "lock_changes": [],
+    "env_lock_sha256": "fd9a9361ff23407e1e6dc07078793422cb6e56c84a9a071ec29c48cb5292412d",
+    "grade_s": 34.8,
+    "venv_modified": false
+  },
+  "valid": true,
+  "invalid_reason": null,
+  "invalid_detail": null,
+  "artifacts": {
+    "stream": "runs/oai02_A_r2_7a9e/stream.jsonl",
+    "stderr": "runs/oai02_A_r2_7a9e/stderr.log",
+    "diff": "runs/oai02_A_r2_7a9e/final.diff",
+    "claude_md": "runs/oai02_A_r2_7a9e/CLAUDE.md",
+    "grade_log": "runs/oai02_A_r2_7a9e/grade.log",
+    "project": "C:\\b\\runs\\main-2026-09-28\\oai02_A_r2_7a9e"
+  },
+  "cleanup_errors": null
+}

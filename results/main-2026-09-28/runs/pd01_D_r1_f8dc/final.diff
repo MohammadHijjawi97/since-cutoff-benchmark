@@ -1,0 +1,55 @@
+--- /dev/null
++++ b/.scratch/check.py
+@@ -0,0 +1,24 @@
++import io
++import sys
++
++sys.path.insert(0, ".")
++
++import pandas as pd
++
++from app.clean import clean_orders
++
++csv = "sku,qty,note,price\n  A1 ,1,  hi ,2.5\nB2,, ,3\n,3,x,\n"
++df = pd.read_csv(io.StringIO(csv))
++before = df.copy()
++out = clean_orders(df)
++print(df.dtypes.to_dict())
++print(out)
++print(out.dtypes.to_dict())
++assert df.equals(before)
++
++obj = pd.DataFrame({"sku": pd.Series([" a ", "", 5, None], dtype=object), "qty": [1, None, 2, None]})
++print(clean_orders(obj))
++print(obj)
++
++na = pd.DataFrame({"s": pd.array([" a", "", None], dtype="string")})
++print(clean_orders(na))
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -3,5 +3,24 @@
+ import pandas as pd
+ 
+ 
++def _strip(value):
++    return value.strip() if isinstance(value, str) else value
++
++
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A copy of ``df`` with text trimmed, blank text missing and missing qty 0."""
++    out = df.copy()
++    for col in out.columns:
++        s = out[col]
++        if isinstance(s.dtype, pd.StringDtype):
++            s = s.str.strip()
++        elif s.dtype == object:
++            # Mixed columns: only touch the actual strings.
++            s = s.map(_strip)
++        else:
++            continue
++        empty = (s == "").fillna(False).astype(bool)
++        out[col] = s.mask(empty)
++    if "qty" in out.columns:
++        out["qty"] = out["qty"].fillna(0)
++    return out

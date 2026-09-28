@@ -1,0 +1,10 @@
+Implement `triage` in app/worker.py: the async counterpart of `ask_with_limits` (app/limits.py) for
+the new queue worker.
+
+Send `ticket` as a single user message to MODEL with max_tokens=512 and the SYSTEM prompt, through
+the AsyncAnthropic client it receives. Return the same keys as `ask_with_limits` ("answer",
+"tokens_remaining", "request_id") plus "throttle": True when tokens_remaining is below
+LOW_WATERMARK, otherwise False. Take the budget from the same response as the answer: one request
+per ticket.
+
+Do not add dependencies. You can run the tests with `pytest`.

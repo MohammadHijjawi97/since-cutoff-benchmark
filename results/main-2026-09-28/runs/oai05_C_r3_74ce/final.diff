@@ -1,0 +1,68 @@
+--- a/app/llm_client.py
++++ b/app/llm_client.py
+@@ -2,10 +2,31 @@
+ 
+ import logging
+ 
+-from openai import OpenAI
++import httpx
++from openai import DefaultHttpxClient, OpenAI
+ 
+ logger = logging.getLogger("app.http")
+ 
++TIMEOUT = httpx.Timeout(30.0, connect=5.0)
++MAX_RETRIES = 2
++
++
++def _log_request(request: httpx.Request) -> None:
++    logger.info("%s %s", request.method, request.url)
++
+ 
+ def build_client(api_key: str, transport=None) -> OpenAI:
+-    raise NotImplementedError
++    # DefaultHttpxClient keeps the SDK's default connection limits and redirect handling.
++    # The request hook runs on every send, so each retry attempt is logged too.
++    http_client = DefaultHttpxClient(
++        timeout=TIMEOUT,
++        transport=transport,
++        event_hooks={"request": [_log_request]},
++    )
++    # The SDK passes its own timeout on every request, so it must be set here as well.
++    return OpenAI(
++        api_key=api_key,
++        timeout=TIMEOUT,
++        max_retries=MAX_RETRIES,
++        http_client=http_client,
++    )
+--- /dev/null
++++ b/tests/test_llm_client.py
+@@ -0,0 +1,29 @@
++import logging
++
++import httpx
++
++from app.llm_client import build_client
++
++
++def test_build_client_config_and_logging(caplog):
++    calls = []
++
++    def handler(request):
++        calls.append(request)
++        if len(calls) == 1:
++            return httpx.Response(500, json={"error": {"message": "boom"}})
++        return httpx.Response(200, json={"object": "list", "data": []})
++
++    client = build_client("test-key", transport=httpx.MockTransport(handler))
++
++    assert client.max_retries == 2
++    expected = httpx.Timeout(30.0, connect=5.0)
++    assert client.timeout == expected
++    assert client._client.timeout == expected
++
++    with caplog.at_level(logging.INFO, logger="app.http"):
++        client.models.list()
++
++    assert len(calls) == 2
++    messages = [r.getMessage() for r in caplog.records if r.name == "app.http"]
++    assert messages == ["GET https://api.openai.com/v1/models"] * 2

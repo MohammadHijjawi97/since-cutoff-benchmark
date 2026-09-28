@@ -1,0 +1,72 @@
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,16 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    """Numbered context entries, one per source, in the retriever's order."""
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    entries: list[str] = []
++    seen: set[str] = set()
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)
+--- /dev/null
++++ b/tests/test_context.py
+@@ -0,0 +1,49 @@
++from langchain_core.callbacks import BaseCallbackHandler
++from langchain_core.documents import Document
++
++from app.context import MAX_SOURCES, TRACE_TAG, build_context
++from app.kb import KeywordRetriever
++
++
++def doc(source, text):
++    return Document(page_content=text, metadata={"source": source})
++
++
++class TagRecorder(BaseCallbackHandler):
++    def __init__(self):
++        self.tags = []
++
++    def on_retriever_start(self, serialized, query, *, tags=None, **kwargs):
++        self.tags.append(tags or [])
++
++
++def test_numbers_entries_and_strips_text():
++    docs = [doc("a.md", "  alpha vpn \n"), doc("b.md", "\nbeta vpn\n")]
++    retriever = KeywordRetriever(docs=docs)
++    assert build_context(retriever, "vpn") == "[1] a.md\nalpha vpn\n\n[2] b.md\nbeta vpn"
++
++
++def test_skips_repeated_sources_and_caps_entries():
++    docs = [
++        doc("a.md", "vpn one"),
++        doc("a.md", "vpn two"),
++        doc("b.md", "vpn three"),
++        doc("c.md", "vpn four"),
++        doc("d.md", "vpn five"),
++    ]
++    retriever = KeywordRetriever(docs=docs, k=10)
++    context = build_context(retriever, "vpn")
++    assert context == "[1] a.md\nvpn one\n\n[2] b.md\nvpn three\n\n[3] c.md\nvpn four"
++    assert MAX_SOURCES == 3
++
++
++def test_empty_when_nothing_found():
++    retriever = KeywordRetriever(docs=[doc("a.md", "vpn")])
++    assert build_context(retriever, "kubernetes") == ""
++
++
++def test_lookup_carries_trace_tag():
++    recorder = TagRecorder()
++    retriever = KeywordRetriever(docs=[doc("a.md", "vpn")]).with_config(callbacks=[recorder])
++    build_context(retriever, "vpn")
++    assert recorder.tags and all(TRACE_TAG in tags for tags in recorder.tags)

@@ -1,0 +1,57 @@
+--- /dev/null
++++ b/_check_run_tool.py
+@@ -0,0 +1,28 @@
++import anyio
++from mcp.types import CallToolResult, TextContent, ImageContent
++from opsbot.calls import run_tool, ToolCallFailed
++
++
++class Fake:
++    def __init__(self, r):
++        self.r = r
++
++    async def call_tool(self, name, arguments):
++        return self.r
++
++
++async def main():
++    t = [TextContent(type="text", text="a"), ImageContent(type="image", data="", mime_type="image/png"), TextContent(type="text", text="b")]
++    assert await run_tool(Fake(CallToolResult(content=t)), "x", {}) == "a\nb"
++    assert await run_tool(Fake(CallToolResult(content=t, structured_content={"k": 1})), "x", {}) == {"k": 1}
++    assert await run_tool(Fake(CallToolResult(content=t, structured_content=[])), "x", {}) == []
++    try:
++        await run_tool(Fake(CallToolResult(content=t, is_error=True, structured_content={"k": 1})), "deploy", {})
++    except ToolCallFailed as e:
++        assert (e.tool, e.message) == ("deploy", "a\nb")
++    else:
++        raise AssertionError
++    print("ok")
++
++
++anyio.run(main)
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -5,6 +5,7 @@
+ from typing import Any
+ 
+ from mcp import ClientSession
++from mcp.types import CallToolResult, TextContent
+ 
+ 
+ class ToolCallFailed(Exception):
+@@ -16,5 +17,14 @@
+         self.message = message
+ 
+ 
++def _text(result: CallToolResult) -> str:
++    return "\n".join(block.text for block in result.content if isinstance(block, TextContent))
++
++
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    result = await session.call_tool(name, arguments)
++    if result.is_error:
++        raise ToolCallFailed(name, _text(result))
++    if result.structured_content is not None:
++        return result.structured_content
++    return _text(result)

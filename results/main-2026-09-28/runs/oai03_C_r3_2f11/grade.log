@@ -1,0 +1,13 @@
+task oai03 (oai03-stream-transport-errors) project C:\b\runs\main-2026-09-28\oai03_C_r3_2f11
+===== hidden tests: exit 0 in 10.1s
+$ C:\b\runs\main-2026-09-28\_grade\oai03_C_r3_2f11\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\oai03_C_r3_2f11\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\oai03_C_r3_2f11\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\oai03_C_r3_2f11\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\oai03_C_r3_2f11\hidden.xml C:\b\runs\main-2026-09-28\_grade\oai03_C_r3_2f11\proj\_bench_hidden
+......                                                                   [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\oai03_C_r3_2f11\hidden.xml -
+6 passed in 7.26s
+
+===== visible tests: exit 0 in 1.9s
+$ C:\b\runs\main-2026-09-28\_grade\oai03_C_r3_2f11\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\oai03_C_r3_2f11\visible.xml
+......                                                                   [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\oai03_C_r3_2f11\visible.xml -
+6 passed in 1.00s
+

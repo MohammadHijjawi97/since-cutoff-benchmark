@@ -1,0 +1,56 @@
+--- a/tests/fakes.py
++++ b/tests/fakes.py
+@@ -5,8 +5,10 @@
+ import json
+ from contextlib import contextmanager
+ from typing import Iterator
++from unittest import mock
+ 
+ import httpx
++import httpx2
+ import respx
+ 
+ OPENAI_BASE_URL = "https://api.openai.com/v1"
+@@ -55,4 +57,18 @@
+ 
+     with respx.mock(base_url=OPENAI_BASE_URL, assert_all_called=False) as router:
+         router.post("/chat/completions").mock(side_effect=answer)
+-        yield seen
++
++        # openai>=3 sends through httpx2, which respx does not patch; only clients built on a
++        # legacy `httpx.Client` still go through respx's own mocks. Route httpx2's default
++        # transport through the same router, so unmatched requests fail as they do in respx.
++        def handle_request(transport: httpx2.HTTPTransport, request: httpx2.Request) -> httpx2.Response:
++            legacy = httpx.Request(
++                request.method, str(request.url), headers=request.headers.raw, content=request.read()
++            )
++            response = router.handler(legacy)
++            return httpx2.Response(
++                response.status_code, headers=response.headers.raw, content=response.read()
++            )
++
++        with mock.patch.object(httpx2.HTTPTransport, "handle_request", handle_request):
++            yield seen
+--- /dev/null
++++ b/tests/test_zz_tmp.py
+@@ -0,0 +1,20 @@
++import openai
++import pytest
++
++from app import digest
++from tests.fakes import mock_openai
++
++
++def test_x():
++    early = openai.OpenAI(api_key="k", max_retries=0)
++    digest.get_client()
++    with mock_openai("a", "b") as seen:
++        assert early.chat.completions.create(model="m", messages=[]).choices[0].message.content == "a"
++        assert digest.summarize("t") == "b"
++        with pytest.raises(openai.BadRequestError):
++            openai.OpenAI(api_key="k", max_retries=0).chat.completions.create(model="m", messages=[])
++        with pytest.raises(Exception, match="not mocked|RESPX"):
++            early.models.list()
++    assert len(seen) == 3
++    with pytest.raises(openai.APIConnectionError):
++        early.chat.completions.create(model="m", messages=[])

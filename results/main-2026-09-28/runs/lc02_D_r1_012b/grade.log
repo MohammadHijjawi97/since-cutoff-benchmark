@@ -1,0 +1,13 @@
+task lc02 (lc02-chat-summary) project C:\b\runs\main-2026-09-28\lc02_D_r1_012b
+===== hidden tests: exit 0 in 8.8s
+$ C:\b\runs\main-2026-09-28\_grade\lc02_D_r1_012b\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\lc02_D_r1_012b\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\lc02_D_r1_012b\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\lc02_D_r1_012b\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\lc02_D_r1_012b\hidden.xml C:\b\runs\main-2026-09-28\_grade\lc02_D_r1_012b\proj\_bench_hidden
+...                                                                      [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\lc02_D_r1_012b\hidden.xml -
+3 passed in 2.22s
+
+===== visible tests: exit 0 in 2.4s
+$ C:\b\runs\main-2026-09-28\_grade\lc02_D_r1_012b\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\lc02_D_r1_012b\visible.xml
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\lc02_D_r1_012b\visible.xml -
+2 passed in 0.07s
+

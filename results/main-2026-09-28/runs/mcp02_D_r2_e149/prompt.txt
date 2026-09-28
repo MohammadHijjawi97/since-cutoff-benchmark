@@ -1,0 +1,10 @@
+Implement `run_tool(session, name, arguments)` in opsbot/calls.py (the opsbot CLI already uses it).
+It calls the tool `name` with `arguments` on the connected MCP client session and returns what the
+tool produced:
+
+  - if the server reports that the tool call failed, raise `ToolCallFailed(name, message)`, where
+    `message` is the text the server sent back (its text blocks joined with "\n");
+  - otherwise, if the result carries structured output, return that structured value as-is;
+  - otherwise return the text of the result's text blocks joined with "\n".
+
+Do not add dependencies. You can run the tests with `pytest`.

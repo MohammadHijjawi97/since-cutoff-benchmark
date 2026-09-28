@@ -1,0 +1,12 @@
+Implement `extract_invoice` in app/invoices.py for the ledger import.
+
+It gets the Files API id of an uploaded invoice and must return the invoice's fields as a dict that
+matches INVOICE_SCHEMA (app/schemas.py). Don't ask for JSON in the prompt and parse free text, and
+don't route the answer through a tool call: use Claude's structured outputs (JSON outputs), so the
+API itself constrains the text of the reply to INVOICE_SCHEMA.
+
+Send one request to MODEL with max_tokens=1024 and the invoice as a document block, like
+`summarize_invoice` does. File ids only work on the beta Messages API, so keep using
+`client.beta.messages` with FILES_BETA. Return the decoded JSON object.
+
+Do not add dependencies. You can run the tests with `pytest`.

@@ -1,0 +1,13 @@
+task mcp06 (mcp06-in-memory-client) project C:\b\runs\main-2026-09-28\mcp06_E_r3_96ae
+===== hidden tests: exit 0 in 13.0s
+$ C:\b\runs\main-2026-09-28\_grade\mcp06_E_r3_96ae\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\mcp06_E_r3_96ae\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\mcp06_E_r3_96ae\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\mcp06_E_r3_96ae\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\mcp06_E_r3_96ae\hidden.xml C:\b\runs\main-2026-09-28\_grade\mcp06_E_r3_96ae\proj\_bench_hidden
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\mcp06_E_r3_96ae\hidden.xml -
+2 passed in 9.42s
+
+===== visible tests: exit 0 in 1.8s
+$ C:\b\runs\main-2026-09-28\_grade\mcp06_E_r3_96ae\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\mcp06_E_r3_96ae\visible.xml
+.....                                                                    [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\mcp06_E_r3_96ae\visible.xml -
+5 passed in 1.00s
+

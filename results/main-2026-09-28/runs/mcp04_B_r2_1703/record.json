@@ -1,0 +1,276 @@
+{
+  "schema": "since-cutoff-bench/run@1",
+  "study_id": "main-2026-09-28",
+  "run_id": "mcp04_B_r2_1703",
+  "attempt": 1,
+  "attempt_id": "mcp04_B_r2_1703",
+  "task_id": "mcp04-http-host-port",
+  "task": "mcp04",
+  "task_sha256": "e16167d6779630a7d73bd5cc0256542477a322166f485a966cc9e8d9a75826e0",
+  "library": "mcp",
+  "pinned": "2.2.0",
+  "cutoff_version": "1.28.1",
+  "stratum": "post-cutoff",
+  "kind": "post-cutoff-loud",
+  "condition": "B",
+  "rep": 2,
+  "block_id": "mcp04#2",
+  "order_index": 87,
+  "pilot": false,
+  "condition_config": {
+    "condition": "B",
+    "claude_md_sha256": "2cd874706de9eb9aff7571d855a63721a8e2118ed4e005c8ae0cc9f65aa7b2e7",
+    "notes_sha256": null,
+    "notes_tokens": 0,
+    "notes_covered": null,
+    "mcp": "context7",
+    "mcp_config_sha256": "4f93b266a503161426401f012c0cf6a484669db9257458001bafe3f883019400",
+    "context7_key": false,
+    "settings_sha256": "08f1b1cc94823f762daa4df2882c07fe013ba553efef38ab128b5cddc95f5694",
+    "allowed_tools_extra": "mcp__context7"
+  },
+  "agent": {
+    "claude_code_version": "2.1.283",
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "argv": [
+      "C:\\Users\\Mohammad Hijjawi\\.local\\bin\\claude.exe",
+      "-p",
+      "--model",
+      "claude-opus-5-5",
+      "--effort",
+      "medium",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--max-turns",
+      "40",
+      "--max-budget-usd",
+      "3",
+      "--permission-mode",
+      "dontAsk",
+      "--tools",
+      "Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill",
+      "--settings",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\claude_settings.json",
+      "--setting-sources",
+      "project",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\mcp_context7.json",
+      "--allowedTools",
+      "mcp__context7",
+      "--no-session-persistence"
+    ],
+    "env": {
+      "ALLUSERSPROFILE": "C:\\ProgramData",
+      "APPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Roaming",
+      "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+      "CLAUDE_CODE_GIT_BASH_PATH": "C:\\Program Files\\Git\\bin\\bash.exe",
+      "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
+      "COMMONPROGRAMFILES": "C:\\Program Files\\Common Files",
+      "COMMONPROGRAMFILES(X86)": "C:\\Program Files (x86)\\Common Files",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "DISABLE_AUTOUPDATER": "1",
+      "ENABLE_TOOL_SEARCH": "false",
+      "HF_HOME": "C:\\b\\tmp\\main-2026-09-28\\mcp04_B_r2_1703\\hf",
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "<set>",
+      "HOMEDRIVE": "C:",
+      "HOMEPATH": "\\Users\\Mohammad Hijjawi",
+      "LOCALAPPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Local",
+      "MCP_TIMEOUT": "60000",
+      "NUMBER_OF_PROCESSORS": "32",
+      "OS": "Windows_NT",
+      "PATH": "C:\\b\\runs\\main-2026-09-28\\mcp04_B_r2_1703\\.venv\\Scripts;C:\\WINDOWS\\System32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0",
+      "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC",
+      "PROCESSOR_ARCHITECTURE": "AMD64",
+      "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+      "PROGRAMDATA": "C:\\ProgramData",
+      "PROGRAMFILES": "C:\\Program Files",
+      "PROGRAMFILES(X86)": "C:\\Program Files (x86)",
+      "PROGRAMW6432": "C:\\Program Files",
+      "PYTEST_ADDOPTS": "--allow-hosts=127.0.0.1,::1",
+      "SYSTEMDRIVE": "C:",
+      "SYSTEMROOT": "C:\\WINDOWS",
+      "TEMP": "C:\\b\\tmp\\main-2026-09-28\\mcp04_B_r2_1703",
+      "TMP": "C:\\b\\tmp\\main-2026-09-28\\mcp04_B_r2_1703",
+      "USERPROFILE": "C:\\Users\\Mohammad Hijjawi",
+      "VIRTUAL_ENV": "C:\\b\\runs\\main-2026-09-28\\mcp04_B_r2_1703\\.venv",
+      "WINDIR": "C:\\WINDOWS"
+    },
+    "init_model": "claude-opus-5-5",
+    "init_version": "2.1.283",
+    "api_key_source": "none"
+  },
+  "harness": {
+    "code_sha256": "9227ebaf60e2e8c4855fd71792a0de25072ac71a01e5e656e03cde701a8d32a8"
+  },
+  "started_at": "2026-09-28T04:13:49+00:00",
+  "ended_at": "2026-09-28T04:14:55+00:00",
+  "wall_s": 66.0,
+  "exit": {
+    "code": 0,
+    "timed_out": false,
+    "subtype": "success",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "orphans_killed": 1
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 21,
+    "duration_ms": 59436,
+    "duration_api_ms": 48009,
+    "total_cost_usd": 0.2531406,
+    "usage": {
+      "input_tokens": 30,
+      "cache_creation_input_tokens": 14988,
+      "cache_read_input_tokens": 268183,
+      "output_tokens": 3974,
+      "output_tokens_details": {
+        "thinking_tokens": 323
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 14988,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 597,
+          "cache_read_input_tokens": 22735,
+          "cache_creation_input_tokens": 267,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 267
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 30,
+        "outputTokens": 3974,
+        "cacheReadInputTokens": 268183,
+        "cacheCreationInputTokens": 14988,
+        "webSearchRequests": 0,
+        "costUSD": 0.2531406,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 323,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": 6,
+    "permission_denied_tools": [
+      "Bash"
+    ],
+    "terminal_reason": "completed",
+    "result_text": "`python -m app.server --http` now serves the inventory server over MCP Streamable HTTP. I tested it end to end with a real MCP client and it works.\n\n**The change** (`app/server.py:28`):\n```python\ndef serve_http(host: str, port: int) -> None:\n    build_server().run(\"streamable-http\", host=host, port=port)\n```\nI checked the installed `mcp==2.2.0` source to confirm how this works. The server listens at the default `/mcp` path and runs uvicorn, which keeps the process running until it's stopped, just like the stdio mode. I didn't touch the stdio path or add any dependencies.\n\n**Testing:**\n- `pytest -q`: 2 passed.\n- I started `python -m app.server --http --port 8765` and connected over HTTP to `http://127.0.0.1:8765/mcp` with the SDK's Streamable HTTP client. Setup worked, the tool list showed `['stock', 'reserve']`, `stock(\"MS-330\")` returned `42`, and `reserve(\"MS-330\", 2)` returned `40`.\n\n**Needs your action:** my permission settings blocked the cleanup commands, so two things are left over:\n- The test server is still running in the background on port 8765. Stop it, or end its task.\n- The throwaway test script `_smoke_client.py` is still in the project root. Please delete it.\n\n**Before remote agents can connect:** the default host is `127.0.0.1`, which only accepts local connections. Remote agents need something like `--host 0.0.0.0`. On localhost, the SDK automatically restricts which Host and Origin headers it accepts. On any other host that restriction is off and there's no authentication. If this will be reachable beyond a trusted network, it should go behind a proxy that handles auth and TLS."
+  },
+  "mcp": {
+    "servers": [
+      {
+        "name": "context7",
+        "status": "connected"
+      }
+    ],
+    "errors": [],
+    "calls": {},
+    "doc_hit": false,
+    "doc_keys_found": []
+  },
+  "process": {
+    "tool_calls": {
+      "Bash": 10,
+      "Edit": 1,
+      "Glob": 1,
+      "Grep": 1,
+      "Read": 6,
+      "Write": 1
+    },
+    "denied_calls": 6,
+    "pytest_runs": 1,
+    "failing_pytest_runs": 0,
+    "py_edits": 2,
+    "edits_after_first_failure": 0,
+    "stale_in_first_edit": false,
+    "stale_first_edit_patterns": [],
+    "site_packages_reads": 4,
+    "introspection_cmds": 1,
+    "context7_calls": 0,
+    "context7_calls_by_tool": {},
+    "context7_errors": 0,
+    "doc_hit": false,
+    "doc_keys_found": [],
+    "skills": [],
+    "network_like_cmds": 1,
+    "network_like_examples": [
+      "(python -m app.server --http --port 8765 > /tmp/srv.log 2>&1 &) ; for i in $(seq 1 30); do python -c \"import socket;socket.create_connection(('127.0.0.1',8765),1)\" 2>/dev/null && break; python -c \"import time;time.sleep(0.5)\"; done\ncat > /tmp/client.py <<'EOF'\nimport anyio\nfrom mcp.client.session im"
+    ],
+    "api_retries": 0,
+    "bad_stream_lines": 0,
+    "stale_in_final": false,
+    "files_changed": [
+      "_smoke_client.py",
+      "app/server.py"
+    ]
+  },
+  "venv": {
+    "added": {},
+    "removed": {},
+    "changed": {},
+    "modified": false
+  },
+  "grade": {
+    "passed": true,
+    "hidden_passed": true,
+    "hidden": {
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 12.9,
+      "timed_out": false
+    },
+    "visible_passed": true,
+    "visible": {
+      "exit_code": 0,
+      "passed": 2,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 0.72,
+      "timed_out": false
+    },
+    "lock_modified": false,
+    "lock_changes": [],
+    "env_lock_sha256": "deac184832707ce90301a3dce10a95aa3d8c3f1680df0244b2278cac41ebd323",
+    "grade_s": 26.3,
+    "venv_modified": false
+  },
+  "valid": true,
+  "invalid_reason": null,
+  "invalid_detail": null,
+  "artifacts": {
+    "stream": "runs/mcp04_B_r2_1703/stream.jsonl",
+    "stderr": "runs/mcp04_B_r2_1703/stderr.log",
+    "diff": "runs/mcp04_B_r2_1703/final.diff",
+    "claude_md": "runs/mcp04_B_r2_1703/CLAUDE.md",
+    "grade_log": "runs/mcp04_B_r2_1703/grade.log",
+    "project": "C:\\b\\runs\\main-2026-09-28\\mcp04_B_r2_1703"
+  },
+  "cleanup_errors": null
+}

@@ -1,0 +1,17 @@
+attempt_id,run_id,attempt,task,stratum,condition,rep,order_index,pilot,valid,invalid_reason,passed,hidden_passed,lock_modified,venv_modified,subtype,timed_out,num_turns,total_cost_usd,wall_s,total_tokens,pytest_runs,failing_pytest_runs,edits_after_first_failure,stale_in_first_edit,stale_in_final,site_packages_reads,context7_calls,doc_hit,skills,network_like_cmds
+ant01_C_r2_fcb5,ant01_C_r2_fcb5,1,ant01,post-cutoff,C,2,0,True,True,,False,False,False,False,success,False,13,0.1622882,49.2,115902.0,1,0,0,False,False,3,0,False,,0
+ant01_B_r1_4369,ant01_B_r1_4369,1,ant01,post-cutoff,B,1,4,True,True,,True,True,False,False,success,False,15,0.6100912,75.7,497330.0,2,0,0,True,False,0,0,False,claude-api,0
+ant01_D_r2_8d70,ant01_D_r2_8d70,1,ant01,post-cutoff,D,2,1,True,True,,False,False,False,False,success,False,6,0.1001056,44.4,67945.0,1,0,0,False,False,1,0,False,,0
+ant01_A_r1_b9ad,ant01_A_r1_b9ad,1,ant01,post-cutoff,A,1,5,True,True,,False,False,False,False,success,False,10,0.5116628000000001,41.9,299188.0,1,0,0,True,True,0,0,False,claude-api,0
+ant01_A_r2_769b,ant01_A_r2_769b,1,ant01,post-cutoff,A,2,2,True,True,,False,False,False,False,success,False,12,0.5269796,47.7,305428.0,1,0,0,True,True,0,0,False,claude-api,0
+ant01_D_r1_734e,ant01_D_r1_734e,1,ant01,post-cutoff,D,1,6,True,True,,False,False,False,False,success,False,14,0.181682,52.5,151384.0,1,0,0,False,False,4,0,False,,0
+ant01_B_r2_dc19,ant01_B_r2_dc19,1,ant01,post-cutoff,B,2,3,True,True,,False,False,False,False,success,False,7,0.4768147999999999,44.8,245208.0,1,0,0,True,True,0,0,False,claude-api,0
+ant01_C_r1_91a3,ant01_C_r1_91a3,1,ant01,post-cutoff,C,1,7,True,True,,False,False,False,False,success,False,12,0.1720426,50.4,120436.0,1,0,0,False,False,3,0,False,,0
+mcp01_B_r2_4c0b,mcp01_B_r2_4c0b,1,mcp01,post-cutoff,B,2,8,True,True,,True,True,False,False,success,False,18,0.25818560000000007,63.7,222420.0,1,0,0,False,False,3,2,True,,0
+mcp01_C_r1_7921,mcp01_C_r1_7921,1,mcp01,post-cutoff,C,1,12,True,True,,True,True,False,False,success,False,22,0.229796,58.2,191017.0,1,0,0,False,False,7,0,False,,0
+mcp01_A_r2_e11d,mcp01_A_r2_e11d,1,mcp01,post-cutoff,A,2,9,True,True,,True,True,False,False,success,False,22,0.28961939999999997,64.9,298596.0,1,0,0,False,False,7,0,False,,0
+mcp01_B_r1_0690,mcp01_B_r1_0690,1,mcp01,post-cutoff,B,1,13,True,True,,True,True,False,False,success,False,19,0.27180600000000005,61.0,224927.0,1,0,0,False,False,5,2,True,,0
+mcp01_D_r2_f70f,mcp01_D_r2_f70f,1,mcp01,post-cutoff,D,2,10,True,True,,True,True,False,False,success,False,20,0.256144,63.9,262888.0,1,0,0,False,False,7,0,False,,0
+mcp01_A_r1_aed5,mcp01_A_r1_aed5,1,mcp01,post-cutoff,A,1,14,True,True,,True,True,False,False,success,False,19,0.2714992,58.5,231218.0,1,0,0,False,False,7,0,False,,0
+mcp01_C_r2_89fc,mcp01_C_r2_89fc,1,mcp01,post-cutoff,C,2,11,True,True,,True,True,False,False,success,False,18,0.226638,54.9,177944.0,1,0,0,False,False,8,0,False,,0
+mcp01_D_r1_fc35,mcp01_D_r1_fc35,1,mcp01,post-cutoff,D,1,15,True,True,,True,True,False,False,success,False,18,0.2542856,53.4,254504.0,1,0,0,False,False,7,0,False,,0

@@ -1,0 +1,66 @@
+--- /dev/null
++++ b/_e2e_check.py
+@@ -0,0 +1,38 @@
++import threading
++import time
++
++import anyio
++import uvicorn
++from mcp.server import MCPServer
++
++from kb.remote import search_remote
++
++srv = MCPServer("kb")
++
++
++@srv.tool()
++def search(query: str) -> str:
++    return f"Alpha {query}\n\nBeta\n"
++
++
++app = srv.streamable_http_app()
++seen = []
++
++
++async def guard(scope, receive, send):
++    if scope["type"] == "http":
++        auth = dict(scope["headers"]).get(b"authorization")
++        seen.append((scope["method"], auth))
++        if auth != b"Bearer s3cret":
++            await send({"type": "http.response.start", "status": 401, "headers": []})
++            await send({"type": "http.response.body", "body": b""})
++            return
++    await app(scope, receive, send)
++
++
++server = uvicorn.Server(uvicorn.Config(guard, port=8765, log_level="warning"))
++threading.Thread(target=server.run, daemon=True).start()
++time.sleep(2)
++print(anyio.run(search_remote, "http://127.0.0.1:8765/mcp", "s3cret", "q"))
++print(seen)
++server.should_exit = True
+--- a/kb/remote.py
++++ b/kb/remote.py
+@@ -2,6 +2,21 @@
+ 
+ from __future__ import annotations
+ 
++import httpx2
++from mcp import ClientSession
++from mcp.client.streamable_http import streamable_http_client
++
++from kb.results import split_titles
++
++# The MCP SDK's default client timeouts: the server may hold a response stream open.
++_TIMEOUT = httpx2.Timeout(30.0, read=300.0)
++
+ 
+ async def search_remote(url: str, token: str, query: str) -> list[str]:
+-    raise NotImplementedError
++    headers = {"Authorization": f"Bearer {token}"}
++    async with httpx2.AsyncClient(headers=headers, timeout=_TIMEOUT) as http_client:
++        async with streamable_http_client(url, http_client=http_client) as (read, write):
++            async with ClientSession(read, write) as session:
++                await session.initialize()
++                result = await session.call_tool("search", {"query": query})
++    return split_titles(result)

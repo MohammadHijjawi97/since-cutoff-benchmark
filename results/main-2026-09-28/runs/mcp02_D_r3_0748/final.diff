@@ -1,0 +1,73 @@
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -4,6 +4,7 @@
+ 
+ from typing import Any
+ 
++import mcp.types as types
+ from mcp import ClientSession
+ 
+ 
+@@ -16,5 +17,16 @@
+         self.message = message
+ 
+ 
++def _text(result: types.CallToolResult) -> str:
++    return "\n".join(block.text for block in result.content if isinstance(block, types.TextContent))
++
++
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    """Call `name` and return its structured output if it has one, else its text."""
++    result = await session.call_tool(name, arguments)
++    if result.is_error:
++        raise ToolCallFailed(name, _text(result))
++    # Any JSON value is valid structured output, including falsy ones like 0 or [].
++    if result.structured_content is not None:
++        return result.structured_content
++    return _text(result)
+--- /dev/null
++++ b/tests/test_calls.py
+@@ -0,0 +1,42 @@
++import anyio
++import mcp.types as types
++import pytest
++
++from opsbot.calls import ToolCallFailed, run_tool
++
++
++class StubSession:
++    def __init__(self, result: types.CallToolResult) -> None:
++        self.result = result
++        self.calls = []
++
++    async def call_tool(self, name, arguments=None):
++        self.calls.append((name, arguments))
++        return self.result
++
++
++def text(*lines):
++    return [types.TextContent(type="text", text=line) for line in lines]
++
++
++def run(result):
++    session = StubSession(result)
++    value = anyio.run(run_tool, session, "deploy", {"service": "api"})
++    assert session.calls == [("deploy", {"service": "api"})]
++    return value
++
++
++def test_error_raises_with_joined_text():
++    with pytest.raises(ToolCallFailed) as info:
++        run(types.CallToolResult(content=text("no such", "version"), is_error=True))
++    assert (info.value.tool, info.value.message) == ("deploy", "no such\nversion")
++
++
++def test_structured_output_returned_as_is():
++    assert run(types.CallToolResult(content=text("ignored"), structured_content={"ok": True})) == {"ok": True}
++    assert run(types.CallToolResult(content=text("ignored"), structured_content=[])) == []
++
++
++def test_text_joined_when_no_structured_output():
++    image = types.ImageContent(type="image", data="", mime_type="image/png")
++    assert run(types.CallToolResult(content=[*text("a"), image, *text("b")])) == "a\nb"

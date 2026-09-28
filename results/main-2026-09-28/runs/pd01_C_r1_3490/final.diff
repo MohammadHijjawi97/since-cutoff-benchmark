@@ -1,0 +1,53 @@
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -3,5 +3,23 @@
+ import pandas as pd
+ 
+ 
++def _clean_text(value):
++    if isinstance(value, str):
++        value = value.strip()
++        return float("nan") if value == "" else value
++    return value
++
++
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A copy of ``df`` with text trimmed, blank text missing and missing qty 0."""
++    out = df.copy()
++    for col in out.select_dtypes(include=["object", "string"]).columns:
++        if isinstance(out[col].dtype, pd.StringDtype):
++            stripped = out[col].str.strip()
++            out[col] = stripped.mask(stripped == "")
++        else:
++            # Object columns can hold non-strings; only touch the strings.
++            out[col] = out[col].map(_clean_text).astype(object)
++    if "qty" in out.columns:
++        out["qty"] = out["qty"].fillna(0)
++    return out
+--- /dev/null
++++ b/scratch_check.py
+@@ -0,0 +1,23 @@
++import io
++import pandas as pd
++from app.clean import clean_orders
++from app.load import load_orders
++
++csv = "sku,qty,note,price\n A1 ,2, hi ,1.5\nB2,,   ,2\n,3,x,\n"
++df = load_orders(io.StringIO(csv))
++print(df.dtypes)
++orig = df.copy()
++out = clean_orders(df)
++print(out)
++print(out.dtypes)
++print(out.isna())
++pd.testing.assert_frame_equal(df, orig)
++
++d2 = pd.DataFrame({
++    "sku": pd.Series([" a ", 5, None, ""], dtype=object),
++    "qty": [1, None, 2, 3],
++    "sid": pd.Series([" x", "", None, "y"], dtype="string"),
++})
++o2 = clean_orders(d2)
++print(o2.map(repr))
++print(o2.dtypes)

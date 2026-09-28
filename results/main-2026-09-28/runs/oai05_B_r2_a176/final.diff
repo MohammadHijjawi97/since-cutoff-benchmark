@@ -1,0 +1,58 @@
+--- /dev/null
++++ b/_check.py
+@@ -0,0 +1,21 @@
++import logging, httpx
++logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s %(message)s")
++logging.getLogger("httpx").setLevel(logging.WARNING)
++from app.llm_client import build_client
++from app.search import rewrite_query
++
++calls = []
++OK = {"id": "r", "object": "response", "created_at": 0, "model": "m",
++      "output": [{"type": "message", "id": "m1", "role": "assistant", "status": "completed",
++                  "content": [{"type": "output_text", "text": "q", "annotations": []}]}],
++      "parallel_tool_calls": False, "tool_choice": "auto", "tools": [], "status": "completed"}
++
++def handler(req):
++    calls.append(req)
++    if len(calls) == 1:
++        return httpx.Response(500, json={"error": {"message": "boom"}})
++    return httpx.Response(200, json=OK)
++
++c = build_client("k", transport=httpx.MockTransport(handler))
++print(c.timeout, c.max_retries, c._client.timeout)
++print(repr(rewrite_query(c, "hi")), len(calls))
+--- a/app/llm_client.py
++++ b/app/llm_client.py
+@@ -2,10 +2,29 @@
+ 
+ import logging
+ 
+-from openai import OpenAI
++import httpx
++from openai import DefaultHttpxClient, OpenAI
+ 
+ logger = logging.getLogger("app.http")
+ 
++TIMEOUT = httpx.Timeout(30.0, connect=5.0)
++MAX_RETRIES = 2
++
++
++def _log_request(request: httpx.Request) -> None:
++    logger.info("%s %s", request.method, request.url)
++
+ 
+ def build_client(api_key: str, transport=None) -> OpenAI:
+-    raise NotImplementedError
++    http_client = DefaultHttpxClient(
++        timeout=TIMEOUT,
++        transport=transport,
++        event_hooks={"request": [_log_request]},
++    )
++    # The SDK applies its own timeout per request, so set it on the OpenAI client too.
++    return OpenAI(
++        api_key=api_key,
++        timeout=TIMEOUT,
++        max_retries=MAX_RETRIES,
++        http_client=http_client,
++    )

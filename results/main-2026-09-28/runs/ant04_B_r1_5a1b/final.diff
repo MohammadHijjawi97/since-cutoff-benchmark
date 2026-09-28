@@ -1,0 +1,99 @@
+--- a/app/claude.py
++++ b/app/claude.py
+@@ -1,12 +1,24 @@
+ """Claude access for the assistant."""
+ 
+-from anthropic import Anthropic
++import httpx2
++from anthropic import Anthropic, DefaultHttpxClient
++
++from app.http import egress_client_options
+ 
+ MODEL = "claude-opus-5-5"
+ 
+ 
+ def build_claude(api_key: str, transport=None) -> Anthropic:
+-    raise NotImplementedError
++    # The SDK runs on httpx2 and rejects httpx objects, so the shared client can't be passed
++    # in directly; build an httpx2 client with the same egress settings instead.
++    options = egress_client_options(httpx2, transport)
++    return Anthropic(
++        api_key=api_key,
++        max_retries=2,
++        # Set on the SDK client too, so messages.create doesn't substitute its own default.
++        timeout=options["timeout"],
++        http_client=DefaultHttpxClient(**options),
++    )
+ 
+ 
+ def ask(client: Anthropic, question: str) -> str:
+--- a/app/http.py
++++ b/app/http.py
+@@ -21,11 +21,16 @@
+     egress_log.info("%s %s", request.method, request.url)
+ 
+ 
++def egress_client_options(http_lib=httpx, transport=None) -> dict:
++    """Client keyword arguments for the egress rules, for `httpx` or an API-compatible fork (`httpx2`)."""
++    return {
++        "timeout": http_lib.Timeout(READ_TIMEOUT, connect=CONNECT_TIMEOUT),
++        "headers": {"X-Egress-Tag": EGRESS_TAG},
++        "event_hooks": {"request": [log_egress]},
++        "transport": transport,
++    }
++
++
+ def build_http_client(transport=None) -> httpx.Client:
+     """The HTTP client for internal and third-party APIs."""
+-    return httpx.Client(
+-        timeout=TIMEOUT,
+-        headers={"X-Egress-Tag": EGRESS_TAG},
+-        event_hooks={"request": [log_egress]},
+-        transport=transport,
+-    )
++    return httpx.Client(**egress_client_options(httpx, transport))
+--- /dev/null
++++ b/tests/test_claude.py
+@@ -0,0 +1,42 @@
++import logging
++
++import httpx2
++
++from app.claude import ask, build_claude
++from app.http import CONNECT_TIMEOUT, EGRESS_TAG, READ_TIMEOUT
++
++MESSAGE = {
++    "id": "msg_1",
++    "type": "message",
++    "role": "assistant",
++    "model": "claude-opus-5-5",
++    "content": [{"type": "text", "text": "All good."}],
++    "stop_reason": "end_turn",
++    "stop_sequence": None,
++    "usage": {"input_tokens": 1, "output_tokens": 1},
++}
++
++
++def test_claude_goes_through_the_egress_settings(caplog, monkeypatch):
++    monkeypatch.setattr("time.sleep", lambda _: None)
++    seen = []
++
++    def handler(request):
++        seen.append(request)
++        if len(seen) < 3:
++            return httpx2.Response(529, json={"type": "error", "error": {"type": "overloaded_error", "message": "busy"}})
++        return httpx2.Response(200, json=MESSAGE)
++
++    caplog.set_level(logging.INFO, logger="app.egress")
++    client = build_claude("sk-test", transport=httpx2.MockTransport(handler))
++
++    assert ask(client, "status?") == "All good."
++    assert client.max_retries == 2
++    assert len(seen) == 3
++    assert all(r.headers["x-egress-tag"] == EGRESS_TAG for r in seen)
++    assert [r.getMessage() for r in caplog.records if r.name == "app.egress"] == [
++        "POST https://api.anthropic.com/v1/messages"
++    ] * 3
++    timeout = seen[-1].extensions["timeout"]
++    assert timeout["connect"] == CONNECT_TIMEOUT
++    assert timeout["read"] == READ_TIMEOUT

@@ -1,0 +1,31 @@
+task ant01 (ant01-sampling-params) project C:\b\runs\pilot-2026-09-28\ant01_D_r2_8d70
+===== hidden tests: exit 1 in 20.9s
+$ C:\b\runs\pilot-2026-09-28\_grade\ant01_D_r2_8d70\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\pilot-2026-09-28\_grade\ant01_D_r2_8d70\bench_pytest.ini --rootdir C:\b\runs\pilot-2026-09-28\_grade\ant01_D_r2_8d70\proj --confcutdir C:\b\runs\pilot-2026-09-28\_grade\ant01_D_r2_8d70\proj\_bench_hidden --junitxml C:\b\runs\pilot-2026-09-28\_grade\ant01_D_r2_8d70\hidden.xml C:\b\runs\pilot-2026-09-28\_grade\ant01_D_r2_8d70\proj\_bench_hidden
+F.                                                                       [100%]
+================================== FAILURES ===================================
+________________ test_sends_temperature_zero_and_parses_label _________________
+
+    def test_sends_temperature_zero_and_parses_label():
+        seen: list = []
+        assert label_ticket(make_client(" Bug\n", seen), "App crashes on save") == "bug"
+        assert len(seen) == 1
+        body = seen[0]
+        assert body["model"] == MODEL
+        assert body["max_tokens"] == 5
+>       assert body.get("temperature") == 0
+E       AssertionError: assert None == 0
+E        +  where None = <built-in method get of dict object at 0x000002908A3F9B80>('temperature')
+E        +    where <built-in method get of dict object at 0x000002908A3F9B80> = {'max_tokens': 5, 'messages': [{'content': 'App crashes on save', 'role': 'user'}], 'model': 'claude-sonnet-4-6', 'sys...the support ticket. Answer with exactly one word from this list: bug, feature, question. Do not output anything else.'}.get
+
+_bench_hidden\test_hidden_ant01.py:41: AssertionError
+- generated xml file: C:\b\runs\pilot-2026-09-28\_grade\ant01_D_r2_8d70\hidden.xml -
+=========================== short test summary info ===========================
+FAILED _bench_hidden/test_hidden_ant01.py::test_sends_temperature_zero_and_parses_label
+1 failed, 1 passed in 17.74s
+
+===== visible tests: exit 0 in 2.3s
+$ C:\b\runs\pilot-2026-09-28\_grade\ant01_D_r2_8d70\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\pilot-2026-09-28\_grade\ant01_D_r2_8d70\visible.xml
+.                                                                        [100%]
+- generated xml file: C:\b\runs\pilot-2026-09-28\_grade\ant01_D_r2_8d70\visible.xml -
+1 passed in 1.40s
+

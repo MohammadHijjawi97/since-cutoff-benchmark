@@ -1,0 +1,62 @@
+--- a/app/llm_client.py
++++ b/app/llm_client.py
+@@ -2,10 +2,30 @@
+ 
+ import logging
+ 
+-from openai import OpenAI
++import httpx
++from openai import DefaultHttpxClient, OpenAI
+ 
+ logger = logging.getLogger("app.http")
+ 
++TIMEOUT = httpx.Timeout(30.0, connect=5.0)
++MAX_RETRIES = 2
++
++
++def _log_request(request: httpx.Request) -> None:
++    logger.info("%s %s", request.method, request.url)
++
+ 
+ def build_client(api_key: str, transport=None) -> OpenAI:
+-    raise NotImplementedError
++    # The request hook fires once per HTTP send, so retries are logged too.
++    http_client = DefaultHttpxClient(
++        timeout=TIMEOUT,
++        transport=transport,
++        event_hooks={"request": [_log_request]},
++    )
++    # OpenAI passes its own timeout on every request, so set it here as well.
++    return OpenAI(
++        api_key=api_key,
++        timeout=TIMEOUT,
++        max_retries=MAX_RETRIES,
++        http_client=http_client,
++    )
+--- /dev/null
++++ b/smoke_check.py
+@@ -0,0 +1,24 @@
++import logging
++
++import httpx
++
++from app.llm_client import build_client
++
++logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s %(message)s")
++logging.getLogger("openai").setLevel(logging.WARNING)
++logging.getLogger("httpx").setLevel(logging.WARNING)
++
++calls = [0]
++
++
++def handler(req):
++    calls[0] += 1
++    if calls[0] < 3:
++        return httpx.Response(500, json={"error": {"message": "boom"}})
++    return httpx.Response(200, json={"object": "list", "data": []})
++
++
++c = build_client("sk-test", transport=httpx.MockTransport(handler))
++print(c.timeout, c.max_retries, c._client.timeout)
++c.models.list()
++print("calls:", calls[0])

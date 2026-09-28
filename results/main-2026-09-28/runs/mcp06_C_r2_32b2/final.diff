@@ -1,0 +1,72 @@
+--- a/mcpcheck/inproc.py
++++ b/mcpcheck/inproc.py
+@@ -2,10 +2,22 @@
+ 
+ from __future__ import annotations
+ 
+-from typing import Any
++from mcp import Client
++from mcp.server import MCPServer
+ 
+-from mcpcheck.cases import Case, Mismatch
++from mcpcheck.cases import Case, Mismatch, compare
+ 
+ 
+-async def check_server(server: Any, cases: list[Case]) -> list[Mismatch]:
+-    raise NotImplementedError
++async def check_server(server: MCPServer, cases: list[Case]) -> list[Mismatch]:
++    """Connect to `server` in memory, call every case's tool in order and return the mismatches."""
++    mismatches: list[Mismatch] = []
++    # mode="legacy" runs the same initialize handshake and JSON-RPC session as check_command,
++    # over in-memory streams instead of a subprocess's stdio.
++    async with Client(server, mode="legacy") as client:
++        session = client.session
++        for case in cases:
++            result = await session.call_tool(case.tool, case.arguments)
++            mismatch = compare(case, result)
++            if mismatch is not None:
++                mismatches.append(mismatch)
++    return mismatches
+--- /dev/null
++++ b/tests/test_inproc.py
+@@ -0,0 +1,40 @@
++from pathlib import Path
++
++import anyio
++from mcp.server import MCPServer
++
++from mcpcheck.cases import Case, Mismatch, load_cases
++from mcpcheck.inproc import check_server
++
++EXAMPLES = Path(__file__).resolve().parent.parent / "examples" / "cases.toml"
++
++
++def make_server(greeting: str = "Hello") -> MCPServer:
++    server = MCPServer("example")
++
++    @server.tool()
++    def add(a: int, b: int) -> int:
++        return a + b
++
++    @server.tool()
++    def greet(name: str) -> str:
++        return f"{greeting}, {name}!"
++
++    return server
++
++
++def test_check_server_passes():
++    assert anyio.run(check_server, make_server(), load_cases(EXAMPLES)) == []
++
++
++def test_check_server_reports_mismatches_in_order():
++    cases = [
++        Case("greet", {"name": "Ada"}, "Hello, Ada!"),
++        Case("add", {"a": 2, "b": 3}, "6"),
++        Case("greet", {"name": "Bob"}, "Hello, Bob!"),
++    ]
++    assert anyio.run(check_server, make_server("Hi"), cases) == [
++        Mismatch(cases[0], "Hi, Ada!"),
++        Mismatch(cases[1], "5"),
++        Mismatch(cases[2], "Hi, Bob!"),
++    ]

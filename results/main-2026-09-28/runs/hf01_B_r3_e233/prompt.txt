@@ -1,0 +1,7 @@
+Implement `complete_paragraph(endpoint_url, prompt)` in app/tgi.py.
+
+Call our self-hosted text-generation-inference (TGI) server at `endpoint_url` through
+huggingface_hub's InferenceClient text-generation API. Generate at most 200 new tokens, stop
+generation at the first blank line ("\n\n"), and return only the generated text (not the
+prompt) with trailing whitespace removed. Do not add dependencies. You can run the tests
+with `pytest`.

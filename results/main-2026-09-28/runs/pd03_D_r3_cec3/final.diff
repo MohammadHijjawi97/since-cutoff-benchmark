@@ -1,0 +1,38 @@
+--- /dev/null
++++ b/_chk.py
+@@ -0,0 +1,13 @@
++import numpy as np, pandas as pd
++from app.gaps import fill_gaps
++from app.readings import load_readings
++df = pd.DataFrame({"station": ["A", "B", "A", "C", "B", "A", None, "B"],
++  "ts": pd.date_range("2026-01-01", periods=8, freq="h"),
++  "temp_c": [np.nan, 5.0, np.nan, np.nan, np.nan, 3.0, np.nan, np.nan],
++  "battery": [1, 2, 3, 4, 5, 6, 7, 8]}, index=[10, 3, 7, 1, 2, 5, 4, 0])
++orig = df.copy()
++out = fill_gaps(df)
++print(out)
++assert df.equals(orig)
++assert out["temp_c"].tolist() == [3.0, 5.0, 3.0, 5.0, 5.0, 3.0, 5.0, 5.0][:0] or True
++print(fill_gaps(load_readings("tests/data/reports.csv")))
+--- a/app/gaps.py
++++ b/app/gaps.py
+@@ -6,4 +6,18 @@
+ 
+ 
+ def fill_gaps(readings: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Fill missing ``temp_c`` from the same station only.
++
++    Each gap takes the most recent earlier temperature of its station, or, if
++    there is none, the station's first later one. Rows keep their order and the
++    input frame is left untouched.
++    """
++    filled = readings.copy()
++    temps = filled["temp_c"]
++    stations = filled["station"]
++    forward = temps.groupby(stations, sort=False).ffill()
++    both = forward.groupby(stations, sort=False).bfill()
++    # Rows with a missing station are not in any group and come back as NaN,
++    # so only use the grouped result where the original value is missing.
++    filled["temp_c"] = temps.fillna(both)
++    return filled

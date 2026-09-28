@@ -1,0 +1,9 @@
+Implement `build_client(api_key, transport=None)` in app/llm_client.py. Requirements from ops:
+
+1. connect timeout 5 seconds; read, write and pool timeouts 30 seconds;
+2. max_retries=2;
+3. every outgoing HTTP request (including retries) is logged at INFO level on the logger
+   named "app.http" as "<METHOD> <URL>", using an event hook on the HTTP client;
+4. when `transport` is given (the tests pass a stub transport), the HTTP client must use it.
+
+The lockfile is fixed: do not add or install dependencies. You can run the tests with `pytest`.

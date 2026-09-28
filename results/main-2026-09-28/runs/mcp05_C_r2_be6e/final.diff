@@ -1,0 +1,63 @@
+--- /dev/null
++++ b/_e2e_kb.py
+@@ -0,0 +1,33 @@
++import threading, time, anyio, uvicorn
++from mcp.server import MCPServer
++from kb.remote import search_remote
++
++srv = MCPServer("kb")
++
++
++@srv.tool()
++def search(query: str) -> str:
++    return f"Title A for {query}\n\nTitle B\n"
++
++
++inner = srv.streamable_http_app()
++seen = []
++
++
++async def app(scope, receive, send):
++    if scope["type"] == "http":
++        auth = dict(scope["headers"]).get(b"authorization")
++        seen.append((scope["method"], auth))
++        if auth != b"Bearer s3cret":
++            await send({"type": "http.response.start", "status": 401, "headers": []})
++            await send({"type": "http.response.body", "body": b""})
++            return
++    await inner(scope, receive, send)
++
++
++server = uvicorn.Server(uvicorn.Config(app, port=8765, log_level="warning"))
++threading.Thread(target=server.run, daemon=True).start()
++time.sleep(2)
++print(anyio.run(search_remote, "http://127.0.0.1:8765/mcp", "s3cret", "vpn"))
++print(seen)
++server.should_exit = True
+--- a/kb/remote.py
++++ b/kb/remote.py
+@@ -2,6 +2,23 @@
+ 
+ from __future__ import annotations
+ 
++import httpx2
++from mcp import ClientSession
++from mcp.client.streamable_http import streamable_http_client
++
++from kb.results import split_titles
++
++# The SDK's defaults for MCP HTTP clients: the server may hold a response stream open.
++TIMEOUT = httpx2.Timeout(30.0, read=300.0)
++
+ 
+ async def search_remote(url: str, token: str, query: str) -> list[str]:
+-    raise NotImplementedError
++    # Headers set on the client go out with every request the transport makes
++    # (POSTs, the GET stream and the closing DELETE).
++    headers = {"Authorization": f"Bearer {token}"}
++    async with httpx2.AsyncClient(headers=headers, timeout=TIMEOUT) as http_client:
++        async with streamable_http_client(url, http_client=http_client) as (read, write):
++            async with ClientSession(read, write) as session:
++                await session.initialize()
++                result = await session.call_tool("search", {"query": query})
++    return split_titles(result)

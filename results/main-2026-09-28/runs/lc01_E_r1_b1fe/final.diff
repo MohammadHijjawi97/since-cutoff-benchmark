@@ -1,0 +1,62 @@
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,16 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    """Numbered "[n] <source>" entries, one per source, for the answer prompt."""
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    seen: set[str] = set()
++    entries: list[str] = []
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)
+--- /dev/null
++++ b/tests/test_context.py
+@@ -0,0 +1,39 @@
++from langchain_core.documents import Document
++from langchain_core.tracers.context import collect_runs
++
++from app.context import MAX_SOURCES, TRACE_TAG, build_context
++from app.kb import KeywordRetriever
++
++
++def doc(text, source):
++    return Document(page_content=text, metadata={"source": source})
++
++
++def test_one_entry_per_source_in_retriever_order():
++    docs = [
++        doc("  vpn vpn setup \n", "vpn.md"),
++        doc("vpn again", "vpn.md"),
++        doc("vpn printer", "printer.md"),
++    ]
++    retriever = KeywordRetriever(docs=docs)
++    assert build_context(retriever, "vpn setup") == (
++        "[1] vpn.md\nvpn vpn setup\n\n[2] printer.md\nvpn printer"
++    )
++
++
++def test_caps_at_max_sources():
++    docs = [doc(f"word {i}", f"{i}.md") for i in range(MAX_SOURCES + 2)]
++    context = build_context(KeywordRetriever(docs=docs, k=10), "word")
++    assert context.count("\n\n") == MAX_SOURCES - 1
++    assert f"[{MAX_SOURCES + 1}]" not in context
++
++
++def test_empty_when_nothing_found():
++    assert build_context(KeywordRetriever(docs=[doc("vpn", "vpn.md")]), "kubernetes") == ""
++
++
++def test_lookup_carries_trace_tag():
++    with collect_runs() as runs:
++        build_context(KeywordRetriever(docs=[doc("vpn", "vpn.md")]), "vpn")
++    assert len(runs.traced_runs) == 1
++    assert TRACE_TAG in runs.traced_runs[0].tags

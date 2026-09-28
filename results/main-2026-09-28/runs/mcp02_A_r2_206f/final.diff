@@ -1,0 +1,144 @@
+--- /dev/null
++++ b/.scratch/check.py
+@@ -0,0 +1,41 @@
++import anyio
++from mcp.client.client import Client
++from mcp.server.mcpserver.server import MCPServer
++from opsbot.calls import run_tool, ToolCallFailed
++
++srv = MCPServer("t")
++
++
++@srv.tool()
++def status(svc: str) -> dict:
++    return {"svc": svc, "up": True}
++
++
++@srv.tool()
++def count() -> int:
++    return 0
++
++
++@srv.tool(structured_output=False)
++def hello(who: str) -> str:
++    return f"hi {who}"
++
++
++@srv.tool()
++def boom() -> str:
++    raise ValueError("no such version")
++
++
++async def main():
++    async with Client(srv) as c:
++        s = c.session
++        print(repr(await run_tool(s, "status", {"svc": "api"})))
++        print(repr(await run_tool(s, "count", {})))
++        print(repr(await run_tool(s, "hello", {"who": "bob"})))
++        try:
++            await run_tool(s, "boom", {})
++        except ToolCallFailed as e:
++            print("failed:", e.tool, repr(e.message))
++
++
++anyio.run(main)
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -5,6 +5,7 @@
+ from typing import Any
+ 
+ from mcp import ClientSession
++from mcp.types import CallToolResult, TextContent
+ 
+ 
+ class ToolCallFailed(Exception):
+@@ -16,5 +17,15 @@
+         self.message = message
+ 
+ 
++def _text_of(result: CallToolResult) -> str:
++    return "\n".join(block.text for block in result.content if isinstance(block, TextContent))
++
++
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    result = await session.call_tool(name, arguments)
++    if result.is_error:
++        raise ToolCallFailed(name, _text_of(result))
++    # Structured content may be any JSON value (including falsy ones), so only None means "absent".
++    if result.structured_content is not None:
++        return result.structured_content
++    return _text_of(result)
+--- /dev/null
++++ b/tests/test_calls.py
+@@ -0,0 +1,70 @@
++from typing_extensions import TypedDict
++
++import anyio
++import pytest
++from mcp.client.client import Client
++from mcp.server.mcpserver.exceptions import ToolError
++from mcp.server.mcpserver.server import MCPServer
++from mcp.types import CallToolResult, TextContent
++
++from opsbot.calls import ToolCallFailed, run_tool
++
++server = MCPServer("ops-test")
++
++
++class Status(TypedDict):
++    service: str
++    up: bool
++
++
++@server.tool()
++def status(service: str) -> Status:
++    return {"service": service, "up": True}
++
++
++@server.tool()
++def pending() -> CallToolResult:
++    return CallToolResult(content=[TextContent(text="nothing pending")], structured_content=0)
++
++
++@server.tool()
++def greet(who: str) -> CallToolResult:
++    return CallToolResult(content=[TextContent(text="hi"), TextContent(text=who)])
++
++
++@server.tool()
++def deploy(version: str) -> str:
++    raise ToolError("no such version")
++
++
++def call(name, arguments):
++    # Catch inside the client context: exceptions leaving it get wrapped in an ExceptionGroup.
++    async def go():
++        async with Client(server) as client:
++            try:
++                return await run_tool(client.session, name, arguments), None
++            except ToolCallFailed as exc:
++                return None, exc
++
++    value, exc = anyio.run(go)
++    if exc is not None:
++        raise exc
++    return value
++
++
++def test_returns_structured_output():
++    assert call("status", {"service": "api"}) == {"service": "api", "up": True}
++
++
++def test_returns_falsy_structured_output():
++    assert call("pending", {}) == 0
++
++
++def test_joins_text_blocks_without_structured_output():
++    assert call("greet", {"who": "ops"}) == "hi\nops"
++
++
++def test_raises_when_tool_fails():
++    with pytest.raises(ToolCallFailed) as info:
++        call("deploy", {"version": "9.9.9"})
++    assert (info.value.tool, info.value.message) == ("deploy", "Error executing tool deploy: no such version")

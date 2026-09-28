@@ -1,0 +1,47 @@
+--- a/app/gaps.py
++++ b/app/gaps.py
+@@ -6,4 +6,19 @@
+ 
+ 
+ def fill_gaps(readings: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Fill missing ``temp_c`` values from the same station only.
++
++    Each gap takes the most recent earlier temperature of its station, or the
++    first later one when the station has no earlier temperature. Stations with
++    no temperatures at all keep their gaps, as do reports without a station.
++    Rows keep their order and index, and the input frame is left untouched.
++    """
++    filled = readings.copy()
++    # Group by position-aligned keys so a non-unique index cannot misalign rows.
++    stations = filled["station"].to_numpy()
++    temps = filled["temp_c"].reset_index(drop=True)
++    forward = temps.groupby(stations, sort=False).ffill()
++    backward = forward.groupby(stations, sort=False).bfill()
++    # Rows without a station are not grouped; keep their original values.
++    filled["temp_c"] = temps.fillna(backward).to_numpy()
++    return filled
+--- /dev/null
++++ b/scratch_check.py
+@@ -0,0 +1,21 @@
++import numpy as np
++import pandas as pd
++
++from app.gaps import fill_gaps
++from app.readings import load_readings
++
++r = load_readings("tests/data/reports.csv")
++before = r.copy()
++print(fill_gaps(r))
++assert r.equals(before)
++
++df = pd.DataFrame(
++    {
++        "station": ["A", "B", "A", None, "C", "A", "B", None, "A"],
++        "ts": range(9),
++        "temp_c": [np.nan, 1, 2, 5, np.nan, np.nan, np.nan, np.nan, np.nan],
++        "battery": range(9),
++    },
++    index=[3, 3, 1, 1, 0, 0, 2, 2, 9],
++)
++print(fill_gaps(df))

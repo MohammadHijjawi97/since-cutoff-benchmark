@@ -1,0 +1,38 @@
+--- /dev/null
++++ b/_check_tgi.py
+@@ -0,0 +1,19 @@
++import json
++from unittest.mock import patch
++
++from huggingface_hub import InferenceClient
++
++from app.tgi import complete_paragraph
++
++seen = {}
++
++
++def fake(self, rp, stream=False):
++    seen["url"] = rp.url
++    seen["json"] = rp.json
++    return json.dumps([{"generated_text": " A paragraph.  \n\n"}]).encode()
++
++
++with patch.object(InferenceClient, "_inner_post", fake):
++    print(repr(complete_paragraph("http://localhost:8080", "Once upon")))
++print(seen)
+--- a/app/tgi.py
++++ b/app/tgi.py
+@@ -4,4 +4,12 @@
+ 
+ 
+ def complete_paragraph(endpoint_url: str, prompt: str) -> str:
+-    raise NotImplementedError
++    """Continue `prompt` up to the end of the current paragraph (first blank line)."""
++    client = InferenceClient(model=endpoint_url)
++    generated = client.text_generation(
++        prompt,
++        max_new_tokens=200,
++        stop=["\n\n"],
++        return_full_text=False,
++    )
++    return generated.rstrip()

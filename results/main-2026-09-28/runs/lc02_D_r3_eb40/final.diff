@@ -1,0 +1,11 @@
+--- a/app/summary.py
++++ b/app/summary.py
+@@ -9,4 +9,7 @@
+ 
+ 
+ def summarize_ticket(chat: BaseChatModel, ticket: Ticket) -> str:
+-    raise NotImplementedError
++    """A one-line summary of `ticket`; generation stops at the first blank line."""
++    messages = [("system", SUMMARY_PROMPT), ("human", ticket_text(ticket))]
++    reply = chat.invoke(messages, stop=["\n\n"])
++    return str(reply.text).strip()

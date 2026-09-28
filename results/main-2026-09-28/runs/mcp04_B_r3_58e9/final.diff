@@ -1,0 +1,43 @@
+--- /dev/null
++++ b/_smoke.py
+@@ -0,0 +1,29 @@
++import json
++import subprocess
++import sys
++import time
++import urllib.request
++
++proc = subprocess.Popen([sys.executable, "-m", "app.server", "--http", "--port", "8765"],
++                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
++try:
++    for _ in range(30):
++        time.sleep(1)
++        try:
++            urllib.request.urlopen("http://127.0.0.1:8765/", timeout=2)
++        except urllib.error.HTTPError:
++            break
++        except Exception:
++            continue
++    body = {"jsonrpc": "2.0", "id": 1, "method": "initialize",
++            "params": {"protocolVersion": "2025-06-18", "capabilities": {},
++                       "clientInfo": {"name": "t", "version": "1"}}}
++    req = urllib.request.Request("http://127.0.0.1:8765/mcp", method="POST", data=json.dumps(body).encode(),
++                                 headers={"Content-Type": "application/json",
++                                          "Accept": "application/json, text/event-stream"})
++    r = urllib.request.urlopen(req, timeout=10)
++    print(r.status, r.read()[:400])
++    print("still running:", proc.poll() is None)
++finally:
++    proc.kill()
++    print(proc.stdout.read().decode()[:800])
+--- a/app/server.py
++++ b/app/server.py
+@@ -26,7 +26,7 @@
+ 
+ 
+ def serve_http(host: str, port: int) -> None:
+-    raise NotImplementedError
++    build_server().run("streamable-http", host=host, port=port)
+ 
+ 
+ def main(argv: list[str] | None = None) -> None:

@@ -1,0 +1,40 @@
+--- /dev/null
++++ b/_check_tgi.py
+@@ -0,0 +1,20 @@
++import json
++from unittest import mock
++
++from huggingface_hub import InferenceClient
++
++from app.tgi import complete_paragraph
++
++captured = {}
++
++
++def fake(self, rp, stream=False):
++    captured["url"] = rp.url
++    captured["json"] = rp.json
++    return json.dumps([{"generated_text": " a sentence.\n\n"}]).encode()
++
++
++with mock.patch.object(InferenceClient, "_inner_post", fake):
++    out = complete_paragraph("http://tgi.local:8080", "Once upon a time")
++print(repr(out))
++print(captured)
+--- a/app/tgi.py
++++ b/app/tgi.py
+@@ -4,4 +4,13 @@
+ 
+ 
+ def complete_paragraph(endpoint_url: str, prompt: str) -> str:
+-    raise NotImplementedError
++    """Continue `prompt` until the first blank line, up to 200 new tokens."""
++    client = InferenceClient(model=endpoint_url)
++    generated = client.text_generation(
++        prompt,
++        max_new_tokens=200,
++        stop=["\n\n"],
++        return_full_text=False,
++    )
++    # TGI includes the matched stop sequence in the output; rstrip drops it.
++    return generated.rstrip()

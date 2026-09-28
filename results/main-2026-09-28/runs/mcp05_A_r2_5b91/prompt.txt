@@ -1,0 +1,5 @@
+Our knowledge-base MCP server is now deployed remotely. Implement `search_remote(url, token, query)`
+in kb/remote.py: connect to the MCP server at `url` over the Streamable HTTP transport, sending the
+header `Authorization: Bearer <token>` on every HTTP request, call its `search` tool with
+`{"query": query}` and return the titles the same way `search_local` in kb/local.py does. The kb CLI
+already uses it when KB_URL is set. Do not add dependencies. You can run the tests with `pytest`.

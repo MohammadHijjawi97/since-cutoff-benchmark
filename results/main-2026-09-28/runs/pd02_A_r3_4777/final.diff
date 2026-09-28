@@ -1,0 +1,63 @@
+--- a/app/report.py
++++ b/app/report.py
+@@ -5,5 +5,18 @@
+ import pandas as pd
+ 
+ 
++def _format_amount(value: object) -> str:
++    """Accounting style: 1,234.50 / (634.20) for negatives / - for zero / "" for missing."""
++    if pd.isna(value):
++        return ""
++    amount = round(float(value), 2)
++    # Anything that shows as 0.00 (including -0.0 and float noise from summing) is a zero.
++    if amount == 0:
++        return "-"
++    text = f"{abs(amount):,.2f}"
++    return f"({text})" if amount < 0 else text
++
++
+ def format_for_display(table: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Return a copy of the account x month table with every cell formatted as an accounting string."""
++    return table.map(_format_amount)
+--- /dev/null
++++ b/tests/test_report.py
+@@ -0,0 +1,38 @@
++import numpy as np
++import pandas as pd
++
++from app.ledger import load_ledger, monthly_pnl
++from app.report import format_for_display
++
++from tests.test_ledger import DATA
++
++
++def test_format_for_display_accounting_style():
++    table = pd.DataFrame(
++        {"2026-07": [12500.0, -634.2, 0.0, np.nan], "2026-08": [1234567.891, -0.0, 1e-12, -5.0]},
++        index=["A", "B", "C", "D"],
++    )
++    original = table.copy()
++
++    shown = format_for_display(table)
++
++    assert shown.loc["A", "2026-07"] == "12,500.00"
++    assert shown.loc["B", "2026-07"] == "(634.20)"
++    assert shown.loc["C", "2026-07"] == "-"
++    assert shown.loc["D", "2026-07"] == ""
++    assert shown.loc["A", "2026-08"] == "1,234,567.89"
++    assert shown.loc["B", "2026-08"] == "-"
++    assert shown.loc["C", "2026-08"] == "-"
++    assert shown.loc["D", "2026-08"] == "(5.00)"
++    pd.testing.assert_frame_equal(table, original)
++
++
++def test_format_for_display_keeps_shape_of_monthly_pnl():
++    table = monthly_pnl(load_ledger(DATA))
++    shown = format_for_display(table)
++    assert shown.index.equals(table.index)
++    assert shown.columns.equals(table.columns)
++    assert all(isinstance(v, str) for v in shown.to_numpy().ravel())
++    assert shown.loc["Revenue", "2026-07"] == "12,500.00"
++    assert shown.loc["Salaries", "2026-08"] == "(8,200.00)"
++    assert shown.loc["Travel", "2026-07"] == ""

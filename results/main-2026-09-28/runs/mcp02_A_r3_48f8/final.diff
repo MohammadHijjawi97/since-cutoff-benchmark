@@ -1,0 +1,73 @@
+--- /dev/null
++++ b/_smoke.py
+@@ -0,0 +1,42 @@
++import anyio
++from mcp.client.client import Client
++from mcp.server.mcpserver import MCPServer
++from mcp.server.mcpserver.exceptions import ToolError
++from opsbot.calls import run_tool, ToolCallFailed
++
++srv = MCPServer("t")
++
++
++@srv.tool()
++def status(service: str) -> dict:
++    return {"service": service, "up": True}
++
++
++@srv.tool()
++def zero() -> int:
++    return 0
++
++
++@srv.tool(structured_output=False)
++def hello(name: str) -> str:
++    return f"hi {name}"
++
++
++@srv.tool()
++def boom() -> str:
++    raise ToolError("no such version")
++
++
++async def main():
++    async with Client(srv) as c:
++        s = c.session
++        print(repr(await run_tool(s, "status", {"service": "api"})))
++        print(repr(await run_tool(s, "zero", {})))
++        print(repr(await run_tool(s, "hello", {"name": "x"})))
++        try:
++            await run_tool(s, "boom", {})
++        except ToolCallFailed as e:
++            print("raised:", repr(e.tool), repr(e.message))
++
++
++anyio.run(main)
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -5,6 +5,7 @@
+ from typing import Any
+ 
+ from mcp import ClientSession
++from mcp.types import CallToolResult, TextContent
+ 
+ 
+ class ToolCallFailed(Exception):
+@@ -16,5 +17,16 @@
+         self.message = message
+ 
+ 
++def _text(result: CallToolResult) -> str:
++    return "\n".join(block.text for block in result.content if isinstance(block, TextContent))
++
++
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    """Call tool `name` and return its structured output, or else its text."""
++    result = await session.call_tool(name, arguments)
++    if result.is_error:
++        raise ToolCallFailed(name, _text(result))
++    # Any JSON value can be structured output (including 0, "" or []), so test for None.
++    if result.structured_content is not None:
++        return result.structured_content
++    return _text(result)

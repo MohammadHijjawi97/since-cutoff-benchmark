@@ -1,0 +1,10 @@
+Implement `draft_reply(client, ticket)` in app/drafts.py. Like `suggest_tag`, use the
+Responses API: model `DRAFT_MODEL`, `STYLE_GUIDE` as the instructions, and the ticket's
+subject and body as the input. Cap the reply at `MAX_DRAFT_TOKENS` output tokens, don't let
+OpenAI store the response, and attach the ticket id as request metadata under the key
+"ticket_id".
+
+Return a `Draft`: `text` is the reply text without surrounding whitespace, and `truncated` is
+True only when the reply was cut off because it hit the output-token cap.
+
+Do not add dependencies. You can run the tests with `pytest`.

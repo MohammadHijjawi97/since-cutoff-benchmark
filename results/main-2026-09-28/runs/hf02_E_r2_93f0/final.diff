@@ -1,0 +1,80 @@
+--- a/app/publish.py
++++ b/app/publish.py
+@@ -21,5 +21,22 @@
+     return info.commit_url
+ 
+ 
+-def publish_run(run_dir: str | Path, repo_id: str) -> None:
+-    raise NotImplementedError
++RUN_IGNORE_PATTERNS = ["*.tmp", "wandb/*"]  # fnmatch-style: `*` also matches across `/`
++
++
++def publish_run(run_dir: str | Path, repo_id: str, api: HfApi | None = None) -> None:
++    """Mirror `run_dir` at the root of the private dataset repo `repo_id`, creating the repo if needed.
++
++    With `hf_xet` installed (a huggingface_hub dependency), `upload_folder` commits large folders in
++    several batches and resumes an interrupted upload when called again, skipping files already on the Hub.
++    """
++    api = api or HfApi()
++    run_dir = Path(run_dir)
++    api.create_repo(repo_id=repo_id, repo_type="dataset", private=True, exist_ok=True)
++    api.upload_folder(
++        repo_id=repo_id,
++        repo_type="dataset",
++        folder_path=run_dir,
++        ignore_patterns=list(RUN_IGNORE_PATTERNS),
++        commit_message=f"Upload run {run_dir.name}",
++    )
+--- a/tests/test_publish.py
++++ b/tests/test_publish.py
+@@ -1,6 +1,8 @@
+ from types import SimpleNamespace
+ 
+-from app.publish import SUMMARIES_REPO, publish_summary
++from huggingface_hub.utils import filter_repo_objects
++
++from app.publish import RUN_IGNORE_PATTERNS, SUMMARIES_REPO, publish_run, publish_summary
+ 
+ 
+ class RecordingApi:
+@@ -10,6 +12,40 @@
+     def upload_file(self, **kwargs):
+         self.calls.append(kwargs)
+         return SimpleNamespace(commit_url="https://huggingface.co/datasets/acme-ml/run-summaries/commit/abc")
++
++    def create_repo(self, **kwargs):
++        self.calls.append(("create_repo", kwargs))
++
++    def upload_folder(self, **kwargs):
++        self.calls.append(("upload_folder", kwargs))
++
++
++def test_publish_run_creates_private_dataset_and_uploads_folder_at_root(tmp_path):
++    run = tmp_path / "run-0007"
++    run.mkdir()
++    api = RecordingApi()
++
++    publish_run(run, "acme-ml/run-0007", api=api)
++
++    (create_name, create), (upload_name, upload) = api.calls
++    assert create_name == "create_repo" and upload_name == "upload_folder"
++    assert create == {"repo_id": "acme-ml/run-0007", "repo_type": "dataset", "private": True, "exist_ok": True}
++    assert upload["repo_id"] == "acme-ml/run-0007" and upload["repo_type"] == "dataset"
++    assert upload["folder_path"] == run and upload.get("path_in_repo") is None
++    assert upload["ignore_patterns"] == RUN_IGNORE_PATTERNS
++
++
++def test_run_ignore_patterns_skip_tmp_files_and_wandb():
++    paths = [
++        "metrics.json",
++        "checkpoints/step-100/model.safetensors",
++        "checkpoints/step-100/model.safetensors.tmp",
++        "shard.tmp",
++        "wandb/run-1/files/output.log",
++        "data/wandb.json",
++    ]
++    kept = list(filter_repo_objects(paths, ignore_patterns=RUN_IGNORE_PATTERNS))
++    assert kept == ["metrics.json", "checkpoints/step-100/model.safetensors", "data/wandb.json"]
+ 
+ 
+ def test_publish_summary_uploads_into_the_run_folder(tmp_path):

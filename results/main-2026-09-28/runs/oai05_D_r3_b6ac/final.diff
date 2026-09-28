@@ -1,0 +1,66 @@
+--- a/app/llm_client.py
++++ b/app/llm_client.py
+@@ -2,10 +2,31 @@
+ 
+ import logging
+ 
+-from openai import OpenAI
++import httpx
++from openai import DefaultHttpxClient, OpenAI
+ 
+ logger = logging.getLogger("app.http")
+ 
++TIMEOUT = httpx.Timeout(30.0, connect=5.0)
++MAX_RETRIES = 2
++
++
++def _log_request(request: httpx.Request) -> None:
++    logger.info("%s %s", request.method, request.url)
++
+ 
+ def build_client(api_key: str, transport=None) -> OpenAI:
+-    raise NotImplementedError
++    http_client_kwargs = {
++        "timeout": TIMEOUT,
++        "event_hooks": {"request": [_log_request]},
++    }
++    if transport is not None:
++        http_client_kwargs["transport"] = transport
++
++    return OpenAI(
++        api_key=api_key,
++        # The SDK passes its own timeout on every request, so set it here too.
++        timeout=TIMEOUT,
++        max_retries=MAX_RETRIES,
++        http_client=DefaultHttpxClient(**http_client_kwargs),
++    )
+--- /dev/null
++++ b/tests/test_llm_client.py
+@@ -0,0 +1,27 @@
++import logging
++
++import httpx
++
++from app.llm_client import build_client
++
++
++def test_build_client_retries_logs_and_timeouts(caplog, monkeypatch):
++    monkeypatch.setattr("time.sleep", lambda _: None)
++    seen = []
++
++    def handler(request):
++        seen.append(request)
++        if len(seen) < 3:
++            return httpx.Response(500, json={})
++        return httpx.Response(200, json={"object": "list", "data": []})
++
++    client = build_client("test-key", transport=httpx.MockTransport(handler))
++
++    with caplog.at_level(logging.INFO, logger="app.http"):
++        client.models.list()
++
++    assert client.max_retries == 2
++    assert len(seen) == 3
++    assert seen[0].extensions["timeout"] == {"connect": 5.0, "read": 30.0, "write": 30.0, "pool": 30.0}
++    messages = [r.getMessage() for r in caplog.records if r.name == "app.http"]
++    assert messages == ["GET https://api.openai.com/v1/models"] * 3

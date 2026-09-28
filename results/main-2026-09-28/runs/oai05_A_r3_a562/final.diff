@@ -1,0 +1,71 @@
+--- a/app/llm_client.py
++++ b/app/llm_client.py
+@@ -2,10 +2,30 @@
+ 
+ import logging
+ 
+-from openai import OpenAI
++import httpx
++from openai import DefaultHttpxClient, OpenAI
+ 
+ logger = logging.getLogger("app.http")
+ 
++TIMEOUT = httpx.Timeout(30.0, connect=5.0)
++MAX_RETRIES = 2
++
++
++def _log_request(request: httpx.Request) -> None:
++    logger.info("%s %s", request.method, request.url)
++
+ 
+ def build_client(api_key: str, transport=None) -> OpenAI:
+-    raise NotImplementedError
++    http_client = DefaultHttpxClient(
++        timeout=TIMEOUT,
++        transport=transport,
++        event_hooks={"request": [_log_request]},
++    )
++    # The SDK sends its own timeout with every request, so it must be set here
++    # too; otherwise it would override the http client's timeout.
++    return OpenAI(
++        api_key=api_key,
++        timeout=TIMEOUT,
++        max_retries=MAX_RETRIES,
++        http_client=http_client,
++    )
+--- /dev/null
++++ b/tests/test_llm_client.py
+@@ -0,0 +1,33 @@
++import logging
++
++import httpx
++
++from app.llm_client import build_client
++
++
++def test_timeouts_and_retries():
++    client = build_client("sk-test", transport=httpx.MockTransport(lambda r: httpx.Response(200)))
++    assert client.max_retries == 2
++    for timeout in (client.timeout, client._client.timeout):
++        assert timeout.connect == 5.0
++        assert timeout.read == timeout.write == timeout.pool == 30.0
++
++
++def test_every_request_is_logged_and_uses_transport(caplog, monkeypatch):
++    monkeypatch.setattr("openai._base_client.time.sleep", lambda _: None)
++    calls = []
++
++    def handler(request):
++        calls.append(request)
++        if len(calls) < 3:
++            return httpx.Response(500, json={"error": {"message": "boom"}})
++        return httpx.Response(200, json={"object": "list", "data": []})
++
++    client = build_client("sk-test", transport=httpx.MockTransport(handler))
++    with caplog.at_level(logging.INFO, logger="app.http"):
++        client.models.list()
++
++    assert len(calls) == 3  # initial request + 2 retries, all via the stub
++    records = [r for r in caplog.records if r.name == "app.http"]
++    assert [r.levelno for r in records] == [logging.INFO] * 3
++    assert [r.getMessage() for r in records] == ["GET https://api.openai.com/v1/models"] * 3

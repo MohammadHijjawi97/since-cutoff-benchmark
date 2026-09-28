@@ -1,0 +1,50 @@
+--- a/app/report.py
++++ b/app/report.py
+@@ -5,5 +5,17 @@
+ import pandas as pd
+ 
+ 
++def _format_amount(value: float) -> str:
++    """Accounting style: 1,234.50, (634.20) for negatives, - for zero, empty for missing."""
++    if pd.isna(value):
++        return ""
++    amount = round(float(value), 2)
++    if amount == 0:
++        return "-"
++    text = f"{abs(amount):,.2f}"
++    return f"({text})" if amount < 0 else text
++
++
+ def format_for_display(table: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Return a copy of the account x month table with every cell formatted as a display string."""
++    return table.map(_format_amount).astype(object)
+--- /dev/null
++++ b/tests/test_report.py
+@@ -0,0 +1,26 @@
++import math
++
++import pandas as pd
++
++from app.report import format_for_display
++
++
++def test_format_for_display_uses_accounting_style():
++    table = pd.DataFrame(
++        {"2026-07": [12500.0, -634.2, 0.0], "2026-08": [math.nan, 1234567.891, -0.001]},
++        index=["Revenue", "Travel", "Refunds"],
++    )
++    original = table.copy()
++
++    shown = format_for_display(table)
++
++    assert shown.loc["Revenue", "2026-07"] == "12,500.00"
++    assert shown.loc["Travel", "2026-07"] == "(634.20)"
++    assert shown.loc["Refunds", "2026-07"] == "-"
++    assert shown.loc["Revenue", "2026-08"] == ""
++    assert shown.loc["Travel", "2026-08"] == "1,234,567.89"
++    assert shown.loc["Refunds", "2026-08"] == "-"
++    assert shown.index.equals(table.index)
++    assert shown.columns.equals(table.columns)
++    assert all(isinstance(cell, str) for cell in shown.to_numpy().ravel())
++    pd.testing.assert_frame_equal(table, original)

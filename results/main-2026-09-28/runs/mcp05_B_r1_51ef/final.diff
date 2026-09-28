@@ -1,0 +1,25 @@
+--- a/kb/remote.py
++++ b/kb/remote.py
+@@ -2,6 +2,21 @@
+ 
+ from __future__ import annotations
+ 
++import httpx2
++from mcp import ClientSession
++from mcp.client.streamable_http import streamable_http_client
++
++from kb.results import split_titles
++
++# The SDK's recommended timeouts: a server may hold a response stream open for a while.
++TIMEOUT = httpx2.Timeout(30.0, read=300.0)
++
+ 
+ async def search_remote(url: str, token: str, query: str) -> list[str]:
+-    raise NotImplementedError
++    headers = {"Authorization": f"Bearer {token}"}
++    async with httpx2.AsyncClient(headers=headers, timeout=TIMEOUT) as http_client:
++        async with streamable_http_client(url, http_client=http_client) as (read, write):
++            async with ClientSession(read, write) as session:
++                await session.initialize()
++                result = await session.call_tool("search", {"query": query})
++    return split_titles(result)

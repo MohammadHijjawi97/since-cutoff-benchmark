@@ -1,0 +1,45 @@
+--- a/app/server.py
++++ b/app/server.py
+@@ -26,7 +26,7 @@
+ 
+ 
+ def serve_http(host: str, port: int) -> None:
+-    raise NotImplementedError
++    build_server().run("streamable-http", host=host, port=port, streamable_http_path="/mcp")
+ 
+ 
+ def main(argv: list[str] | None = None) -> None:
+--- /dev/null
++++ b/smoke_tmp.py
+@@ -0,0 +1,31 @@
++import socket
++import subprocess
++import sys
++import time
++
++import anyio
++from mcp import ClientSession
++from mcp.client.streamable_http import streamable_http_client
++
++
++async def check():
++    async with streamable_http_client("http://127.0.0.1:8765/mcp") as streams:
++        async with ClientSession(streams[0], streams[1]) as s:
++            await s.initialize()
++            print("tools:", [t.name for t in (await s.list_tools()).tools])
++            print("stock:", (await s.call_tool("stock", {"sku": "KB-101"})).content)
++
++
++proc = subprocess.Popen([sys.executable, "-m", "app.server", "--http", "--port", "8765"])
++try:
++    for _ in range(20):
++        try:
++            socket.create_connection(("127.0.0.1", 8765)).close()
++            break
++        except OSError:
++            time.sleep(0.5)
++    anyio.run(check)
++    print("still running:", proc.poll() is None)
++finally:
++    proc.terminate()
++    proc.wait()

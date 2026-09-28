@@ -1,0 +1,71 @@
+--- a/app/publish.py
++++ b/app/publish.py
+@@ -21,5 +21,16 @@
+     return info.commit_url
+ 
+ 
+-def publish_run(run_dir: str | Path, repo_id: str) -> None:
+-    raise NotImplementedError
++def publish_run(run_dir: str | Path, repo_id: str, api: HfApi | None = None) -> None:
++    """Mirror `run_dir` at the root of the private dataset repo `repo_id`, skipping `*.tmp` and `wandb/`."""
++    api = api or HfApi()
++    api.create_repo(repo_id=repo_id, repo_type="dataset", private=True, exist_ok=True)
++    # With hf_xet installed (huggingface_hub>=2.0 replaces upload_large_folder), upload_folder commits
++    # large folders in batches and resumes an interrupted upload when re-run.
++    api.upload_folder(
++        repo_id=repo_id,
++        repo_type="dataset",
++        folder_path=Path(run_dir),
++        ignore_patterns=["*.tmp", "wandb/*"],
++        commit_message=f"Upload run {Path(run_dir).name}",
++    )
+--- a/tests/test_publish.py
++++ b/tests/test_publish.py
+@@ -1,6 +1,9 @@
++from pathlib import Path
+ from types import SimpleNamespace
+ 
+-from app.publish import SUMMARIES_REPO, publish_summary
++from huggingface_hub.utils import filter_repo_objects
++
++from app.publish import SUMMARIES_REPO, publish_run, publish_summary
+ 
+ 
+ class RecordingApi:
+@@ -10,6 +13,12 @@
+     def upload_file(self, **kwargs):
+         self.calls.append(kwargs)
+         return SimpleNamespace(commit_url="https://huggingface.co/datasets/acme-ml/run-summaries/commit/abc")
++
++    def create_repo(self, **kwargs):
++        self.calls.append({"method": "create_repo", **kwargs})
++
++    def upload_folder(self, **kwargs):
++        self.calls.append({"method": "upload_folder", **kwargs})
+ 
+ 
+ def test_publish_summary_uploads_into_the_run_folder(tmp_path):
+@@ -24,3 +33,23 @@
+     (call,) = api.calls
+     assert call["repo_id"] == SUMMARIES_REPO and call["repo_type"] == "dataset"
+     assert call["path_in_repo"] == "run-0007/summary.json"
++
++
++def test_publish_run_mirrors_the_run_folder_into_a_private_dataset(tmp_path):
++    run = tmp_path / "run-0007"
++    run.mkdir()
++    api = RecordingApi()
++
++    publish_run(run, "acme-ml/run-0007", api=api)
++
++    create, upload = api.calls
++    assert create == {"method": "create_repo", "repo_id": "acme-ml/run-0007", "repo_type": "dataset",
++                      "private": True, "exist_ok": True}
++    assert upload["method"] == "upload_folder"
++    assert upload["repo_id"] == "acme-ml/run-0007" and upload["repo_type"] == "dataset"
++    assert Path(upload["folder_path"]) == run and upload.get("path_in_repo") in (None, "")
++
++    files = ["metrics.json", "ckpt/step-1/model.safetensors", "ckpt/step-1/model.safetensors.tmp",
++             "data/shard-0.tmp", "wandb/run-1/files/output.log", "wandb/debug.log"]
++    kept = list(filter_repo_objects(files, ignore_patterns=upload["ignore_patterns"]))
++    assert kept == ["metrics.json", "ckpt/step-1/model.safetensors"]

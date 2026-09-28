@@ -1,0 +1,68 @@
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,15 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    seen: set[str] = set()
++    entries: list[str] = []
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)
+--- /dev/null
++++ b/tests/test_context.py
+@@ -0,0 +1,46 @@
++from pathlib import Path
++
++from langchain_core.documents import Document
++
++from app.context import MAX_SOURCES, TRACE_TAG, build_context
++from app.kb import KeywordRetriever, load_notes
++
++NOTES = Path(__file__).parent / "data" / "notes"
++
++
++class TagRecordingRetriever(KeywordRetriever):
++    seen_tags: list = []
++
++    def _get_relevant_documents(self, query, *, run_manager):
++        self.seen_tags.append(list(run_manager.tags))
++        return super()._get_relevant_documents(query, run_manager=run_manager)
++
++
++def doc(text, source):
++    return Document(page_content=text, metadata={"source": source})
++
++
++def test_dedupes_limits_and_formats():
++    docs = [
++        doc("  alpha one \n", "x.md"),
++        doc("alpha two", "x.md"),
++        doc("alpha three", "y.md"),
++        doc("alpha four", "z.md"),
++        doc("alpha five", "w.md"),
++    ]
++    retriever = KeywordRetriever(docs=docs, k=5)
++    assert MAX_SOURCES == 3
++    assert build_context(retriever, "alpha") == (
++        "[1] x.md\nalpha one\n\n[2] y.md\nalpha three\n\n[3] z.md\nalpha four"
++    )
++
++
++def test_empty_when_nothing_found():
++    retriever = KeywordRetriever(docs=load_notes(NOTES))
++    assert build_context(retriever, "kubernetes") == ""
++
++
++def test_lookup_carries_trace_tag():
++    retriever = TagRecordingRetriever(docs=load_notes(NOTES), seen_tags=[])
++    build_context(retriever, "vpn")
++    assert len(retriever.seen_tags) == 1 and TRACE_TAG in retriever.seen_tags[0]

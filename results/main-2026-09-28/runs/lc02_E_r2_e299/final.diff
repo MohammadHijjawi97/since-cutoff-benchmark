@@ -1,0 +1,51 @@
+--- a/app/summary.py
++++ b/app/summary.py
+@@ -3,10 +3,18 @@
+ from __future__ import annotations
+ 
+ from langchain_core.language_models import BaseChatModel
++from langchain_core.messages import HumanMessage, SystemMessage
+ 
+ from app.prompts import SUMMARY_PROMPT
+ from app.tickets import Ticket, ticket_text
+ 
+ 
+ def summarize_ticket(chat: BaseChatModel, ticket: Ticket) -> str:
+-    raise NotImplementedError
++    """A one-line summary of `ticket`; generation stops at the first blank line.
++
++    `.text` is used rather than `.content`, since some chat models reply with a list of content
++    blocks instead of a plain string.
++    """
++    messages = [SystemMessage(content=SUMMARY_PROMPT), HumanMessage(content=ticket_text(ticket))]
++    reply = chat.invoke(messages, stop=["\n\n"])
++    return str(reply.text).strip()
+--- /dev/null
++++ b/tests/test_tmp_summary.py
+@@ -0,0 +1,26 @@
++from typing import Any
++
++from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
++from langchain_core.messages import AIMessage
++
++from app.prompts import SUMMARY_PROMPT
++from app.summary import summarize_ticket
++from app.tickets import Ticket, ticket_text
++
++
++class Recording(GenericFakeChatModel):
++    calls: list = []
++
++    def _generate(self, messages, stop=None, run_manager=None, **kwargs: Any):
++        self.calls.append((messages, stop))
++        return super()._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
++
++
++def test_summary():
++    ticket = Ticket(id=1, customer="Acme", subject="x", body="y")
++    chat = Recording(messages=iter([AIMessage(content=[{"type": "text", "text": "  Login broken \n"}])]))
++    assert summarize_ticket(chat, ticket) == "Login broken"
++    (messages, stop), = chat.calls
++    assert stop == ["\n\n"]
++    assert [m.type for m in messages] == ["system", "human"]
++    assert messages[0].content == SUMMARY_PROMPT and messages[1].content == ticket_text(ticket)

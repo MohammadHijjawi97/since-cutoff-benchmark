@@ -1,0 +1,42 @@
+--- a/app/gaps.py
++++ b/app/gaps.py
+@@ -6,4 +6,14 @@
+ 
+ 
+ def fill_gaps(readings: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Fill missing ``temp_c`` values from the same station only.
++
++    Each gap takes the most recent earlier temperature of its station, or failing that the
++    station's first later one. Stations with no temperatures at all, and rows without a
++    station, keep their gaps. The input frame is not modified.
++    """
++    filled = readings.copy()
++    temps = filled["temp_c"].groupby(filled["station"], sort=False)
++    from_station = temps.ffill().fillna(temps.bfill())
++    filled["temp_c"] = filled["temp_c"].fillna(from_station)
++    return filled
+--- /dev/null
++++ b/chk_tmp.py
+@@ -0,0 +1,21 @@
++import numpy as np
++import pandas as pd
++
++from app.gaps import fill_gaps
++
++df = pd.DataFrame(
++    {
++        "station": ["A", "B", "A", "C", "B", "A", None, "B", "A"],
++        "ts": pd.date_range("2026-01-01", periods=9, freq="h"),
++        "temp_c": [np.nan, 5.0, 1.0, np.nan, np.nan, np.nan, np.nan, 7.0, 3.0],
++        "battery": [9, 8, 7, 6, 5, 4, 3, 2, 1],
++    },
++    index=[5, 5, 3, 2, 1, 0, 9, 9, 9],
++)
++orig = df.copy()
++out = fill_gaps(df)
++print(out)
++pd.testing.assert_frame_equal(df, orig)
++assert out["temp_c"].tolist()[:6] == [1.0, 5.0, 1.0, out["temp_c"].iloc[3], 5.0, 1.0]
++assert pd.isna(out["temp_c"].iloc[3]) and pd.isna(out["temp_c"].iloc[6])
++print("ok")

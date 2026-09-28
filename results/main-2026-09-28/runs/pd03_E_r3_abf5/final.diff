@@ -1,0 +1,59 @@
+--- a/app/gaps.py
++++ b/app/gaps.py
+@@ -6,4 +6,13 @@
+ 
+ 
+ def fill_gaps(readings: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Fill missing temperatures from the same station only.
++
++    A gap takes the station's most recent earlier temperature, or its first later one
++    when there is none earlier. Stations without any temperature keep their gaps.
++    """
++    filled = readings.copy()
++    by_station = filled.groupby("station", sort=False)["temp_c"]
++    # fillna keeps existing values, including on rows without a station (which groupby drops).
++    filled["temp_c"] = filled["temp_c"].fillna(by_station.ffill()).fillna(by_station.bfill())
++    return filled
+--- /dev/null
++++ b/tests/test_gaps.py
+@@ -0,0 +1,39 @@
++import numpy as np
++import pandas as pd
++
++from app.gaps import fill_gaps
++
++
++def make_readings():
++    return pd.DataFrame(
++        {
++            "station": ["A", "B", "A", "C", "B", "A", None, "A"],
++            "ts": pd.date_range("2026-01-01", periods=8, freq="h"),
++            "temp_c": [np.nan, 5.0, 1.0, np.nan, np.nan, np.nan, 7.0, 2.0],
++            "battery": [1, 2, 3, 4, 5, 6, 7, 8],
++        },
++        index=[5, 5, 3, 2, 1, 0, 9, 8],
++    )
++
++
++def test_fills_within_station_only():
++    out = fill_gaps(make_readings())
++    temps = out["temp_c"].tolist()
++    # A's first gap takes its first later value; later gaps take the most recent earlier one.
++    assert temps[:3] == [1.0, 5.0, 1.0]
++    # C has no temperatures at all, so its gap stays missing.
++    assert np.isnan(temps[3])
++    assert temps[4:] == [5.0, 1.0, 7.0, 2.0]
++
++
++def test_rows_and_other_columns_unchanged():
++    readings = make_readings()
++    out = fill_gaps(readings)
++    assert list(out.index) == list(readings.index)
++    pd.testing.assert_frame_equal(out.drop(columns="temp_c"), readings.drop(columns="temp_c"))
++
++
++def test_input_not_modified():
++    readings = make_readings()
++    fill_gaps(readings)
++    pd.testing.assert_frame_equal(readings, make_readings())

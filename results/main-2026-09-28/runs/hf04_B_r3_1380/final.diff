@@ -1,0 +1,89 @@
+--- a/app/network.py
++++ b/app/network.py
+@@ -2,14 +2,49 @@
+ 
+ import logging
+ 
+-from huggingface_hub import HfApi
++import httpx2
++from huggingface_hub import HfApi, set_client_factory
++from huggingface_hub.utils._http import hf_request_event_hook
+ 
+ logger = logging.getLogger("app.network")
+ 
++TIMEOUT = httpx2.Timeout(60.0, connect=5.0)
++JOB_HEADERS = {"X-Acme-Job": "nightly-sync"}
++
++
++class _HubClient(httpx2.Client):
++    """Client whose timeouts cannot be switched off by huggingface_hub's `timeout=None` arguments.
++
++    Many HfApi methods (e.g. `model_info`) forward their `timeout=None` default to the request, which httpx
++    reads as "no timeout at all". Treat it as "use the client's timeout" instead.
++    """
++
++    def build_request(self, *args, timeout=httpx2.USE_CLIENT_DEFAULT, **kwargs):
++        if timeout is None:
++            timeout = httpx2.USE_CLIENT_DEFAULT
++        return super().build_request(*args, timeout=timeout, **kwargs)
++
+ 
+ def configure_hub_http(transport=None) -> None:
+-    raise NotImplementedError
++    def client_factory() -> httpx2.Client:
++        # Mirrors huggingface_hub's default_client_factory (event hook for offline mode, request ids, debug
++        # logging; redirects) and adds our timeouts and job header. Per-request headers built by
++        # huggingface_hub (user agent, auth) are merged on top of these client headers.
++        return _HubClient(
++            event_hooks={"request": [hf_request_event_hook]},
++            follow_redirects=True,
++            timeout=TIMEOUT,
++            headers=JOB_HEADERS,
++            transport=transport,
++        )
++
++    # Closes any existing shared session; the next request creates the client from this factory.
++    set_client_factory(client_factory)
+ 
+ 
+ def current_revision(repo_id: str) -> str | None:
+-    raise NotImplementedError
++    try:
++        return HfApi().model_info(repo_id, revision="main").sha
++    except (httpx2.ConnectError, httpx2.TimeoutException) as e:
++        logger.warning("Could not reach the Hugging Face Hub to get the revision of %s: %s", repo_id, e)
++        return None
+--- /dev/null
++++ b/scratch_check.py
+@@ -0,0 +1,31 @@
++import logging
++
++import httpx2
++from huggingface_hub.errors import RepositoryNotFoundError
++
++from app.network import configure_hub_http, current_revision
++
++logging.basicConfig()
++seen = []
++
++
++def handler(req):
++    seen.append((dict(req.headers), req.extensions["timeout"], str(req.url)))
++    if "nope" in str(req.url):
++        return httpx2.Response(404, headers={"X-Error-Code": "RepoNotFound"}, request=req)
++    if "down" in str(req.url):
++        raise httpx2.ConnectError("boom", request=req)
++    if "slow" in str(req.url):
++        raise httpx2.ReadTimeout("slow", request=req)
++    return httpx2.Response(200, json={"id": "a/b", "sha": "deadbeef"}, request=req)
++
++
++configure_hub_http(httpx2.MockTransport(handler))
++print(current_revision("a/b"))
++print(seen[-1])
++print(current_revision("a/down"), current_revision("a/slow"))
++try:
++    current_revision("a/nope")
++    print("NO RAISE")
++except RepositoryNotFoundError as e:
++    print("raised", type(e).__name__)

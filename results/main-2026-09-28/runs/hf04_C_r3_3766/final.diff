@@ -1,0 +1,89 @@
+--- /dev/null
++++ b/_probe.py
+@@ -0,0 +1,33 @@
++import logging
++
++import httpx2
++import pytest
++from huggingface_hub import HfApi
++from huggingface_hub.errors import RepositoryNotFoundError
++
++from app.network import configure_hub_http, current_revision
++
++logging.basicConfig()
++seen = []
++
++
++def handler(request):
++    seen.append(request)
++    if "down" in str(request.url):
++        raise httpx2.ConnectError("boom", request=request)
++    if "slow" in str(request.url):
++        raise httpx2.ReadTimeout("slow", request=request)
++    if "missing" in str(request.url):
++        return httpx2.Response(404, headers={"X-Error-Code": "RepoNotFound"}, json={"error": "nope"})
++    return httpx2.Response(200, json={"id": "a/b", "sha": "deadbeef", "siblings": []})
++
++
++configure_hub_http(httpx2.MockTransport(handler))
++print(current_revision("a/b"))
++r = seen[-1]
++print(r.url, r.headers.get("x-acme-job"), r.headers.get("user-agent"), r.extensions["timeout"])
++HfApi().list_models(limit=1).__iter__().__next__() if False else None
++print(current_revision("a/down"), current_revision("a/slow"))
++with pytest.raises(RepositoryNotFoundError):
++    current_revision("a/missing")
++print("404 raised ok")
+--- a/app/network.py
++++ b/app/network.py
+@@ -2,14 +2,47 @@
+ 
+ import logging
+ 
+-from huggingface_hub import HfApi
++import httpx2
++from huggingface_hub import HfApi, set_client_factory
++from huggingface_hub.utils._http import hf_request_event_hook
+ 
+ logger = logging.getLogger("app.network")
+ 
++HUB_TIMEOUT = httpx2.Timeout(60.0, connect=5.0)
++JOB_HEADERS = {"X-Acme-Job": "nightly-sync"}
++
++
++def _apply_timeout(request: httpx2.Request) -> None:
++    # HfApi passes `timeout=None` per request, which would disable the client's timeouts:
++    # fill every unset component with our default, keep values a caller set explicitly.
++    requested = request.extensions.get("timeout") or {}
++    defaults = HUB_TIMEOUT.as_dict()
++    request.extensions["timeout"] = {
++        key: requested.get(key) if requested.get(key) is not None else value for key, value in defaults.items()
++    }
++
+ 
+ def configure_hub_http(transport=None) -> None:
+-    raise NotImplementedError
++    """Route every huggingface_hub request through one shared, configured HTTP client."""
++
++    def factory() -> httpx2.Client:
++        return httpx2.Client(
++            transport=transport,
++            headers=JOB_HEADERS,
++            timeout=HUB_TIMEOUT,
++            # Keep huggingface_hub's own hook (offline mode, request ids, debug logging).
++            event_hooks={"request": [hf_request_event_hook, _apply_timeout]},
++            follow_redirects=True,
++        )
++
++    # Closes any existing shared client; the next request creates one from `factory`.
++    set_client_factory(factory)
+ 
+ 
+ def current_revision(repo_id: str) -> str | None:
+-    raise NotImplementedError
++    """Commit sha of the model repo's main branch, or None when the Hub cannot be reached."""
++    try:
++        return HfApi().model_info(repo_id, revision="main").sha
++    except (httpx2.ConnectError, httpx2.TimeoutException) as err:
++        logger.warning("Could not reach the Hugging Face Hub for %s: %s", repo_id, err)
++        return None

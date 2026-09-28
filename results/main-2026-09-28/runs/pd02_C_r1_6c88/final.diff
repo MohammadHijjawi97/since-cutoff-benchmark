@@ -1,0 +1,59 @@
+--- a/app/report.py
++++ b/app/report.py
+@@ -5,5 +5,18 @@
+ import pandas as pd
+ 
+ 
++def _accounting(value: object) -> str:
++    """Format one amount in accounting style: 1,234.50 / (634.20) / - / ""."""
++    if pd.isna(value):
++        return ""
++    # Round to cents first so float noise from summing (e.g. 1e-13) shows as zero, not "(0.00)".
++    amount = round(float(value), 2)
++    if amount == 0:
++        return "-"
++    text = f"{abs(amount):,.2f}"
++    return f"({text})" if amount < 0 else text
++
++
+ def format_for_display(table: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Return a copy of the account x month table with every cell as an accounting-style string."""
++    return table.map(_accounting)
+--- /dev/null
++++ b/tests/test_report.py
+@@ -0,0 +1,34 @@
++from pathlib import Path
++
++import numpy as np
++import pandas as pd
++
++from app.ledger import load_ledger, monthly_pnl
++from app.report import format_for_display
++
++DATA = Path(__file__).parent / "data" / "ledger.csv"
++
++
++def test_format_for_display_on_ledger_table():
++    table = monthly_pnl(load_ledger(DATA))
++    before = table.copy()
++    shown = format_for_display(table)
++
++    pd.testing.assert_frame_equal(table, before)
++    assert list(shown.index) == list(table.index)
++    assert list(shown.columns) == list(table.columns)
++    assert shown.loc["Revenue", "2026-07"] == "12,500.00"
++    assert shown.loc["Salaries", "2026-08"] == "(8,200.00)"
++    assert shown.loc["Travel", "2026-07"] == ""
++    assert all(isinstance(v, str) for v in shown.to_numpy().ravel())
++
++
++def test_format_for_display_cell_rules():
++    table = pd.DataFrame(
++        {"2026-07": [12500, -634.2, 0.0, np.nan, 0.1 + 0.2 - 0.3, 1234567.891, -0.004]},
++        index=list("abcdefg"),
++    )
++    shown = format_for_display(table)
++    assert list(shown["2026-07"]) == [
++        "12,500.00", "(634.20)", "-", "", "-", "1,234,567.89", "-",
++    ]

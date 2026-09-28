@@ -1,0 +1,17 @@
+Implement `answer(client, question, history=())` in app/chat.py for the e-mail channel. It
+streams the reply to `question` (like `iter_answer`) and returns the whole text. Our link to
+the model provider is flaky, so:
+
+1. If the connection fails, or drops while the answer is streaming, retry the whole request
+   from the start, up to ATTEMPTS (3) attempts in total. Return only the text of the attempt
+   that completed, never fragments of a dropped attempt.
+2. For each failed attempt, log a WARNING on the "app.chat" logger that includes the
+   underlying network error's own message (for example "peer closed connection without
+   sending complete message body"), so ops can tell connection resets from truncated
+   responses.
+3. If every attempt fails, raise `UpstreamUnavailable` (app/errors.py).
+4. If the provider stops sending data and the request times out, do not retry: raise
+   `UpstreamTimeout` straight away.
+
+Use the client you are given as it is (its own retry settings are the caller's business).
+Do not add dependencies. You can run the tests with `pytest`.

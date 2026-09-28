@@ -1,0 +1,45 @@
+--- /dev/null
++++ b/_check_summary.py
+@@ -0,0 +1,23 @@
++from typing import Any
++
++from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
++from langchain_core.messages import AIMessage
++
++from app.summary import summarize_ticket
++from app.tickets import Ticket
++
++calls = []
++
++
++class Spy(GenericFakeChatModel):
++    def _generate(self, messages, stop=None, run_manager=None, **kw: Any):
++        calls.append((messages, stop))
++        return super()._generate(messages, stop=stop, run_manager=run_manager, **kw)
++
++
++t = Ticket(1, "Acme", "Login broken", "Nobody can log in.")
++m = Spy(messages=iter([AIMessage("  Login fails for Acme.\n"),
++                       AIMessage(content=[{"type": "text", "text": " Blocks work. "}])]))
++print(repr(summarize_ticket(m, t)), repr(summarize_ticket(m, t)))
++msgs, stop = calls[0]
++print(len(calls), [type(x).__name__ for x in msgs], stop)
+--- a/app/summary.py
++++ b/app/summary.py
+@@ -3,10 +3,15 @@
+ from __future__ import annotations
+ 
+ from langchain_core.language_models import BaseChatModel
++from langchain_core.messages import HumanMessage, SystemMessage
+ 
+ from app.prompts import SUMMARY_PROMPT
+ from app.tickets import Ticket, ticket_text
+ 
+ 
+ def summarize_ticket(chat: BaseChatModel, ticket: Ticket) -> str:
+-    raise NotImplementedError
++    """A one-sentence summary of `ticket`; generation stops at the first blank line."""
++    messages = [SystemMessage(SUMMARY_PROMPT), HumanMessage(ticket_text(ticket))]
++    reply = chat.invoke(messages, stop=["\n\n"])
++    # `.text` also handles providers that return a list of content blocks instead of a str.
++    return str(reply.text).strip()

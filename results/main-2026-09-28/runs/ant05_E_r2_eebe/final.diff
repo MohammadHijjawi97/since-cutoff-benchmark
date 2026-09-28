@@ -1,0 +1,88 @@
+--- a/app/worker.py
++++ b/app/worker.py
+@@ -8,4 +8,18 @@
+ 
+ 
+ async def triage(client: AsyncAnthropic, ticket: str) -> dict:
+-    raise NotImplementedError
++    """Classify one ticket; the budget comes from the same response, so one request per ticket."""
++    raw = await client.messages.with_raw_response.create(
++        model=MODEL,
++        max_tokens=512,
++        system=SYSTEM,
++        messages=[{"role": "user", "content": ticket}],
++    )
++    message = await raw.parse()  # AsyncAPIResponse.parse() is a coroutine
++    tokens_remaining = int(raw.headers[TOKENS_REMAINING])
++    return {
++        "answer": "".join(block.text for block in message.content if block.type == "text"),
++        "tokens_remaining": tokens_remaining,
++        "request_id": raw.headers.get("request-id"),
++        "throttle": tokens_remaining < LOW_WATERMARK,
++    }
+--- /dev/null
++++ b/tests/test_worker.py
+@@ -0,0 +1,63 @@
++import asyncio
++import json
++
++import httpx2
++from anthropic import AsyncAnthropic
++
++from app import worker
++
++
++def _run_triage(tokens_remaining: int):
++    requests = []
++
++    def handler(request: httpx2.Request) -> httpx2.Response:
++        requests.append(request)
++        return httpx2.Response(
++            200,
++            headers={worker.TOKENS_REMAINING: str(tokens_remaining), "request-id": "req_123"},
++            json={
++                "id": "msg_1",
++                "type": "message",
++                "role": "assistant",
++                "model": worker.MODEL,
++                "content": [{"type": "text", "text": "billing: refund request"}],
++                "stop_reason": "end_turn",
++                "stop_sequence": None,
++                "usage": {"input_tokens": 10, "output_tokens": 5},
++            },
++        )
++
++    async def go():
++        http_client = httpx2.AsyncClient(transport=httpx2.MockTransport(handler))
++        client = AsyncAnthropic(api_key="test", http_client=http_client, max_retries=0)
++        async with client:
++            return await worker.triage(client, "I was charged twice")
++
++    return asyncio.run(go()), requests
++
++
++def test_triage_sends_one_request_and_returns_budget():
++    result, requests = _run_triage(50_000)
++
++    assert len(requests) == 1
++    body = json.loads(requests[0].content)
++    assert body["model"] == worker.MODEL
++    assert body["max_tokens"] == 512
++    assert body["system"] == worker.SYSTEM
++    assert body["messages"] == [{"role": "user", "content": "I was charged twice"}]
++    assert result == {
++        "answer": "billing: refund request",
++        "tokens_remaining": 50_000,
++        "request_id": "req_123",
++        "throttle": False,
++    }
++
++
++def test_triage_throttles_below_low_watermark():
++    result, _ = _run_triage(worker.LOW_WATERMARK - 1)
++    assert result["throttle"] is True
++
++
++def test_triage_does_not_throttle_at_low_watermark():
++    result, _ = _run_triage(worker.LOW_WATERMARK)
++    assert result["throttle"] is False

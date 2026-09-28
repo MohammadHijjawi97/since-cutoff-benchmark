@@ -1,0 +1,13 @@
+task mcp05 (mcp05-streamable-http-client) project C:\b\runs\main-2026-09-28\mcp05_A_r3_ce17
+===== hidden tests: exit 0 in 16.0s
+$ C:\b\runs\main-2026-09-28\_grade\mcp05_A_r3_ce17\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\mcp05_A_r3_ce17\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\mcp05_A_r3_ce17\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\mcp05_A_r3_ce17\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\mcp05_A_r3_ce17\hidden.xml C:\b\runs\main-2026-09-28\_grade\mcp05_A_r3_ce17\proj\_bench_hidden
+.                                                                        [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\mcp05_A_r3_ce17\hidden.xml -
+1 passed in 12.02s
+
+===== visible tests: exit 0 in 1.7s
+$ C:\b\runs\main-2026-09-28\_grade\mcp05_A_r3_ce17\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\mcp05_A_r3_ce17\visible.xml
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\mcp05_A_r3_ce17\visible.xml -
+2 passed in 0.89s
+

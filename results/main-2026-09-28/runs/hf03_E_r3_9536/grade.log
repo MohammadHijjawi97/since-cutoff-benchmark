@@ -1,0 +1,13 @@
+task hf03 (hf03-list-models-name) project C:\b\runs\main-2026-09-28\hf03_E_r3_9536
+===== hidden tests: exit 0 in 7.1s
+$ C:\b\runs\main-2026-09-28\_grade\hf03_E_r3_9536\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\hf03_E_r3_9536\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\hf03_E_r3_9536\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\hf03_E_r3_9536\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\hf03_E_r3_9536\hidden.xml C:\b\runs\main-2026-09-28\_grade\hf03_E_r3_9536\proj\_bench_hidden
+...                                                                      [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\hf03_E_r3_9536\hidden.xml -
+3 passed in 4.58s
+
+===== visible tests: exit 0 in 1.2s
+$ C:\b\runs\main-2026-09-28\_grade\hf03_E_r3_9536\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\hf03_E_r3_9536\visible.xml
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\hf03_E_r3_9536\visible.xml -
+2 passed in 0.54s
+

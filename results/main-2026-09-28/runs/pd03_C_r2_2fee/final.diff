@@ -1,0 +1,63 @@
+--- a/app/gaps.py
++++ b/app/gaps.py
+@@ -6,4 +6,19 @@
+ 
+ 
+ def fill_gaps(readings: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Fill missing ``temp_c`` from the same station only.
++
++    A gap takes the station's most recent earlier temperature or, if there is
++    none, its first later one. Stations without any temperature keep their gaps.
++    Rows keep their order and the input frame is left untouched.
++    """
++    # Work on a fresh RangeIndex so alignment is positional even if the input
++    # index has duplicates or is not sorted.
++    temp = readings["temp_c"].reset_index(drop=True)
++    station = readings["station"].reset_index(drop=True)
++    by_station = temp.groupby(station, sort=False)
++    filled = temp.fillna(by_station.ffill()).fillna(by_station.bfill())
++
++    result = readings.copy()
++    result["temp_c"] = filled.to_numpy()
++    return result
+--- /dev/null
++++ b/tests/test_gaps.py
+@@ -0,0 +1,37 @@
++from pathlib import Path
++
++import numpy as np
++import pandas as pd
++
++from app.gaps import fill_gaps
++from app.readings import load_readings
++
++DATA = Path(__file__).parent / "data" / "reports.csv"
++
++
++def test_fills_from_same_station_only():
++    readings = load_readings(DATA)
++    before = readings.copy()
++    filled = fill_gaps(readings)
++    # A has no earlier temperature, so it takes its first later one; B takes its earlier one.
++    assert filled["temp_c"].tolist() == [11.0, 7.5, 11.0, 7.5]
++    pd.testing.assert_frame_equal(readings, before)
++    pd.testing.assert_frame_equal(filled.drop(columns="temp_c"), before.drop(columns="temp_c"))
++
++
++def test_previous_preferred_over_next_and_station_without_values_kept():
++    readings = pd.DataFrame(
++        {
++            "station": ["A", "B", "C", "A", "A", None, "A", "C"],
++            "ts": pd.date_range("2026-09-01", periods=8, freq="5min"),
++            "temp_c": [1.0, 5.0, np.nan, np.nan, 3.0, np.nan, np.nan, np.nan],
++            "battery": range(8),
++        },
++        index=[5, 5, 3, 2, 1, 0, 9, 9],
++    )
++    before = readings.copy()
++    filled = fill_gaps(readings)
++    expected = [1.0, 5.0, np.nan, 1.0, 3.0, np.nan, 3.0, np.nan]
++    np.testing.assert_array_equal(filled["temp_c"].to_numpy(), expected)
++    assert list(filled.index) == list(readings.index)
++    pd.testing.assert_frame_equal(readings, before)

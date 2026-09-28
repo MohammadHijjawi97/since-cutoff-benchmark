@@ -1,0 +1,48 @@
+--- /dev/null
++++ b/_scratch.py
+@@ -0,0 +1,21 @@
++import io
++import pandas as pd
++from app.clean import clean_orders
++from app.load import load_orders
++
++csv = "sku,qty,note,price\n  A1 ,2, hi ,1.5\nB2,,   ,2.0\n,3,,\n"
++df = load_orders(io.StringIO(csv))
++orig = df.copy()
++print(df.dtypes.to_dict())
++out = clean_orders(df)
++print(out)
++print(out.dtypes.to_dict())
++pd.testing.assert_frame_equal(df, orig)
++
++o = pd.DataFrame({"sku": pd.Series([" x ", "", 5, None], dtype=object), "qty": [1, None, 2, 3]})
++r = clean_orders(o)
++print(r.to_dict("list"), r.dtypes.to_dict())
++
++s = pd.DataFrame({"sku": pd.array([" y", "", None], dtype="string"), "qty": pd.array([1, None, 2], dtype="Int64")})
++r = clean_orders(s)
++print(r, r.dtypes.to_dict())
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -3,5 +3,20 @@
+ import pandas as pd
+ 
+ 
++def _clean_text(s: pd.Series) -> pd.Series:
++    if pd.api.types.is_string_dtype(s.dtype) and s.dtype != object:
++        s = s.str.strip()
++    else:
++        # object columns may hold non-string values; only touch the strings
++        s = s.map(lambda v: v.strip() if isinstance(v, str) else v)
++    return s.mask(s.map(lambda v: isinstance(v, str) and v == ""))
++
++
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A copy of ``df`` with text trimmed, blank text missing and missing qty 0."""
++    out = df.copy()
++    for col in out.select_dtypes(include=["object", "string"]).columns:
++        out[col] = _clean_text(out[col])
++    if "qty" in out.columns:
++        out["qty"] = out["qty"].fillna(0)
++    return out

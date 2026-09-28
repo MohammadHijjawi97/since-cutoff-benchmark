@@ -1,0 +1,10 @@
+Implement `format_for_display(table)` in app/report.py. It gets the account x month table from
+`monthly_pnl` and must return a new table with the same index and columns in which every cell is
+a string in accounting style:
+
+- amounts with thousands separators and two decimals: 12500 -> "12,500.00";
+- negative amounts in parentheses instead of a minus sign: -634.2 -> "(634.20)";
+- zero -> "-";
+- missing -> "" (empty string).
+
+Do not modify the input table. Do not add dependencies. You can run the tests with `pytest`.

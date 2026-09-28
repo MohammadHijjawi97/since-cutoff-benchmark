@@ -1,0 +1,87 @@
+--- a/app/publish.py
++++ b/app/publish.py
+@@ -21,5 +21,23 @@
+     return info.commit_url
+ 
+ 
+-def publish_run(run_dir: str | Path, repo_id: str) -> None:
+-    raise NotImplementedError
++RUN_IGNORE_PATTERNS = ["*.tmp", "wandb/*"]  # temporary files and the local W&B cache
++
++
++def publish_run(run_dir: str | Path, repo_id: str, api: HfApi | None = None) -> None:
++    """Upload the whole `run_dir` to the root of the private dataset repo `repo_id`, creating it if needed.
++
++    Relies on `upload_folder`'s hf_xet pipeline (huggingface-hub >= 2.0, which replaced `upload_large_folder`):
++    large folders are split into several commits, and re-running after an interruption skips files already
++    committed and deduplicates data already uploaded.
++    """
++    api = api or HfApi()
++    run_dir = Path(run_dir)
++    api.create_repo(repo_id, repo_type="dataset", private=True, exist_ok=True)
++    api.upload_folder(
++        repo_id=repo_id,
++        repo_type="dataset",
++        folder_path=run_dir,
++        ignore_patterns=list(RUN_IGNORE_PATTERNS),  # copy: upload_folder extends this list in place
++        commit_message=f"Upload run {run_dir.name}",
++    )
+--- a/tests/test_publish.py
++++ b/tests/test_publish.py
+@@ -1,11 +1,19 @@
+ from types import SimpleNamespace
+ 
+-from app.publish import SUMMARIES_REPO, publish_summary
++from huggingface_hub.utils import filter_repo_objects
++
++from app.publish import SUMMARIES_REPO, publish_run, publish_summary
+ 
+ 
+ class RecordingApi:
+     def __init__(self):
+         self.calls = []
++
++    def create_repo(self, repo_id, **kwargs):
++        self.calls.append(("create_repo", repo_id, kwargs))
++
++    def upload_folder(self, **kwargs):
++        self.calls.append(("upload_folder", kwargs))
+ 
+     def upload_file(self, **kwargs):
+         self.calls.append(kwargs)
+@@ -24,3 +32,35 @@
+     (call,) = api.calls
+     assert call["repo_id"] == SUMMARIES_REPO and call["repo_type"] == "dataset"
+     assert call["path_in_repo"] == "run-0007/summary.json"
++
++
++def test_publish_run_creates_private_repo_and_uploads_folder_at_root(tmp_path):
++    run = tmp_path / "run-0007"
++    run.mkdir()
++    api = RecordingApi()
++
++    publish_run(run, "acme-ml/run-0007", api=api)
++
++    create, upload = api.calls
++    assert create == ("create_repo", "acme-ml/run-0007", {"repo_type": "dataset", "private": True, "exist_ok": True})
++    _, kwargs = upload
++    assert kwargs["repo_id"] == "acme-ml/run-0007" and kwargs["repo_type"] == "dataset"
++    assert kwargs["folder_path"] == run
++    assert kwargs.get("path_in_repo") in (None, "")
++
++
++def test_publish_run_ignore_patterns_skip_tmp_files_and_wandb(tmp_path):
++    api = RecordingApi()
++    publish_run(tmp_path, "acme-ml/run-0007", api=api)
++    _, kwargs = api.calls[1]
++
++    paths = [
++        "metrics.json",
++        "checkpoints/step-100/model.safetensors",
++        "checkpoints/step-100/model.safetensors.tmp",
++        "shard.tmp",
++        "wandb/run-1/files/output.log",
++        "data/wandb-notes.txt",
++    ]
++    kept = list(filter_repo_objects(paths, ignore_patterns=kwargs["ignore_patterns"]))
++    assert kept == ["metrics.json", "checkpoints/step-100/model.safetensors", "data/wandb-notes.txt"]

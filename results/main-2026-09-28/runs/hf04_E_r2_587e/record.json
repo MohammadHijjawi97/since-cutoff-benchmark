@@ -1,0 +1,285 @@
+{
+  "schema": "since-cutoff-bench/run@1",
+  "study_id": "main-2026-09-28",
+  "run_id": "hf04_E_r2_587e",
+  "attempt": 1,
+  "attempt_id": "hf04_E_r2_587e",
+  "task_id": "hf04-http-client-errors",
+  "task": "hf04",
+  "task_sha256": "acb254c767a1036c6de6cb6a75beb7e1780fe871818ec1f37a757c7a20906576",
+  "library": "huggingface-hub",
+  "pinned": "2.0.0",
+  "cutoff_version": "1.21.0",
+  "stratum": "post-cutoff",
+  "kind": "post-cutoff-loud",
+  "condition": "E",
+  "rep": 2,
+  "block_id": "hf04#2",
+  "order_index": 72,
+  "pilot": false,
+  "condition_config": {
+    "condition": "E",
+    "claude_md_sha256": "0a872d4c981fdde5ff5d12ed88731575a8066da873c5ad7a9fd51a9f72b45ca5",
+    "notes_sha256": null,
+    "notes_tokens": 0,
+    "notes_covered": null,
+    "mcp": "context7",
+    "mcp_config_sha256": "4f93b266a503161426401f012c0cf6a484669db9257458001bafe3f883019400",
+    "context7_key": false,
+    "settings_sha256": "08f1b1cc94823f762daa4df2882c07fe013ba553efef38ab128b5cddc95f5694",
+    "allowed_tools_extra": "mcp__context7"
+  },
+  "agent": {
+    "claude_code_version": "2.1.283",
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "argv": [
+      "C:\\Users\\Mohammad Hijjawi\\.local\\bin\\claude.exe",
+      "-p",
+      "--model",
+      "claude-opus-5-5",
+      "--effort",
+      "medium",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--max-turns",
+      "40",
+      "--max-budget-usd",
+      "3",
+      "--permission-mode",
+      "dontAsk",
+      "--tools",
+      "Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill",
+      "--settings",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\claude_settings.json",
+      "--setting-sources",
+      "project",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\mcp_context7.json",
+      "--allowedTools",
+      "mcp__context7",
+      "--no-session-persistence"
+    ],
+    "env": {
+      "ALLUSERSPROFILE": "C:\\ProgramData",
+      "APPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Roaming",
+      "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+      "CLAUDE_CODE_GIT_BASH_PATH": "C:\\Program Files\\Git\\bin\\bash.exe",
+      "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
+      "COMMONPROGRAMFILES": "C:\\Program Files\\Common Files",
+      "COMMONPROGRAMFILES(X86)": "C:\\Program Files (x86)\\Common Files",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "DISABLE_AUTOUPDATER": "1",
+      "ENABLE_TOOL_SEARCH": "false",
+      "HF_HOME": "C:\\b\\tmp\\main-2026-09-28\\hf04_E_r2_587e\\hf",
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "<set>",
+      "HOMEDRIVE": "C:",
+      "HOMEPATH": "\\Users\\Mohammad Hijjawi",
+      "LOCALAPPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Local",
+      "MCP_TIMEOUT": "60000",
+      "NUMBER_OF_PROCESSORS": "32",
+      "OS": "Windows_NT",
+      "PATH": "C:\\b\\runs\\main-2026-09-28\\hf04_E_r2_587e\\.venv\\Scripts;C:\\WINDOWS\\System32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0",
+      "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC",
+      "PROCESSOR_ARCHITECTURE": "AMD64",
+      "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+      "PROGRAMDATA": "C:\\ProgramData",
+      "PROGRAMFILES": "C:\\Program Files",
+      "PROGRAMFILES(X86)": "C:\\Program Files (x86)",
+      "PROGRAMW6432": "C:\\Program Files",
+      "PYTEST_ADDOPTS": "--allow-hosts=127.0.0.1,::1",
+      "SYSTEMDRIVE": "C:",
+      "SYSTEMROOT": "C:\\WINDOWS",
+      "TEMP": "C:\\b\\tmp\\main-2026-09-28\\hf04_E_r2_587e",
+      "TMP": "C:\\b\\tmp\\main-2026-09-28\\hf04_E_r2_587e",
+      "USERPROFILE": "C:\\Users\\Mohammad Hijjawi",
+      "VIRTUAL_ENV": "C:\\b\\runs\\main-2026-09-28\\hf04_E_r2_587e\\.venv",
+      "WINDIR": "C:\\WINDOWS"
+    },
+    "init_model": "claude-opus-5-5",
+    "init_version": "2.1.283",
+    "api_key_source": "none"
+  },
+  "harness": {
+    "code_sha256": "9227ebaf60e2e8c4855fd71792a0de25072ac71a01e5e656e03cde701a8d32a8"
+  },
+  "started_at": "2026-09-28T04:04:26+00:00",
+  "ended_at": "2026-09-28T04:06:14+00:00",
+  "wall_s": 107.8,
+  "exit": {
+    "code": 0,
+    "timed_out": false,
+    "subtype": "success",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "orphans_killed": 1
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 28,
+    "duration_ms": 106487,
+    "duration_api_ms": 89113,
+    "total_cost_usd": 0.5123294,
+    "usage": {
+      "input_tokens": 40,
+      "cache_creation_input_tokens": 30679,
+      "cache_read_input_tokens": 504187,
+      "output_tokens": 8295,
+      "output_tokens_details": {
+        "thinking_tokens": 1534
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 30679,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 782,
+          "cache_read_input_tokens": 38386,
+          "cache_creation_input_tokens": 307,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 307
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 40,
+        "outputTokens": 8295,
+        "cacheReadInputTokens": 504187,
+        "cacheCreationInputTokens": 30679,
+        "webSearchRequests": 0,
+        "costUSD": 0.5123294,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1534,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": 3,
+    "permission_denied_tools": [
+      "Bash"
+    ],
+    "terminal_reason": "completed",
+    "result_text": "Both functions are implemented in `app/network.py`. `pytest -q` passes (3 tests), but those tests don't exercise the new code, so I also checked it with a script that ran against a stub transport:\n\n- Requests carried `X-Acme-Job: nightly-sync` alongside huggingface_hub's own user agent, with timeouts of connect 5s and read/write/pool 60s.\n- A connection failure and a read timeout each logged a warning on `app.network` and returned `None`.\n- A 404 for a missing repo still raised `RepositoryNotFoundError`.\n\n**How it works**\n\n- **`configure_hub_http(transport=None)`** registers a client factory with huggingface_hub's `set_client_factory`, so every `HfApi` instance shares one client that has our timeouts, header and transport. It also re-attaches huggingface_hub's own request hook, which enforces offline mode (`HF_HUB_OFFLINE`) and adds request IDs. That hook isn't exported publicly, so I import it from `huggingface_hub.utils._http`, which could break in a future release.\n- **`current_revision(repo_id)`** returns `HfApi().model_info(repo_id, revision=\"main\").sha`. It catches only connection failures and timeouts; every other error, including HTTP errors, still raises.\n\n**A problem I had to work around:** `model_info` and several other `HfApi` methods pass `timeout=None` on each request by default. In the HTTP library huggingface_hub 2.0.0 uses (`httpx2`, not `httpx`), that turns off all timeouts rather than falling back to the client's. A normal client would therefore have ignored our 5s/60s settings. The shared client is a small subclass that treats a `None` timeout as \"use the client default\", so the timeouts always apply. A caller who passes a real timeout still gets that value.\n\n**Decision for you:** I only treat connection failures and timeouts as \"unreachable\". A connection dropped after it was established (for example a reset during the read) will still raise. If you want that returned as `None` too, I can widen the catch to `httpx2.NetworkError`.\n\nI wasn't allow"
+  },
+  "mcp": {
+    "servers": [
+      {
+        "name": "context7",
+        "status": "connected"
+      }
+    ],
+    "errors": [],
+    "calls": {
+      "query-docs": 2,
+      "resolve-library-id": 2
+    },
+    "doc_hit": true,
+    "doc_keys_found": [
+      "httpx2|Httpx2"
+    ]
+  },
+  "process": {
+    "tool_calls": {
+      "Bash": 4,
+      "Glob": 1,
+      "Grep": 8,
+      "Read": 8,
+      "Write": 2,
+      "mcp__context7__query-docs": 2,
+      "mcp__context7__resolve-library-id": 2
+    },
+    "denied_calls": 3,
+    "pytest_runs": 1,
+    "failing_pytest_runs": 0,
+    "py_edits": 2,
+    "edits_after_first_failure": 0,
+    "stale_in_first_edit": false,
+    "stale_first_edit_patterns": [],
+    "site_packages_reads": 12,
+    "introspection_cmds": 0,
+    "context7_calls": 4,
+    "context7_calls_by_tool": {
+      "query-docs": 2,
+      "resolve-library-id": 2
+    },
+    "context7_errors": 0,
+    "doc_hit": true,
+    "doc_keys_found": [
+      "httpx2|Httpx2"
+    ],
+    "skills": [],
+    "network_like_cmds": 0,
+    "network_like_examples": [],
+    "api_retries": 0,
+    "bad_stream_lines": 0,
+    "stale_in_final": false,
+    "files_changed": [
+      "app/network.py",
+      "check_network.py"
+    ]
+  },
+  "venv": {
+    "added": {},
+    "removed": {},
+    "changed": {},
+    "modified": false
+  },
+  "grade": {
+    "passed": true,
+    "hidden_passed": true,
+    "hidden": {
+      "exit_code": 0,
+      "passed": 7,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 6.15,
+      "timed_out": false
+    },
+    "visible_passed": true,
+    "visible": {
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 1.26,
+      "timed_out": false
+    },
+    "lock_modified": false,
+    "lock_changes": [],
+    "env_lock_sha256": "28be7943facacbf7cf39737c32721a3576cc7c1e29fe4f07a09586a9635c3677",
+    "grade_s": 18.7,
+    "venv_modified": false
+  },
+  "valid": true,
+  "invalid_reason": null,
+  "invalid_detail": null,
+  "artifacts": {
+    "stream": "runs/hf04_E_r2_587e/stream.jsonl",
+    "stderr": "runs/hf04_E_r2_587e/stderr.log",
+    "diff": "runs/hf04_E_r2_587e/final.diff",
+    "claude_md": "runs/hf04_E_r2_587e/CLAUDE.md",
+    "grade_log": "runs/hf04_E_r2_587e/grade.log",
+    "project": "C:\\b\\runs\\main-2026-09-28\\hf04_E_r2_587e"
+  },
+  "cleanup_errors": null
+}

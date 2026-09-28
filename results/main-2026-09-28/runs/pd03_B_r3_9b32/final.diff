@@ -1,0 +1,46 @@
+--- a/app/gaps.py
++++ b/app/gaps.py
+@@ -6,4 +6,19 @@
+ 
+ 
+ def fill_gaps(readings: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Fill missing ``temp_c`` from the same station only.
++
++    A gap takes the station's most recent earlier temperature or, if there is none, its first
++    later one. Stations without any temperature keep their gaps. Rows, order and the other
++    columns are unchanged; the input frame is not modified.
++    """
++    filled = readings.copy()
++    temps = filled.groupby("station", sort=False)["temp_c"]
++    # Combine positionally so duplicate index labels cannot cause misalignment.
++    earlier = temps.ffill().to_numpy()
++    later = temps.bfill().to_numpy()
++    temp = filled["temp_c"]
++    temp = temp.mask(temp.isna().to_numpy(), earlier)
++    temp = temp.mask(temp.isna().to_numpy(), later)
++    filled["temp_c"] = temp
++    return filled
+--- /dev/null
++++ b/chk_tmp.py
+@@ -0,0 +1,20 @@
++import numpy as np, pandas as pd
++from app.gaps import fill_gaps
++from app.readings import load_readings
++
++r = load_readings("tests/data/reports.csv"); before = r.copy()
++print(fill_gaps(r)); assert r.equals(before)
++
++df = pd.DataFrame({"station": ["A", "B", "A", "C", "A", "B", None, "A"],
++                   "ts": range(8),
++                   "temp_c": [np.nan, 1.0, 2.0, np.nan, np.nan, np.nan, np.nan, 5.0],
++                   "battery": range(8)},
++                  index=[3, 3, 1, 1, 0, 0, 9, 9])
++before = df.copy(); out = fill_gaps(df)
++print(out); assert df.equals(before)
++t = out["temp_c"].tolist()
++assert t[0] == 2.0 and t[1] == 1.0 and t[2] == 2.0 and np.isnan(t[3])
++assert t[4] == 2.0 and t[5] == 1.0 and np.isnan(t[6]) and t[7] == 5.0
++assert out.index.equals(df.index)
++assert out.drop(columns="temp_c").equals(df.drop(columns="temp_c"))
++print("ok")

@@ -1,0 +1,74 @@
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -1,7 +1,37 @@
+ """Cleaning step of the orders ETL."""
+ 
++import numpy as np
+ import pandas as pd
++from pandas.api.types import is_object_dtype, is_string_dtype
++
++
++def _clean_text_value(value):
++    if isinstance(value, str):
++        value = value.strip()
++        return np.nan if value == "" else value
++    return value
+ 
+ 
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A cleaned copy of the orders frame; the input is left untouched.
++
++    Text columns have surrounding whitespace stripped and empty strings turned
++    into missing values; missing ``qty`` values become 0.
++    """
++    out = df.copy()
++
++    for col in out.columns:
++        series = out[col]
++        if is_string_dtype(series.dtype) and not is_object_dtype(series.dtype):
++            # Dedicated string dtype (pandas' default for text): every value is a
++            # string or missing, and the column keeps its own missing marker.
++            stripped = series.str.strip()
++            out[col] = stripped.mask(stripped == "")
++        elif is_object_dtype(series.dtype):
++            # Object columns may mix strings with other values; only touch strings.
++            out[col] = series.map(_clean_text_value).astype(object)
++
++    if "qty" in out.columns:
++        out["qty"] = out["qty"].fillna(0)
++
++    return out
+--- /dev/null
++++ b/scratch/test_scratch.py
+@@ -0,0 +1,30 @@
++import pandas as pd
++from app.clean import clean_orders
++from app.load import load_orders
++
++
++def test_csv(tmp_path):
++    p = tmp_path / "o.csv"
++    p.write_text("sku,qty,note,price\n A1 ,2, hi ,1.5\n  ,, ,2\nB2,3,,\n")
++    df = load_orders(p)
++    before = df.copy()
++    out = clean_orders(df)
++    print(df.dtypes, out.dtypes, out, sep="\n")
++    pd.testing.assert_frame_equal(df, before)
++    assert out["sku"].tolist()[0] == "A1"
++    assert out["sku"].isna().tolist() == [False, True, False]
++    assert out["note"].tolist()[0] == "hi"
++    assert out["note"].isna().tolist() == [False, True, True]
++    assert out["qty"].tolist() == [2, 0, 3]
++    assert out["price"].isna().tolist() == [False, False, True]
++
++
++def test_object_mixed():
++    df = pd.DataFrame({"sku": pd.Series([" x", 5, None, "  "], dtype=object), "qty": [1, None, 2, 3]})
++    before = df.copy()
++    out = clean_orders(df)
++    print(out)
++    pd.testing.assert_frame_equal(df, before)
++    assert out["sku"].tolist()[:2] == ["x", 5]
++    assert out["sku"].isna().tolist() == [False, False, True, True]
++    assert out["qty"].tolist() == [1, 0, 2, 3]

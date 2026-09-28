@@ -1,0 +1,80 @@
+--- a/app/claude.py
++++ b/app/claude.py
+@@ -1,12 +1,30 @@
+ """Claude access for the assistant."""
+ 
+-from anthropic import Anthropic
++from anthropic import Anthropic, DefaultHttpxClient, Timeout
++
++from app.http import CONNECT_TIMEOUT, EGRESS_TAG, READ_TIMEOUT, log_egress
+ 
+ MODEL = "claude-opus-5-5"
+ 
++# anthropic 1.x runs on httpx2 and rejects httpx objects, so the egress settings from
++# app.http are rebuilt here as httpx2 objects instead of reusing build_http_client().
++CLAUDE_TIMEOUT = Timeout(READ_TIMEOUT, connect=CONNECT_TIMEOUT)
++
+ 
+ def build_claude(api_key: str, transport=None) -> Anthropic:
+-    raise NotImplementedError
++    http_kwargs = {} if transport is None else {"transport": transport}
++    http_client = DefaultHttpxClient(
++        timeout=CLAUDE_TIMEOUT,
++        headers={"X-Egress-Tag": EGRESS_TAG},
++        event_hooks={"request": [log_egress]},
++        **http_kwargs,
++    )
++    return Anthropic(
++        api_key=api_key,
++        http_client=http_client,
++        timeout=CLAUDE_TIMEOUT,
++        max_retries=2,
++    )
+ 
+ 
+ def ask(client: Anthropic, question: str) -> str:
+--- /dev/null
++++ b/tests/test_claude.py
+@@ -0,0 +1,42 @@
++import logging
++
++import httpx2
++
++from app.claude import MODEL, ask, build_claude
++from app.http import CONNECT_TIMEOUT, EGRESS_TAG, READ_TIMEOUT
++
++MESSAGES_URL = "https://api.anthropic.com/v1/messages"
++
++
++def test_claude_goes_through_the_egress_settings(caplog):
++    seen = []
++
++    def handler(request):
++        seen.append(request)
++        if len(seen) == 1:
++            return httpx2.Response(500, json={"type": "error", "error": {"type": "api_error", "message": "boom"}})
++        return httpx2.Response(
++            200,
++            json={
++                "id": "msg_1",
++                "type": "message",
++                "role": "assistant",
++                "model": MODEL,
++                "content": [{"type": "text", "text": "All good."}],
++                "stop_reason": "end_turn",
++                "stop_sequence": None,
++                "usage": {"input_tokens": 1, "output_tokens": 1},
++            },
++        )
++
++    caplog.set_level(logging.INFO, logger="app.egress")
++    client = build_claude("test-key", transport=httpx2.MockTransport(handler))
++
++    assert ask(client, "status?") == "All good."
++    assert client.max_retries == 2
++    assert len(seen) == 2
++    assert all(r.headers["x-egress-tag"] == EGRESS_TAG for r in seen)
++    timeout = seen[-1].extensions["timeout"]
++    assert timeout["connect"] == CONNECT_TIMEOUT
++    assert timeout["read"] == READ_TIMEOUT
++    assert [r.getMessage() for r in caplog.records if r.name == "app.egress"] == [f"POST {MESSAGES_URL}"] * 2

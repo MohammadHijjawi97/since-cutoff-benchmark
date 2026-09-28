@@ -1,0 +1,67 @@
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,15 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    entries: list[str] = []
++    seen: set = set()
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)
+--- /dev/null
++++ b/tests/test_context.py
+@@ -0,0 +1,45 @@
++from pathlib import Path
++
++from langchain_core.documents import Document
++
++from app.context import MAX_SOURCES, TRACE_TAG, build_context
++from app.kb import KeywordRetriever, load_notes
++
++NOTES = Path(__file__).parent / "data" / "notes"
++
++
++class TagRecordingRetriever(KeywordRetriever):
++    seen_tags: list = []
++
++    def _get_relevant_documents(self, query, *, run_manager):
++        self.seen_tags.append(list(run_manager.tags))
++        return super()._get_relevant_documents(query, run_manager=run_manager)
++
++
++def test_dedupes_sources_keeps_order_and_formats():
++    expenses, printer, vpn = load_notes(NOTES)
++    dup = Document(page_content="another vpn chunk", metadata={"source": "vpn.md"})
++    extra = Document(page_content="extra", metadata={"source": "extra.md"})
++    docs = [vpn, dup, printer, expenses, extra]
++    # Give every doc the same single matching word so the retriever keeps this order.
++    for doc in docs:
++        doc.page_content = f"  {doc.page_content}\nzzkey\n\n"
++    retriever = KeywordRetriever(docs=docs, k=10)
++    context = build_context(retriever, "zzkey")
++    entries = context.split("\n\n[")
++    assert len(entries) == MAX_SOURCES
++    assert context.startswith("[1] vpn.md\n# VPN access")
++    assert "[2] printer.md\n" in context and "[3] expenses.md\n" in context
++    assert "another vpn chunk" not in context and "extra.md" not in context
++    assert not context.endswith("\n")
++
++
++def test_empty_when_nothing_found():
++    retriever = KeywordRetriever(docs=load_notes(NOTES))
++    assert build_context(retriever, "kubernetes") == ""
++
++
++def test_lookup_carries_trace_tag():
++    retriever = TagRecordingRetriever(docs=load_notes(NOTES))
++    build_context(retriever, "vpn")
++    assert retriever.seen_tags == [[TRACE_TAG]]

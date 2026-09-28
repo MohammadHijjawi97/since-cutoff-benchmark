@@ -1,0 +1,9 @@
+Implement `ask_with_audit` in app/audit.py.
+
+Send `prompt` as a single user message to the model in `MODEL` with max_tokens=256, using the
+SDK's raw-response interface (`with_raw_response`) because the audit log must keep the exact
+HTTP body. Return a dict with:
+  "request_id": the value of the `request-id` response header,
+  "raw_body":   the HTTP response body decoded as text (the exact JSON the API returned),
+  "answer":     the concatenated text blocks of the parsed message.
+Do not add dependencies. You can run the tests with `pytest`.

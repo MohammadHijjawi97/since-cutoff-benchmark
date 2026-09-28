@@ -1,0 +1,42 @@
+--- a/app/invoices.py
++++ b/app/invoices.py
+@@ -5,12 +5,15 @@
+ in this module goes through `client.beta.messages`.
+ """
+ 
++import json
++
+ from anthropic import Anthropic
+ 
+ from app.schemas import INVOICE_SCHEMA
+ 
+ MODEL = "claude-opus-5-5"
+ FILES_BETA = "files-api-2025-04-14"
++STRUCTURED_OUTPUTS_BETA = "structured-outputs-2025-12-15"
+ 
+ 
+ def invoice_block(file_id: str) -> dict:
+@@ -39,4 +42,22 @@
+ 
+ def extract_invoice(client: Anthropic, file_id: str) -> dict:
+     """The invoice's fields as one ledger import row (see INVOICE_SCHEMA)."""
+-    raise NotImplementedError
++    message = client.beta.messages.create(
++        model=MODEL,
++        max_tokens=1024,
++        betas=[FILES_BETA, STRUCTURED_OUTPUTS_BETA],
++        output_config={"format": {"type": "json_schema", "schema": INVOICE_SCHEMA}},
++        messages=[
++            {
++                "role": "user",
++                "content": [
++                    invoice_block(file_id),
++                    {"type": "text", "text": "Extract this invoice's fields for the ledger import."},
++                ],
++            }
++        ],
++    )
++    # A refusal or a cut-off reply is not guaranteed to match the schema.
++    if message.stop_reason != "end_turn":
++        raise RuntimeError(f"invoice extraction stopped early: {message.stop_reason}")
++    return json.loads("".join(block.text for block in message.content if block.type == "text"))

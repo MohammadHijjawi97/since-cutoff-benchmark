@@ -1,0 +1,86 @@
+--- /dev/null
++++ b/_check_fakes.py
+@@ -0,0 +1,28 @@
++import time
++
++t0 = time.perf_counter()
++import openai
++from app import digest
++from tests.fakes import mock_openai
++
++print("imports", round(time.perf_counter() - t0, 2))
++
++before = openai.OpenAI(api_key="k", max_retries=0, timeout=3)
++digest.get_client()  # cache it before the block too
++msgs = [{"role": "user", "content": "hi"}]
++t0 = time.perf_counter()
++with mock_openai("a", "b", "c") as seen:
++    print(before.chat.completions.create(model="m", messages=msgs).choices[0].message.content)
++    inside = openai.OpenAI(api_key="k", max_retries=0)
++    print(inside.chat.completions.create(model="m", messages=msgs).choices[0].message.content)
++    print(digest.summarize("t"))
++    try:
++        before.chat.completions.create(model="m", messages=msgs)
++    except openai.BadRequestError as e:
++        print("exhausted ->", e.status_code)
++print("seen", len(seen), "block time", round(time.perf_counter() - t0, 2))
++try:
++    before.chat.completions.create(model="m", messages=msgs)
++    print("AFTER: still intercepted!")
++except openai.APIConnectionError as e:
++    print("after block -> real network attempted:", type(e).__name__)
+--- a/tests/fakes.py
++++ b/tests/fakes.py
+@@ -7,9 +7,44 @@
+ from typing import Iterator
+ 
+ import httpx
++import httpx2
+ import respx
++from respx.mocks import AbstractRequestMocker
+ 
+ OPENAI_BASE_URL = "https://api.openai.com/v1"
++HTTPX2_MOCKER = "tests.fakes:httpx2"
++
++
++class HTTPX2TransportMocker(AbstractRequestMocker):
++    """Lets respx routers answer requests sent through `httpx2`, which the openai SDK uses since 3.x.
++
++    respx only patches `httpx` and `httpcore`, so without this the SDK's requests bypass the router
++    and go to the network. Patching the transport class (not a client) also covers clients created
++    before the router started, and respx removes the patch when the router stops.
++    """
++
++    name = HTTPX2_MOCKER
++    targets = ["httpx2._transports.default.HTTPTransport"]
++    target_methods = ["handle_request"]
++
++    @classmethod
++    def to_httpx_request(cls, **kwargs):
++        request: httpx2.Request = kwargs["request"]
++        # Reading replaces a one-shot body stream with a replayable one, for pass-through.
++        content = request.read()
++        return httpx.Request(request.method, str(request.url), headers=request.headers.raw, content=content)
++
++    @classmethod
++    def prepare_sync_request(cls, httpx_request, **kwargs):
++        return httpx_request, kwargs
++
++    @classmethod
++    def from_sync_httpx_response(cls, httpx_response, target, **kwargs):
++        return httpx2.Response(
++            httpx_response.status_code,
++            headers=httpx_response.headers.raw,
++            content=httpx_response.read(),
++        )
+ 
+ 
+ def chat_completion(text: str, model: str = "gpt-5.5-mini") -> dict:
+@@ -53,6 +88,6 @@
+             return httpx.Response(400, json={"error": error})
+         return httpx.Response(200, json=chat_completion(pending.pop(0), body.get("model", "")))
+ 
+-    with respx.mock(base_url=OPENAI_BASE_URL, assert_all_called=False) as router:
++    with respx.mock(base_url=OPENAI_BASE_URL, assert_all_called=False, using=HTTPX2_MOCKER) as router:
+         router.post("/chat/completions").mock(side_effect=answer)
+         yield seen

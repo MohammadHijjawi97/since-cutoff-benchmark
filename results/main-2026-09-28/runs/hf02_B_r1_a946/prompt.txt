@@ -1,0 +1,15 @@
+Implement `publish_run(run_dir, repo_id)` in app/publish.py.
+
+At the end of every training job we push the job's whole output folder `run_dir` (checkpoints,
+data shards, metrics) to its own dataset repo `repo_id` on the Hugging Face Hub, with the folder
+layout mirrored at the root of the repo:
+
+- create the dataset repo as private if it does not exist yet; if it already exists, upload into it;
+- skip temporary files (`*.tmp`) and everything under `wandb/`;
+- these folders are big (tens of thousands of files, hundreds of GB), so use huggingface_hub's
+  way of uploading very large folders: the upload must not fail because of the number of files,
+  and if a job dies halfway, calling `publish_run` again must pick up where it stopped instead of
+  uploading again what is already on the Hub.
+
+Use huggingface_hub like `publish_summary` does. Do not add dependencies. You can run the tests
+with `pytest`.

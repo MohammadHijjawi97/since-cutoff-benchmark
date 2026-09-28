@@ -1,0 +1,13 @@
+task pd01 (pd01-text-columns) project C:\b\runs\main-2026-09-28\pd01_A_r3_39ce
+===== hidden tests: exit 0 in 14.3s
+$ C:\b\runs\main-2026-09-28\_grade\pd01_A_r3_39ce\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\pd01_A_r3_39ce\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\pd01_A_r3_39ce\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\pd01_A_r3_39ce\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\pd01_A_r3_39ce\hidden.xml C:\b\runs\main-2026-09-28\_grade\pd01_A_r3_39ce\proj\_bench_hidden
+...                                                                      [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\pd01_A_r3_39ce\hidden.xml -
+3 passed in 12.16s
+
+===== visible tests: exit 0 in 1.6s
+$ C:\b\runs\main-2026-09-28\_grade\pd01_A_r3_39ce\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\pd01_A_r3_39ce\visible.xml
+.                                                                        [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\pd01_A_r3_39ce\visible.xml -
+1 passed in 1.05s
+

@@ -1,0 +1,11 @@
+Implement `fill_gaps(readings)` in app/gaps.py. `readings` has one row per station report, in
+time order, with the columns `station`, `ts`, `temp_c` and `battery`; reports from different
+stations are interleaved, and some `temp_c` values are missing.
+
+Return a new frame with the same rows in the same order, where each missing `temp_c` is replaced
+by the most recent earlier temperature from the same station or, if that station has no earlier
+temperature, by its first later one. Never use another station's values: a station with no
+temperatures at all keeps its missing values. Leave the other columns unchanged and do not modify
+the input frame.
+
+Do not add dependencies. You can run the tests with `pytest`.

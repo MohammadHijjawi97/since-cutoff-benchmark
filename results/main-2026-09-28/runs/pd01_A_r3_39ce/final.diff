@@ -1,0 +1,47 @@
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -3,5 +3,23 @@
+ import pandas as pd
+ 
+ 
++def _clean_text(value):
++    if not isinstance(value, str):
++        return value
++    value = value.strip()
++    return value if value else pd.NA
++
++
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A copy of the orders frame with text trimmed, blanks missing and qty filled."""
++    out = df.copy()
++    for col in out.select_dtypes(include=["object", "string"]).columns:
++        s = out[col]
++        if isinstance(s.dtype, pd.StringDtype):
++            s = s.str.strip()
++            out[col] = s.mask(s == "")
++        else:
++            out[col] = s.map(_clean_text)
++    if "qty" in out.columns:
++        out["qty"] = out["qty"].fillna(0)
++    return out
+--- /dev/null
++++ b/scratch_probe.py
+@@ -0,0 +1,17 @@
++import io
++
++import pandas as pd
++
++from app.clean import clean_orders
++
++df = pd.read_csv(io.StringIO("sku,qty,note,price\n A1 ,1, hi ,2.5\n,,  ,\nB2,3,x,1\n"))
++before = df.copy()
++out = clean_orders(df)
++print(out.dtypes)
++print(out.to_dict("list"))
++pd.testing.assert_frame_equal(df, before)
++o = pd.DataFrame({"m": ["  a ", 5, None, " "], "qty": [1, None, 2, None]})
++o["m"] = o["m"].astype(object)
++r = clean_orders(o)
++print(r.dtypes)
++print(r.to_dict("list"))

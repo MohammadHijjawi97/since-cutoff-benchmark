@@ -1,0 +1,52 @@
+--- /dev/null
++++ b/_chk.py
+@@ -0,0 +1,27 @@
++import asyncio, json
++import httpx2
++from anthropic import AsyncAnthropic
++from app.worker import triage
++
++calls = []
++
++
++def handler(req):
++    calls.append(json.loads(req.content))
++    return httpx2.Response(
++        200,
++        headers={"anthropic-ratelimit-tokens-remaining": "1500", "request-id": "req_1"},
++        json={"id": "m", "type": "message", "role": "assistant", "model": "x",
++              "content": [{"type": "text", "text": "billing: charged twice"}],
++              "stop_reason": "end_turn", "stop_sequence": None,
++              "usage": {"input_tokens": 1, "output_tokens": 1}},
++    )
++
++
++async def main():
++    c = AsyncAnthropic(api_key="k", http_client=httpx2.AsyncClient(transport=httpx2.MockTransport(handler)))
++    print(await triage(c, "I was charged twice"))
++    print(len(calls), calls[0])
++
++
++asyncio.run(main())
+--- a/app/worker.py
++++ b/app/worker.py
+@@ -8,4 +8,18 @@
+ 
+ 
+ async def triage(client: AsyncAnthropic, ticket: str) -> dict:
+-    raise NotImplementedError
++    """The classification plus the rate-limit budget reported with the same response."""
++    raw = await client.messages.with_raw_response.create(
++        model=MODEL,
++        max_tokens=512,
++        system=SYSTEM,
++        messages=[{"role": "user", "content": ticket}],
++    )
++    message = await raw.parse()
++    tokens_remaining = int(raw.headers[TOKENS_REMAINING])
++    return {
++        "answer": "".join(block.text for block in message.content if block.type == "text"),
++        "tokens_remaining": tokens_remaining,
++        "request_id": raw.headers.get("request-id"),
++        "throttle": tokens_remaining < LOW_WATERMARK,
++    }

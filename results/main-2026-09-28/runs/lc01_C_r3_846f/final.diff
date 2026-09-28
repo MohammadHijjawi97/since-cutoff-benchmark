@@ -1,0 +1,58 @@
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,16 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    """Numbered "[n] <source>" entries, one per source, in retrieval order."""
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    entries: list[str] = []
++    seen: set[str] = set()
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)
+--- /dev/null
++++ b/tests/test_context.py
+@@ -0,0 +1,35 @@
++from langchain_core.callbacks import BaseCallbackHandler
++from langchain_core.documents import Document
++
++from app.context import MAX_SOURCES, TRACE_TAG, build_context
++from app.kb import KeywordRetriever
++
++
++def doc(text, source):
++    return Document(page_content=text, metadata={"source": source})
++
++
++def test_formats_dedupes_and_limits():
++    sources = ["a.md", "a.md", "b.md", "c.md", "d.md"]
++    docs = [doc(f"  alpha {i}\n", s) for i, s in enumerate(sources)]
++    retriever = KeywordRetriever(docs=docs, k=10)
++    assert MAX_SOURCES == 3
++    assert build_context(retriever, "alpha") == (
++        "[1] a.md\nalpha 0\n\n[2] b.md\nalpha 2\n\n[3] c.md\nalpha 3"
++    )
++
++
++def test_empty_when_nothing_found():
++    assert build_context(KeywordRetriever(docs=[doc("alpha", "a.md")]), "zzz") == ""
++
++
++def test_lookup_carries_trace_tag():
++    seen = []
++
++    class Handler(BaseCallbackHandler):
++        def on_retriever_start(self, serialized, query, *, tags=None, **kwargs):
++            seen.append(tags)
++
++    retriever = KeywordRetriever(docs=[doc("alpha", "a.md")]).with_config(callbacks=[Handler()])
++    build_context(retriever, "alpha")
++    assert seen and TRACE_TAG in seen[0]

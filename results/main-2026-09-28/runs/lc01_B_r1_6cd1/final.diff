@@ -1,0 +1,36 @@
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,16 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    """Numbered entries for the first MAX_SOURCES distinct sources the retriever returns."""
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    seen: set[str] = set()
++    entries: list[str] = []
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)
+--- /dev/null
++++ b/smoke_check.py
+@@ -0,0 +1,13 @@
++from app.context import build_context
++from app.kb import KeywordRetriever
++from langchain_core.documents import Document
++
++
++class Spy(KeywordRetriever):
++    def _get_relevant_documents(self, query, *, run_manager):
++        print("tags:", run_manager.tags)
++        return super()._get_relevant_documents(query, run_manager=run_manager)
++
++
++r = Spy(docs=[Document(page_content="vpn", metadata={"source": "a.md"})], tags=["own"])
++print(repr(build_context(r, "vpn")))

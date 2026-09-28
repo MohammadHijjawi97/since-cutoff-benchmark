@@ -1,0 +1,30 @@
+--- /dev/null
++++ b/_chk.py
+@@ -0,0 +1,9 @@
++from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
++from langchain_core.messages import AIMessage
++
++from app.summary import summarize_ticket
++from app.tickets import Ticket
++
++m = GenericFakeChatModel(messages=iter([AIMessage(content=[{"type": "text", "text": "  Login loop at Globex \n"}])]))
++r = summarize_ticket(m, Ticket(id=1, customer="G", subject="s", body="b"))
++print(repr(r), type(r))
+--- a/app/summary.py
++++ b/app/summary.py
+@@ -3,10 +3,14 @@
+ from __future__ import annotations
+ 
+ from langchain_core.language_models import BaseChatModel
++from langchain_core.messages import HumanMessage, SystemMessage
+ 
+ from app.prompts import SUMMARY_PROMPT
+ from app.tickets import Ticket, ticket_text
+ 
+ 
+ def summarize_ticket(chat: BaseChatModel, ticket: Ticket) -> str:
+-    raise NotImplementedError
++    """A one-line summary of `ticket`; generation stops at the first blank line."""
++    messages = [SystemMessage(content=SUMMARY_PROMPT), HumanMessage(content=ticket_text(ticket))]
++    reply = chat.invoke(messages, stop=["\n\n"])
++    return str(reply.text).strip()

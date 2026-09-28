@@ -1,0 +1,62 @@
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -5,6 +5,12 @@
+ from typing import Any
+ 
+ from mcp import ClientSession
++from mcp.types import CallToolResult, TextContent
++
++
++def _text(result: CallToolResult) -> str:
++    """The result's text blocks joined with newlines."""
++    return "\n".join(block.text for block in result.content if isinstance(block, TextContent))
+ 
+ 
+ class ToolCallFailed(Exception):
+@@ -17,4 +23,11 @@
+ 
+ 
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    """Call tool `name` and return its structured output if any, else its text."""
++    result = await session.call_tool(name, arguments)
++    if result.is_error:
++        raise ToolCallFailed(name, _text(result))
++    # Any JSON value may be structured output (including 0, false, "", []), so test for None only.
++    if result.structured_content is not None:
++        return result.structured_content
++    return _text(result)
+--- /dev/null
++++ b/tests/test_tmp_run_tool.py
+@@ -0,0 +1,31 @@
++import anyio
++import pytest
++from mcp.types import CallToolResult, ImageContent, TextContent
++
++from opsbot.calls import ToolCallFailed, run_tool
++
++
++class Stub:
++    def __init__(self, result):
++        self.result = result
++
++    async def call_tool(self, name, arguments):
++        return self.result
++
++
++def t(s):
++    return TextContent(type="text", text=s)
++
++
++def call(result):
++    return anyio.run(run_tool, Stub(result), "deploy", {})
++
++
++def test_all():
++    img = ImageContent(type="image", data="", mime_type="image/png")
++    assert call(CallToolResult(content=[t("a"), img, t("b")])) == "a\nb"
++    assert call(CallToolResult(content=[t("x")], structured_content={"k": 1})) == {"k": 1}
++    assert call(CallToolResult(content=[t("x")], structured_content=0)) == 0
++    with pytest.raises(ToolCallFailed) as ei:
++        call(CallToolResult(content=[t("no such"), t("version")], structured_content={"k": 1}, is_error=True))
++    assert ei.value.message == "no such\nversion"

@@ -1,0 +1,66 @@
+--- a/app/llm_client.py
++++ b/app/llm_client.py
+@@ -2,10 +2,28 @@
+ 
+ import logging
+ 
+-from openai import OpenAI
++import httpx2
++from openai import DefaultHttpx2Client, OpenAI
+ 
+ logger = logging.getLogger("app.http")
+ 
++TIMEOUT = httpx2.Timeout(30.0, connect=5.0)
++MAX_RETRIES = 2
++
++
++def _log_request(request: httpx2.Request) -> None:
++    logger.info("%s %s", request.method, request.url)
++
+ 
+ def build_client(api_key: str, transport=None) -> OpenAI:
+-    raise NotImplementedError
++    http_client = DefaultHttpx2Client(
++        timeout=TIMEOUT,
++        transport=transport,
++        event_hooks={"request": [_log_request]},
++    )
++    return OpenAI(
++        api_key=api_key,
++        timeout=TIMEOUT,
++        max_retries=MAX_RETRIES,
++        http_client=http_client,
++    )
+--- /dev/null
++++ b/tests/test_llm_client.py
+@@ -0,0 +1,30 @@
++import logging
++
++import httpx2
++import openai
++import pytest
++
++from app.llm_client import build_client
++
++
++def test_timeouts_and_retries():
++    client = build_client("sk-test")
++    assert client.max_retries == 2
++    assert client.timeout == httpx2.Timeout(connect=5.0, read=30.0, write=30.0, pool=30.0)
++
++
++def test_uses_transport_and_logs_every_attempt(caplog):
++    calls = []
++
++    def handler(request):
++        calls.append(request)
++        return httpx2.Response(500, json={"error": {"message": "boom"}})
++
++    client = build_client("sk-test", transport=httpx2.MockTransport(handler))
++    with caplog.at_level(logging.INFO, logger="app.http"):
++        with pytest.raises(openai.InternalServerError):
++            client.models.list()
++
++    assert len(calls) == 3  # initial attempt + 2 retries, all via the stub
++    messages = [r.getMessage() for r in caplog.records if r.name == "app.http"]
++    assert messages == ["GET https://api.openai.com/v1/models"] * 3

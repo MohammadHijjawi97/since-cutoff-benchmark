@@ -1,0 +1,286 @@
+{
+  "schema": "since-cutoff-bench/run@1",
+  "study_id": "main-2026-09-28",
+  "run_id": "mcp04_E_r2_9b9e",
+  "attempt": 1,
+  "attempt_id": "mcp04_E_r2_9b9e",
+  "task_id": "mcp04-http-host-port",
+  "task": "mcp04",
+  "task_sha256": "e16167d6779630a7d73bd5cc0256542477a322166f485a966cc9e8d9a75826e0",
+  "library": "mcp",
+  "pinned": "2.2.0",
+  "cutoff_version": "1.28.1",
+  "stratum": "post-cutoff",
+  "kind": "post-cutoff-loud",
+  "condition": "E",
+  "rep": 2,
+  "block_id": "mcp04#2",
+  "order_index": 86,
+  "pilot": false,
+  "condition_config": {
+    "condition": "E",
+    "claude_md_sha256": "0a872d4c981fdde5ff5d12ed88731575a8066da873c5ad7a9fd51a9f72b45ca5",
+    "notes_sha256": null,
+    "notes_tokens": 0,
+    "notes_covered": null,
+    "mcp": "context7",
+    "mcp_config_sha256": "4f93b266a503161426401f012c0cf6a484669db9257458001bafe3f883019400",
+    "context7_key": false,
+    "settings_sha256": "08f1b1cc94823f762daa4df2882c07fe013ba553efef38ab128b5cddc95f5694",
+    "allowed_tools_extra": "mcp__context7"
+  },
+  "agent": {
+    "claude_code_version": "2.1.283",
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "argv": [
+      "C:\\Users\\Mohammad Hijjawi\\.local\\bin\\claude.exe",
+      "-p",
+      "--model",
+      "claude-opus-5-5",
+      "--effort",
+      "medium",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--max-turns",
+      "40",
+      "--max-budget-usd",
+      "3",
+      "--permission-mode",
+      "dontAsk",
+      "--tools",
+      "Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill",
+      "--settings",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\claude_settings.json",
+      "--setting-sources",
+      "project",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\mcp_context7.json",
+      "--allowedTools",
+      "mcp__context7",
+      "--no-session-persistence"
+    ],
+    "env": {
+      "ALLUSERSPROFILE": "C:\\ProgramData",
+      "APPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Roaming",
+      "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+      "CLAUDE_CODE_GIT_BASH_PATH": "C:\\Program Files\\Git\\bin\\bash.exe",
+      "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
+      "COMMONPROGRAMFILES": "C:\\Program Files\\Common Files",
+      "COMMONPROGRAMFILES(X86)": "C:\\Program Files (x86)\\Common Files",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "DISABLE_AUTOUPDATER": "1",
+      "ENABLE_TOOL_SEARCH": "false",
+      "HF_HOME": "C:\\b\\tmp\\main-2026-09-28\\mcp04_E_r2_9b9e\\hf",
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "<set>",
+      "HOMEDRIVE": "C:",
+      "HOMEPATH": "\\Users\\Mohammad Hijjawi",
+      "LOCALAPPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Local",
+      "MCP_TIMEOUT": "60000",
+      "NUMBER_OF_PROCESSORS": "32",
+      "OS": "Windows_NT",
+      "PATH": "C:\\b\\runs\\main-2026-09-28\\mcp04_E_r2_9b9e\\.venv\\Scripts;C:\\WINDOWS\\System32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0",
+      "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC",
+      "PROCESSOR_ARCHITECTURE": "AMD64",
+      "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+      "PROGRAMDATA": "C:\\ProgramData",
+      "PROGRAMFILES": "C:\\Program Files",
+      "PROGRAMFILES(X86)": "C:\\Program Files (x86)",
+      "PROGRAMW6432": "C:\\Program Files",
+      "PYTEST_ADDOPTS": "--allow-hosts=127.0.0.1,::1",
+      "SYSTEMDRIVE": "C:",
+      "SYSTEMROOT": "C:\\WINDOWS",
+      "TEMP": "C:\\b\\tmp\\main-2026-09-28\\mcp04_E_r2_9b9e",
+      "TMP": "C:\\b\\tmp\\main-2026-09-28\\mcp04_E_r2_9b9e",
+      "USERPROFILE": "C:\\Users\\Mohammad Hijjawi",
+      "VIRTUAL_ENV": "C:\\b\\runs\\main-2026-09-28\\mcp04_E_r2_9b9e\\.venv",
+      "WINDIR": "C:\\WINDOWS"
+    },
+    "init_model": "claude-opus-5-5",
+    "init_version": "2.1.283",
+    "api_key_source": "none"
+  },
+  "harness": {
+    "code_sha256": "9227ebaf60e2e8c4855fd71792a0de25072ac71a01e5e656e03cde701a8d32a8"
+  },
+  "started_at": "2026-09-28T04:12:28+00:00",
+  "ended_at": "2026-09-28T04:13:02+00:00",
+  "wall_s": 34.2,
+  "exit": {
+    "code": 0,
+    "timed_out": false,
+    "subtype": "success",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "orphans_killed": 1
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 13,
+    "duration_ms": 32887,
+    "duration_api_ms": 25935,
+    "total_cost_usd": 0.16849080000000002,
+    "usage": {
+      "input_tokens": 20,
+      "cache_creation_input_tokens": 11425,
+      "cache_read_input_tokens": 146854,
+      "output_tokens": 2382,
+      "output_tokens_details": {
+        "thinking_tokens": 184
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 11425,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 501,
+          "cache_read_input_tokens": 19284,
+          "cache_creation_input_tokens": 155,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 155
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 20,
+        "outputTokens": 2382,
+        "cacheReadInputTokens": 146854,
+        "cacheCreationInputTokens": 11425,
+        "webSearchRequests": 0,
+        "costUSD": 0.16849080000000002,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 184,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": 2,
+    "permission_denied_tools": [
+      "Bash"
+    ],
+    "terminal_reason": "completed",
+    "result_text": "I implemented `serve_http` in `app/server.py`, and it's now a single call:\n\n```python\ndef serve_http(host: str, port: int) -> None:\n    build_server().run(transport=\"streamable-http\", host=host, port=port)\n```\n\nThe tests pass (2 passed). But I haven't seen the HTTP server actually run: my attempt to start it and send a request to `/mcp` was blocked by a permission prompt. To check it yourself, run `python -m app.server --http` and point an MCP client at `http://127.0.0.1:8000/mcp`.\n\n- **How it works:** mcp 2.2.0's `MCPServer.run()` has a built-in streamable HTTP mode. I checked this against the Context7 docs and the installed package code. It serves at `/mcp` by default and keeps running until the process is stopped, the same way stdio mode does.\n- **Stdio mode** is unchanged.\n- **No new dependencies.**\n- **Remote agents:** by default the server listens on `127.0.0.1`, so other machines can't reach it. Start it with `--host 0.0.0.0` (or a specific network address) for remote agents. When bound to a localhost address, the SDK only accepts requests addressed to localhost. With any other address it adds no such check unless you pass `transport_security`."
+  },
+  "mcp": {
+    "servers": [
+      {
+        "name": "context7",
+        "status": "connected"
+      }
+    ],
+    "errors": [],
+    "calls": {
+      "query-docs": 1,
+      "resolve-library-id": 1
+    },
+    "doc_hit": true,
+    "doc_keys_found": [
+      "\\.run\\(\\s*(?:transport\\s*=\\s*)?[\"']streamable-http[\"']\\s*,[^)]*\\bport\\s*="
+    ]
+  },
+  "process": {
+    "tool_calls": {
+      "Bash": 3,
+      "Edit": 1,
+      "Glob": 1,
+      "Grep": 1,
+      "Read": 4,
+      "mcp__context7__query-docs": 1,
+      "mcp__context7__resolve-library-id": 1
+    },
+    "denied_calls": 2,
+    "pytest_runs": 1,
+    "failing_pytest_runs": 0,
+    "py_edits": 1,
+    "edits_after_first_failure": 0,
+    "stale_in_first_edit": false,
+    "stale_first_edit_patterns": [],
+    "site_packages_reads": 3,
+    "introspection_cmds": 0,
+    "context7_calls": 2,
+    "context7_calls_by_tool": {
+      "query-docs": 1,
+      "resolve-library-id": 1
+    },
+    "context7_errors": 0,
+    "doc_hit": true,
+    "doc_keys_found": [
+      "\\.run\\(\\s*(?:transport\\s*=\\s*)?[\"']streamable-http[\"']\\s*,[^)]*\\bport\\s*="
+    ],
+    "skills": [],
+    "network_like_cmds": 1,
+    "network_like_examples": [
+      "pytest -q 2>&1 | tail -3\n(python -m app.server --http --port 8765 > /tmp/srv.log 2>&1 &) ; for i in 1 2 3 4 5 6 7 8 9 10; do curl -s -o /dev/null localhost:8765 2>/dev/null && break; python -c \"import time;time.sleep(0.5)\"; done\ncurl -s -X POST http://127.0.0.1:8765/mcp -H \"Content-Type: application"
+    ],
+    "api_retries": 0,
+    "bad_stream_lines": 0,
+    "stale_in_final": false,
+    "files_changed": [
+      "app/server.py"
+    ]
+  },
+  "venv": {
+    "added": {},
+    "removed": {},
+    "changed": {},
+    "modified": false
+  },
+  "grade": {
+    "passed": true,
+    "hidden_passed": true,
+    "hidden": {
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 12.73,
+      "timed_out": false
+    },
+    "visible_passed": true,
+    "visible": {
+      "exit_code": 0,
+      "passed": 2,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 0.78,
+      "timed_out": false
+    },
+    "lock_modified": false,
+    "lock_changes": [],
+    "env_lock_sha256": "deac184832707ce90301a3dce10a95aa3d8c3f1680df0244b2278cac41ebd323",
+    "grade_s": 26.8,
+    "venv_modified": false
+  },
+  "valid": true,
+  "invalid_reason": null,
+  "invalid_detail": null,
+  "artifacts": {
+    "stream": "runs/mcp04_E_r2_9b9e/stream.jsonl",
+    "stderr": "runs/mcp04_E_r2_9b9e/stderr.log",
+    "diff": "runs/mcp04_E_r2_9b9e/final.diff",
+    "claude_md": "runs/mcp04_E_r2_9b9e/CLAUDE.md",
+    "grade_log": "runs/mcp04_E_r2_9b9e/grade.log",
+    "project": "C:\\b\\runs\\main-2026-09-28\\mcp04_E_r2_9b9e"
+  },
+  "cleanup_errors": null
+}

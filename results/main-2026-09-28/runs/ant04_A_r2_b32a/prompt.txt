@@ -1,0 +1,14 @@
+Implement `build_claude(api_key, transport=None)` in app/claude.py.
+
+Security wants Claude API traffic to follow the same egress rules as the rest of the service
+(app/http.py):
+1. every request carries the X-Egress-Tag header;
+2. every outgoing HTTP request, retries included, is logged once on the "app.egress" logger by the
+   `log_egress` request hook;
+3. connect timeout 5 seconds, read timeout 60 seconds.
+
+Use max_retries=2. When `transport` is given (the tests pass a stub transport), the HTTP client must
+send through it. Reuse what app/http.py already defines instead of copying values, and keep
+`fetch_status` working as it is.
+
+Do not add dependencies. You can run the tests with `pytest`.

@@ -1,0 +1,34 @@
+task hf04 (hf04-http-client-errors) project C:\b\runs\main-2026-09-28\hf04_E_r1_8054
+===== hidden tests: exit 0 in 8.2s
+$ C:\b\runs\main-2026-09-28\_grade\hf04_E_r1_8054\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\hf04_E_r1_8054\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\hf04_E_r1_8054\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\hf04_E_r1_8054\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\hf04_E_r1_8054\hidden.xml C:\b\runs\main-2026-09-28\_grade\hf04_E_r1_8054\proj\_bench_hidden
+.......                                                                  [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\hf04_E_r1_8054\hidden.xml -
+7 passed in 4.71s
+
+===== visible tests: exit 1 in 1.4s
+$ C:\b\runs\main-2026-09-28\_grade\hf04_E_r1_8054\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\hf04_E_r1_8054\visible.xml
+...F....                                                                 [100%]
+================================== FAILURES ===================================
+_____________________ test_requests_use_configured_client _____________________
+
+    def test_requests_use_configured_client():
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx2.Response(200, json={"id": "acme-ml/ner-large", "sha": "abc123", "siblings": []})
+    
+        configure_hub_http(transport=httpx2.MockTransport(handler))
+        assert current_revision("acme-ml/ner-large") == "abc123"
+        HfApi().model_info("acme-ml/ner-large")
+    
+>       assert len(seen) == 2
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([<Request('GET', 'https://huggingface.co/api/agent-harnesses')>, <Request('GET', 'https://huggingface.co/api/models/acme-ml/ner-large/revision/main')>, <Request('GET', 'https://huggingface.co/api/models/acme-ml/ner-large')>])
+
+tests\test_network.py:29: AssertionError
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\hf04_E_r1_8054\visible.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_network.py::test_requests_use_configured_client - Assertion...
+1 failed, 7 passed in 0.72s
+

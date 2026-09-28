@@ -1,0 +1,87 @@
+--- a/mcpcheck/inproc.py
++++ b/mcpcheck/inproc.py
+@@ -2,10 +2,16 @@
+ 
+ from __future__ import annotations
+ 
+-from typing import Any
++from mcp import ClientSession
++from mcp.client._memory import InMemoryTransport
++from mcp.server.mcpserver import MCPServer
+ 
+ from mcpcheck.cases import Case, Mismatch
++from mcpcheck.stdio import check_session
+ 
+ 
+-async def check_server(server: Any, cases: list[Case]) -> list[Mismatch]:
+-    raise NotImplementedError
++async def check_server(server: MCPServer, cases: list[Case]) -> list[Mismatch]:
++    """Connect to `server` over in-memory streams, call every case's tool in order and return the mismatches."""
++    async with InMemoryTransport(server) as (read, write):
++        async with ClientSession(read, write) as session:
++            return await check_session(session, cases)
+--- a/mcpcheck/stdio.py
++++ b/mcpcheck/stdio.py
+@@ -8,16 +8,21 @@
+ from mcpcheck.cases import Case, Mismatch, compare
+ 
+ 
++async def check_session(session: ClientSession, cases: list[Case]) -> list[Mismatch]:
++    """Initialize `session`, call every case's tool in order and return the mismatches."""
++    mismatches: list[Mismatch] = []
++    await session.initialize()
++    for case in cases:
++        result = await session.call_tool(case.tool, case.arguments)
++        mismatch = compare(case, result)
++        if mismatch is not None:
++            mismatches.append(mismatch)
++    return mismatches
++
++
+ async def check_command(command: list[str], cases: list[Case]) -> list[Mismatch]:
+     """Launch `command`, call every case's tool in order and return the mismatches."""
+     program, *args = command
+-    mismatches: list[Mismatch] = []
+     async with stdio_client(StdioServerParameters(command=program, args=args)) as (read, write):
+         async with ClientSession(read, write) as session:
+-            await session.initialize()
+-            for case in cases:
+-                result = await session.call_tool(case.tool, case.arguments)
+-                mismatch = compare(case, result)
+-                if mismatch is not None:
+-                    mismatches.append(mismatch)
+-    return mismatches
++            return await check_session(session, cases)
+--- /dev/null
++++ b/tests/test_inproc.py
+@@ -0,0 +1,30 @@
++import anyio
++from mcp.server import MCPServer
++
++from mcpcheck.cases import Case, Mismatch, load_cases
++from mcpcheck.inproc import check_server
++
++from test_cases import EXAMPLES
++
++
++def make_server(greeting: str) -> MCPServer:
++    server = MCPServer("demo")
++
++    @server.tool()
++    def add(a: int, b: int) -> int:
++        return a + b
++
++    @server.tool()
++    def greet(name: str) -> str:
++        return f"{greeting}, {name}!"
++
++    return server
++
++
++def test_check_server_passes():
++    assert anyio.run(check_server, make_server("Hello"), load_cases(EXAMPLES)) == []
++
++
++def test_check_server_reports_mismatches():
++    mismatches = anyio.run(check_server, make_server("Hi"), load_cases(EXAMPLES))
++    assert mismatches == [Mismatch(Case("greet", {"name": "Ada"}, "Hello, Ada!"), "Hi, Ada!")]

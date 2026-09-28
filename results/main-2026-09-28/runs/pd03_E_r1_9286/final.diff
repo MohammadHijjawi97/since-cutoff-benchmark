@@ -1,0 +1,58 @@
+--- a/app/gaps.py
++++ b/app/gaps.py
+@@ -6,4 +6,14 @@
+ 
+ 
+ def fill_gaps(readings: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Fill missing ``temp_c`` from the same station only.
++
++    A gap takes the station's most recent earlier temperature, or its first later one
++    when there is none earlier. Stations without any temperature keep their gaps, as do
++    rows whose station is unknown. Returns a copy; the input is left untouched.
++    """
++    filled = readings.copy()
++    by_station = filled.groupby("station", sort=False)["temp_c"]
++    nearest = by_station.ffill().fillna(by_station.bfill())
++    filled["temp_c"] = filled["temp_c"].fillna(nearest)
++    return filled
+--- /dev/null
++++ b/tests/test_gaps.py
+@@ -0,0 +1,37 @@
++import math
++
++import pandas as pd
++
++from app.gaps import fill_gaps
++
++NAN = float("nan")
++
++
++def _frame():
++    return pd.DataFrame(
++        {
++            "station": ["A", "B", "A", "C", "B", "A", "C", None],
++            "ts": pd.date_range("2026-01-01", periods=8, freq="h"),
++            "temp_c": [NAN, 5.0, 1.0, NAN, NAN, NAN, NAN, NAN],
++            "battery": [90, 80, 89, 70, 79, 88, 69, 50],
++        },
++        index=[10, 11, 12, 13, 14, 15, 16, 17],
++    )
++
++
++def test_fills_from_same_station_only():
++    out = fill_gaps(_frame())
++    temps = out["temp_c"].tolist()
++    assert temps[:3] == [1.0, 5.0, 1.0]  # A's leading gap takes its first later value
++    assert temps[4] == 5.0  # B takes its earlier value
++    assert temps[5] == 1.0  # A takes its earlier value
++    assert all(math.isnan(t) for t in (temps[3], temps[6], temps[7]))  # C and unknown stay missing
++
++
++def test_rows_order_other_columns_and_input_unchanged():
++    readings = _frame()
++    before = readings.copy()
++    out = fill_gaps(readings)
++    pd.testing.assert_frame_equal(readings, before)
++    assert list(out.index) == list(readings.index)
++    pd.testing.assert_frame_equal(out.drop(columns="temp_c"), readings.drop(columns="temp_c"))

@@ -1,0 +1,69 @@
+--- a/app/drafts.py
++++ b/app/drafts.py
+@@ -45,4 +45,19 @@
+ 
+ 
+ def draft_reply(client: OpenAI, ticket: Ticket) -> Draft:
+-    raise NotImplementedError
++    """A reply draft for the ticket, flagged as truncated if it hit MAX_DRAFT_TOKENS."""
++    response = client.responses.create(
++        model=DRAFT_MODEL,
++        instructions=STYLE_GUIDE,
++        input=f"{ticket.subject}\n\n{ticket.body}",
++        max_output_tokens=MAX_DRAFT_TOKENS,
++        store=False,
++        metadata={"ticket_id": ticket.id},
++    )
++    # Only a cut-off at the token cap counts; other incomplete reasons (e.g. content_filter) don't.
++    details = getattr(response, "incomplete_details", None)
++    truncated = (
++        getattr(response, "status", None) == "incomplete"
++        and getattr(details, "reason", None) == "max_output_tokens"
++    )
++    return Draft(ticket_id=ticket.id, text=response.output_text.strip(), truncated=truncated)
+--- /dev/null
++++ b/tests/test_drafts.py
+@@ -0,0 +1,43 @@
++from types import SimpleNamespace
++
++from app.drafts import DRAFT_MODEL, MAX_DRAFT_TOKENS, STYLE_GUIDE, Draft, Ticket, draft_reply
++
++TICKET = Ticket(id="T-88", subject="Charged twice", body="My card was charged twice for September.")
++
++
++class FakeResponses:
++    def __init__(self, response):
++        self.response = response
++        self.calls = []
++
++    def create(self, **kwargs):
++        self.calls.append(kwargs)
++        return self.response
++
++
++def fake_response(text, status="completed", reason=None):
++    details = SimpleNamespace(reason=reason) if reason else None
++    return SimpleNamespace(output_text=text, status=status, incomplete_details=details)
++
++
++def test_draft_reply_sends_the_expected_request():
++    responses = FakeResponses(fake_response("  Hi there!\n"))
++    draft = draft_reply(SimpleNamespace(responses=responses), TICKET)
++    assert draft == Draft(ticket_id="T-88", text="Hi there!", truncated=False)
++    call = responses.calls[0]
++    assert call["model"] == DRAFT_MODEL
++    assert call["instructions"] == STYLE_GUIDE
++    assert TICKET.subject in call["input"] and TICKET.body in call["input"]
++    assert call["max_output_tokens"] == MAX_DRAFT_TOKENS
++    assert call["store"] is False
++    assert call["metadata"] == {"ticket_id": "T-88"}
++
++
++def test_draft_hitting_the_token_cap_is_truncated():
++    responses = FakeResponses(fake_response("Hi", status="incomplete", reason="max_output_tokens"))
++    assert draft_reply(SimpleNamespace(responses=responses), TICKET).truncated is True
++
++
++def test_other_incomplete_reasons_are_not_truncation():
++    responses = FakeResponses(fake_response("Hi", status="incomplete", reason="content_filter"))
++    assert draft_reply(SimpleNamespace(responses=responses), TICKET).truncated is False

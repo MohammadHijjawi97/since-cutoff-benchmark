@@ -1,0 +1,59 @@
+--- /dev/null
++++ b/_scratch_check.py
+@@ -0,0 +1,25 @@
++import io
++
++import pandas as pd
++
++from app.clean import clean_orders
++
++csv = "sku,qty,note,price\n  A1 ,3, hi ,1.5\nB2,, ,2.0\n,2,,\n"
++df = pd.read_csv(io.StringIO(csv))
++orig = df.copy()
++out = clean_orders(df)
++print(df.dtypes.to_dict())
++print(out.dtypes.to_dict())
++print(out.to_dict("list"))
++pd.testing.assert_frame_equal(df, orig)
++
++m = pd.DataFrame({
++    "sku": pd.Series([" x ", 5, None, ""], dtype=object),
++    "qty": [1, None, 2, 3],
++    "note": pd.array([" a", "", None, "b "], dtype="string"),
++    "price": [1.0] * 4,
++})
++print(m.dtypes.to_dict())
++o = clean_orders(m)
++print(o.dtypes.to_dict())
++print(o.to_dict("list"))
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -1,7 +1,27 @@
+ """Cleaning step of the orders ETL."""
+ 
+ import pandas as pd
++from pandas.api.types import is_object_dtype, is_string_dtype
++
++
++def _clean_text(s: pd.Series) -> pd.Series:
++    """Strip surrounding whitespace and turn empty strings into missing values.
++
++    Non-string values in object columns (numbers, None, ...) are left untouched,
++    and string-dtype columns keep their exact dtype.
++    """
++    if is_object_dtype(s):
++        s = s.map(lambda v: v.strip() if isinstance(v, str) else v)
++        return s.mask(s.map(lambda v: isinstance(v, str) and v == ""))
++    s = s.str.strip()
++    return s.mask((s == "").fillna(False))
+ 
+ 
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A cleaned copy of the orders frame; ``df`` itself is not modified."""
++    out = df.copy()
++    for col in out.columns:
++        if is_string_dtype(out[col]) or is_object_dtype(out[col]):
++            out[col] = _clean_text(out[col])
++    out["qty"] = out["qty"].fillna(0)
++    return out

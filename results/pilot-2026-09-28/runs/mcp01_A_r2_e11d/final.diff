@@ -1,0 +1,52 @@
+--- /dev/null
++++ b/_check.py
+@@ -0,0 +1,16 @@
++import sys
++
++import anyio
++from mcp import ClientSession, StdioServerParameters
++from mcp.client.stdio import stdio_client
++
++
++async def main():
++    params = StdioServerParameters(command=sys.executable, args=["-m", "app.server"])
++    async with stdio_client(params) as (read, write):
++        async with ClientSession(read, write) as session:
++            await session.initialize()
++            print(await session.call_tool("word_count", {"title": "zz"}))
++
++
++anyio.run(main)
+--- a/app/server.py
++++ b/app/server.py
+@@ -1,10 +1,28 @@
+ """Notes MCP server."""
++
++from mcp.server.mcpserver import MCPServer
++from mcp.server.mcpserver.exceptions import ToolError
+ 
+ NOTES: dict[str, str] = {}
+ 
+ 
+-def build_server():
+-    raise NotImplementedError
++def build_server() -> MCPServer:
++    server = MCPServer("notes")
++
++    @server.tool()
++    def add_note(title: str, body: str) -> str:
++        """Store a note under the given title."""
++        NOTES[title] = body
++        return f"saved {title}"
++
++    @server.tool()
++    def word_count(title: str) -> int:
++        """Return the number of whitespace-separated words in a stored note."""
++        if title not in NOTES:
++            raise ToolError(f"no such note: {title}")
++        return len(NOTES[title].split())
++
++    return server
+ 
+ 
+ if __name__ == "__main__":

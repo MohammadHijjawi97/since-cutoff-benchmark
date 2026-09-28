@@ -1,0 +1,7 @@
+Implement `clean_orders(df)` in app/clean.py. Return a cleaned copy of the orders frame:
+
+- in every text column, strip leading/trailing whitespace and turn empty strings into missing values;
+- fill missing values in the numeric `qty` column with 0;
+- leave all other values as they are, and do not modify the input frame.
+
+Do not add dependencies. You can run the tests with `pytest`.

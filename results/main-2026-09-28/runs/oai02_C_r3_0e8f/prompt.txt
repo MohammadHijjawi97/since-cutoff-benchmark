@@ -1,0 +1,13 @@
+Since we bumped openai to the version pinned in pyproject.toml, the digest tests fail: the
+requests that `mock_openai()` in tests/fakes.py should answer now try to reach the real API
+(and error out, because the test environment has no network access). The respx mocks no
+longer catch the OpenAI client's requests, and nothing warns about it.
+
+Fix `mock_openai()` so it works as its docstring says again: every request a synchronous
+OpenAI client sends inside the `with` block gets the canned replies, including app.digest's
+cached client and clients created before the block, and nothing is intercepted after the
+block ends. The fix belongs in tests/fakes.py: keep the helper's interface, and don't change
+app/ or the pytest configuration.
+
+The dependencies are pinned: do not add, remove or upgrade packages. You can run the tests
+with `pytest`.

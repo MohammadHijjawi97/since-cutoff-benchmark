@@ -1,0 +1,53 @@
+--- /dev/null
++++ b/_check.py
+@@ -0,0 +1,17 @@
++import anyio
++from mcp import ClientSession, StdioServerParameters
++from mcp.client.stdio import stdio_client
++import sys
++
++
++async def main():
++    params = StdioServerParameters(command=sys.executable, args=["-m", "app.server"])
++    async with stdio_client(params) as (read, write):
++        async with ClientSession(read, write) as session:
++            await session.initialize()
++            print(await session.call_tool("add_note", {"title": "a", "body": "one two  three"}))
++            print(await session.call_tool("word_count", {"title": "a"}))
++            print(await session.call_tool("word_count", {"title": "zzz"}))
++
++
++anyio.run(main)
+--- a/app/server.py
++++ b/app/server.py
+@@ -1,10 +1,28 @@
+ """Notes MCP server."""
++
++from mcp.server import MCPServer
++from mcp.server.mcpserver.exceptions import ToolError
+ 
+ NOTES: dict[str, str] = {}
+ 
+ 
+-def build_server():
+-    raise NotImplementedError
++def build_server() -> MCPServer:
++    mcp = MCPServer("notes")
++
++    @mcp.tool()
++    def add_note(title: str, body: str) -> str:
++        """Store a note under the given title."""
++        NOTES[title] = body
++        return f"saved {title}"
++
++    @mcp.tool()
++    def word_count(title: str) -> int:
++        """Count the whitespace-separated words in a stored note."""
++        if title not in NOTES:
++            raise ToolError(f"no such note: {title!r}")
++        return len(NOTES[title].split())
++
++    return mcp
+ 
+ 
+ if __name__ == "__main__":

@@ -1,0 +1,70 @@
+--- a/app/report.py
++++ b/app/report.py
+@@ -5,5 +5,19 @@
+ import pandas as pd
+ 
+ 
++def _format_amount(value: object) -> str:
++    """Accounting-style text for one amount: 1,234.50 / (634.20) / - / ""."""
++    if pd.isna(value):
++        return ""
++    # Round first so float noise from summing (e.g. -1e-13) shows as zero, not "(0.00)".
++    amount = round(float(value), 2)
++    if amount == 0:
++        return "-"
++    if amount < 0:
++        return f"({-amount:,.2f})"
++    return f"{amount:,.2f}"
++
++
+ def format_for_display(table: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Return a copy of the account x month table with every cell as accounting-style text."""
++    return table.map(_format_amount).astype(object)
+--- /dev/null
++++ b/tests/test_report.py
+@@ -0,0 +1,44 @@
++from pathlib import Path
++
++import pandas as pd
++
++from app.ledger import load_ledger, monthly_pnl
++from app.report import format_for_display
++
++DATA = Path(__file__).parent / "data" / "ledger.csv"
++
++
++def test_format_for_display_uses_accounting_style():
++    table = monthly_pnl(load_ledger(DATA))
++    shown = format_for_display(table)
++    assert shown.index.equals(table.index)
++    assert shown.columns.equals(table.columns)
++    assert shown.loc["Revenue", "2026-07"] == "12,500.00"
++    assert shown.loc["Revenue", "2026-08"] == "11,250.50"
++    assert shown.loc["Salaries", "2026-08"] == "(8,200.00)"
++    assert shown.loc["Travel", "2026-08"] == "(634.20)"
++    assert shown.loc["Refunds", "2026-08"] == "-"
++    assert shown.loc["Travel", "2026-07"] == ""
++    assert shown.map(lambda cell: isinstance(cell, str)).all().all()
++
++
++def test_format_for_display_leaves_input_untouched():
++    table = monthly_pnl(load_ledger(DATA))
++    before = table.copy()
++    format_for_display(table)
++    pd.testing.assert_frame_equal(table, before)
++
++
++def test_format_for_display_edge_values():
++    table = pd.DataFrame(
++        {"m": [0.1 + 0.2 - 0.3, -0.004, 1234567.891, -0.005, None]},
++        index=["noise", "tiny_neg", "big", "half_cent", "missing"],
++    )
++    shown = format_for_display(table)
++    assert shown["m"].tolist() == ["-", "-", "1,234,567.89", "(0.01)", ""]
++
++
++def test_format_for_display_empty_table():
++    shown = format_for_display(pd.DataFrame(columns=["2026-07"], dtype=float))
++    assert shown.empty
++    assert list(shown.columns) == ["2026-07"]

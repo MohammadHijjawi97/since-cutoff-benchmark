@@ -1,0 +1,68 @@
+--- a/app/llm_client.py
++++ b/app/llm_client.py
+@@ -2,10 +2,29 @@
+ 
+ import logging
+ 
+-from openai import OpenAI
++import httpx
++from openai import DefaultHttpxClient, OpenAI
+ 
+ logger = logging.getLogger("app.http")
+ 
++TIMEOUT = httpx.Timeout(30.0, connect=5.0)
++MAX_RETRIES = 2
++
++
++def _log_request(request: httpx.Request) -> None:
++    logger.info("%s %s", request.method, request.url)
++
+ 
+ def build_client(api_key: str, transport=None) -> OpenAI:
+-    raise NotImplementedError
++    http_client = DefaultHttpxClient(
++        timeout=TIMEOUT,
++        transport=transport,
++        event_hooks={"request": [_log_request]},
++    )
++    # The SDK sends its own per-request timeout, so set it on the client too.
++    return OpenAI(
++        api_key=api_key,
++        timeout=TIMEOUT,
++        max_retries=MAX_RETRIES,
++        http_client=http_client,
++    )
+--- /dev/null
++++ b/tests/test_build_client.py
+@@ -0,0 +1,31 @@
++import logging
++
++import httpx
++import openai
++import pytest
++
++from app.llm_client import build_client
++
++
++def test_config_and_request_logging(caplog, monkeypatch):
++    monkeypatch.setattr(openai._base_client.time, "sleep", lambda s: None)
++    seen = []
++
++    def handler(request):
++        seen.append(request)
++        return httpx.Response(500, json={"error": {"message": "boom"}})
++
++    client = build_client("sk-test", transport=httpx.MockTransport(handler))
++    assert client.max_retries == 2
++    for t in (client.timeout, client._client.timeout):
++        assert (t.connect, t.read, t.write, t.pool) == (5.0, 30.0, 30.0, 30.0)
++
++    with caplog.at_level(logging.INFO, logger="app.http"):
++        with pytest.raises(openai.InternalServerError):
++            client.models.list()
++
++    msgs = [r.getMessage() for r in caplog.records if r.name == "app.http"]
++    assert len(seen) == 3
++    assert msgs == ["GET https://api.openai.com/v1/models"] * 3
++    assert all(r.levelno == logging.INFO for r in caplog.records if r.name == "app.http")
++    assert seen[0].extensions["timeout"] == {"connect": 5.0, "read": 30.0, "write": 30.0, "pool": 30.0}

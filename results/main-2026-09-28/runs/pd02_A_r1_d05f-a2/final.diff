@@ -1,0 +1,57 @@
+--- a/app/report.py
++++ b/app/report.py
+@@ -5,5 +5,18 @@
+ import pandas as pd
+ 
+ 
++def _accounting(value: object) -> str:
++    """Format one amount in accounting style: "12,500.00", "(634.20)", "-" for zero, "" for missing."""
++    if pd.isna(value):
++        return ""
++    amount = float(value)
++    text = f"{abs(amount):,.2f}"
++    # Compare after rounding to cents so float noise such as 1e-13 or -0.0 shows as zero.
++    if text == "0.00":
++        return "-"
++    return f"({text})" if amount < 0 else text
++
++
+ def format_for_display(table: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Return a copy of the account x month table with every cell formatted as an accounting string."""
++    return table.map(_accounting).astype(object)
+--- /dev/null
++++ b/tests/test_report.py
+@@ -0,0 +1,32 @@
++from pathlib import Path
++
++import numpy as np
++import pandas as pd
++
++from app.ledger import load_ledger, monthly_pnl
++from app.report import format_for_display
++
++DATA = Path(__file__).parent / "data" / "ledger.csv"
++
++
++def test_format_for_display_accounting_style():
++    table = pd.DataFrame(
++        {"2026-07": [12500.0, -634.2, 0.0, np.nan], "2026-08": [1234567.891, -0.0, 1e-13, -8200.0]},
++        index=["Revenue", "Refunds", "Travel", "Salaries"],
++    )
++    out = format_for_display(table)
++    assert out["2026-07"].tolist() == ["12,500.00", "(634.20)", "-", ""]
++    assert out["2026-08"].tolist() == ["1,234,567.89", "-", "-", "(8,200.00)"]
++
++
++def test_format_for_display_keeps_shape_and_does_not_modify_input():
++    table = monthly_pnl(load_ledger(DATA))
++    before = table.copy()
++    out = format_for_display(table)
++    assert table.equals(before)
++    assert out.index.equals(table.index)
++    assert out.columns.equals(table.columns)
++    assert all(isinstance(cell, str) for cell in out.to_numpy().ravel())
++    assert out.loc["Revenue", "2026-07"] == "12,500.00"
++    assert out.loc["Salaries", "2026-08"] == "(8,200.00)"
++    assert out.loc["Travel", "2026-07"] == ""

@@ -1,0 +1,150 @@
+--- a/app/chat.py
++++ b/app/chat.py
+@@ -5,9 +5,9 @@
+ import logging
+ from collections.abc import Iterable, Iterator
+ 
+-from openai import OpenAI
++from openai import APIConnectionError, APITimeoutError, OpenAI
+ 
+-from app.errors import UpstreamTimeout, UpstreamUnavailable  # noqa: F401  (for answer())
++from app.errors import UpstreamTimeout, UpstreamUnavailable
+ 
+ MODEL = "gpt-5.5"
+ SYSTEM_PROMPT = "You are the help-desk assistant for Northwind Cloud. Answer briefly and concretely."
+@@ -39,5 +39,24 @@
+ 
+ 
+ def answer(client: OpenAI, question: str, history: Iterable[tuple[str, str]] = ()) -> str:
+-    """The complete answer to `question` (used by the e-mail channel)."""
+-    raise NotImplementedError
++    """The complete answer to `question` (used by the e-mail channel).
++
++    A failed or dropped connection restarts the whole request, up to ATTEMPTS times;
++    a read timeout is not retried.
++    """
++    history = list(history)  # may be a one-shot iterator, and each attempt needs it
++    for attempt in range(1, ATTEMPTS + 1):
++        try:
++            return "".join(iter_answer(client, question, history))
++        except APITimeoutError as err:  # subclass of APIConnectionError, so check it first
++            raise UpstreamTimeout(_network_message(err)) from err
++        except APIConnectionError as err:
++            logger.warning("Attempt %d/%d to reach the model failed: %s", attempt, ATTEMPTS, _network_message(err))
++            last_error = err
++    raise UpstreamUnavailable(f"No answer after {ATTEMPTS} attempts: {_network_message(last_error)}") from last_error
++
++
++def _network_message(err: APIConnectionError) -> str:
++    """The underlying network error's message; openai's own is just "Connection error."."""
++    cause = err.__cause__
++    return f"{type(cause).__name__}: {cause}" if cause is not None else str(err)
+--- a/tests/test_chat.py
++++ b/tests/test_chat.py
+@@ -1,6 +1,13 @@
++import json
++import logging
+ from types import SimpleNamespace
+ 
++import httpx2
++import pytest
++from openai import OpenAI
++
+ from app import chat
++from app.errors import UpstreamTimeout, UpstreamUnavailable
+ 
+ 
+ def test_build_messages_keeps_history_in_order():
+@@ -27,3 +34,92 @@
+     assert list(chat.iter_answer(client, "How do I log in?")) == ["Reset ", "your password"]
+     assert completions.calls[0]["stream"] is True
+     assert completions.calls[0]["model"] == chat.MODEL
++
++
++# answer() runs against a real OpenAI client whose network is simulated by httpx2.MockTransport,
++# so the SDK's own wrapping of connect errors, mid-stream drops and timeouts is exercised.
++
++DROPPED = "peer closed connection without sending complete message body"
++
++
++class Body(httpx2.SyncByteStream):
++    """A server-sent-event stream of text deltas that ends with [DONE], or with `error`."""
++
++    def __init__(self, texts, error=None):
++        self.texts, self.error = texts, error
++
++    def __iter__(self):
++        for text in self.texts:
++            chunk = {
++                "id": "c",
++                "object": "chat.completion.chunk",
++                "created": 0,
++                "model": chat.MODEL,
++                "choices": [{"index": 0, "delta": {"content": text}, "finish_reason": None}],
++            }
++            yield f"data: {json.dumps(chunk)}\n\n".encode()
++        if self.error is not None:
++            raise self.error
++        yield b"data: [DONE]\n\n"
++
++
++def client_for(*outcomes):
++    """Each request gets the next outcome: an exception to raise, or a streaming Body."""
++    outcomes = list(outcomes)
++    requests = []
++
++    def handler(request):
++        requests.append(request)
++        outcome = outcomes.pop(0)
++        if isinstance(outcome, Exception):
++            raise outcome
++        return httpx2.Response(200, headers={"content-type": "text/event-stream"}, stream=outcome)
++
++    http_client = httpx2.Client(transport=httpx2.MockTransport(handler))
++    return OpenAI(api_key="test", max_retries=0, http_client=http_client), requests
++
++
++def chat_warnings(caplog):
++    return [r.getMessage() for r in caplog.records if r.name == "app.chat" and r.levelno == logging.WARNING]
++
++
++def test_answer_returns_the_streamed_text():
++    client, requests = client_for(Body(["Reset ", "your password"]))
++    assert chat.answer(client, "How do I log in?") == "Reset your password"
++    assert len(requests) == 1
++
++
++def test_answer_retries_failures_and_keeps_only_the_completed_attempt(caplog):
++    client, requests = client_for(
++        httpx2.ConnectError("connection refused"),
++        Body(["Half an ans"], httpx2.RemoteProtocolError(DROPPED)),
++        Body(["Whole ", "answer"]),
++    )
++    history = iter([("Hi", "Hello!")])  # a one-shot iterable must survive the retries
++    with caplog.at_level(logging.WARNING, logger="app.chat"):
++        assert chat.answer(client, "Q?", history) == "Whole answer"
++    assert len(requests) == 3
++    assert all(b"Hello!" in r.read() for r in requests)
++    warnings = chat_warnings(caplog)
++    assert len(warnings) == 2
++    assert "connection refused" in warnings[0]
++    assert DROPPED in warnings[1]
++
++
++def test_answer_gives_up_after_all_attempts(caplog):
++    client, requests = client_for(*[Body(["frag"], httpx2.RemoteProtocolError(DROPPED)) for _ in range(chat.ATTEMPTS)])
++    with caplog.at_level(logging.WARNING, logger="app.chat"), pytest.raises(UpstreamUnavailable):
++        chat.answer(client, "Q?")
++    assert len(requests) == chat.ATTEMPTS
++    warnings = chat_warnings(caplog)
++    assert len(warnings) == chat.ATTEMPTS
++    assert all(DROPPED in w for w in warnings)
++
++
++@pytest.mark.parametrize("mid_stream", [False, True])
++def test_answer_does_not_retry_a_timeout(mid_stream):
++    timeout = httpx2.ReadTimeout("timed out")
++    client, requests = client_for(Body(["par"], timeout) if mid_stream else timeout, Body(["unused"]))
++    with pytest.raises(UpstreamTimeout):
++        chat.answer(client, "Q?")
++    assert len(requests) == 1

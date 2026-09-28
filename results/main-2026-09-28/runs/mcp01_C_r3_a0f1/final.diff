@@ -1,0 +1,72 @@
+--- a/app/server.py
++++ b/app/server.py
+@@ -1,10 +1,28 @@
+ """Notes MCP server."""
++
++from mcp.server import MCPServer
++from mcp.server.mcpserver.exceptions import ToolError
+ 
+ NOTES: dict[str, str] = {}
+ 
+ 
+-def build_server():
+-    raise NotImplementedError
++def build_server() -> MCPServer:
++    server = MCPServer("notes")
++
++    @server.tool()
++    def add_note(title: str, body: str) -> str:
++        """Store a note under the given title."""
++        NOTES[title] = body
++        return f"saved {title}"
++
++    @server.tool()
++    def word_count(title: str) -> int:
++        """Count the whitespace-separated words in a stored note."""
++        if title not in NOTES:
++            raise ToolError(f"no such note: {title}")
++        return len(NOTES[title].split())
++
++    return server
+ 
+ 
+ if __name__ == "__main__":
+--- /dev/null
++++ b/tests/test_tools.py
+@@ -0,0 +1,36 @@
++import anyio
++import pytest
++from mcp.client.client import Client
++
++from app.server import NOTES, build_server
++
++
++@pytest.fixture(autouse=True)
++def clear_notes():
++    yield
++    NOTES.clear()
++
++
++def call(name: str, arguments: dict):
++    async def run():
++        async with Client(build_server()) as client:
++            return await client.call_tool(name, arguments)
++
++    return anyio.run(run)
++
++
++def test_add_note_then_word_count():
++    result = call("add_note", {"title": "a", "body": "one two\n  three"})
++    assert not result.is_error
++    assert result.content[0].text == "saved a"
++    assert NOTES == {"a": "one two\n  three"}
++
++    result = call("word_count", {"title": "a"})
++    assert not result.is_error
++    assert result.content[0].text == "3"
++
++
++def test_word_count_unknown_title_is_tool_error():
++    result = call("word_count", {"title": "missing"})
++    assert result.is_error
++    assert "no such note" in result.content[0].text

@@ -1,0 +1,6 @@
+Remote agents need to reach our inventory MCP server, so `python -m app.server --http` must work.
+Implement `serve_http(host, port)` in app/server.py: serve the server from `build_server()` over
+the MCP Streamable HTTP transport, listening on the given host and port with the MCP endpoint at
+the default `/mcp` path, and block until the process is stopped (like the stdio mode does).
+`main()` already calls it. Keep the stdio mode working. Do not add dependencies. You can run the
+tests with `pytest`.

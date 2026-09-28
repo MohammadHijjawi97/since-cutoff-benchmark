@@ -1,0 +1,35 @@
+--- a/app/invoices.py
++++ b/app/invoices.py
+@@ -4,6 +4,8 @@
+ file id. File references only work on the beta Messages API with FILES_BETA enabled, so every call
+ in this module goes through `client.beta.messages`.
+ """
++
++import json
+ 
+ from anthropic import Anthropic
+ 
+@@ -39,4 +41,22 @@
+ 
+ def extract_invoice(client: Anthropic, file_id: str) -> dict:
+     """The invoice's fields as one ledger import row (see INVOICE_SCHEMA)."""
+-    raise NotImplementedError
++    message = client.beta.messages.create(
++        model=MODEL,
++        max_tokens=1024,
++        betas=[FILES_BETA],
++        output_config={"format": {"type": "json_schema", "schema": INVOICE_SCHEMA}},
++        messages=[
++            {
++                "role": "user",
++                "content": [
++                    invoice_block(file_id),
++                    {"type": "text", "text": "Extract this invoice's fields for the ledger import."},
++                ],
++            }
++        ],
++    )
++    # A refusal or a max_tokens cutoff can leave text that doesn't match the schema.
++    if message.stop_reason != "end_turn":
++        raise RuntimeError(f"invoice extraction stopped early: {message.stop_reason}")
++    return json.loads("".join(block.text for block in message.content if block.type == "text"))

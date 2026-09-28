@@ -1,0 +1,24 @@
+--- a/app/labeler.py
++++ b/app/labeler.py
+@@ -6,5 +6,20 @@
+ MODEL = "claude-sonnet-4-6"
+ 
+ 
++SYSTEM_PROMPT = (
++    "Label the support ticket. Answer with exactly one word from this list: "
++    + ", ".join(LABELS)
++    + "."
++)
++
++
+ def label_ticket(client: Anthropic, text: str) -> str:
+-    raise NotImplementedError
++    """One of LABELS; falls back to "question" when the reply is not a label."""
++    message = client.messages.create(
++        model=MODEL,
++        max_tokens=5,
++        system=SYSTEM_PROMPT,
++        messages=[{"role": "user", "content": text}],
++    )
++    reply = "".join(block.text for block in message.content if block.type == "text").strip().lower()
++    return reply if reply in LABELS else "question"

@@ -1,0 +1,60 @@
+--- a/app/worker.py
++++ b/app/worker.py
+@@ -8,4 +8,18 @@
+ 
+ 
+ async def triage(client: AsyncAnthropic, ticket: str) -> dict:
+-    raise NotImplementedError
++    """The classification plus the rate-limit budget reported with the same response."""
++    raw = await client.messages.with_raw_response.create(
++        model=MODEL,
++        max_tokens=512,
++        system=SYSTEM,
++        messages=[{"role": "user", "content": ticket}],
++    )
++    message = await raw.parse()  # AsyncAPIResponse: reading the body is a coroutine
++    tokens_remaining = int(raw.headers[TOKENS_REMAINING])
++    return {
++        "answer": "".join(block.text for block in message.content if block.type == "text"),
++        "tokens_remaining": tokens_remaining,
++        "request_id": raw.headers.get("request-id"),
++        "throttle": tokens_remaining < LOW_WATERMARK,
++    }
+--- /dev/null
++++ b/tests/test_scratch_triage.py
+@@ -0,0 +1,35 @@
++import asyncio
++import json
++
++import httpx2
++from anthropic import AsyncAnthropic
++
++from app import worker
++
++
++def _client(remaining, seen):
++    def handler(request):
++        seen.append(json.loads(request.content))
++        return httpx2.Response(
++            200,
++            headers={"anthropic-ratelimit-tokens-remaining": str(remaining), "request-id": "req_1"},
++            json={
++                "id": "msg_1", "type": "message", "role": "assistant", "model": worker.MODEL,
++                "content": [{"type": "text", "text": "billing: refund"}],
++                "stop_reason": "end_turn", "stop_sequence": None,
++                "usage": {"input_tokens": 1, "output_tokens": 1},
++            },
++        )
++
++    return AsyncAnthropic(api_key="x", http_client=httpx2.AsyncClient(transport=httpx2.MockTransport(handler)))
++
++
++def test_triage():
++    for remaining, throttle in [(1999, True), (2000, False)]:
++        seen = []
++        out = asyncio.run(worker.triage(_client(remaining, seen), "charged twice"))
++        assert out == {"answer": "billing: refund", "tokens_remaining": remaining,
++                       "request_id": "req_1", "throttle": throttle}
++        assert len(seen) == 1
++        assert seen[0]["max_tokens"] == 512 and seen[0]["system"] == worker.SYSTEM
++        assert seen[0]["messages"] == [{"role": "user", "content": "charged twice"}]

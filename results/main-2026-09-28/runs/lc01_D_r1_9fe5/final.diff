@@ -1,0 +1,58 @@
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,16 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    """Numbered "[n] <source>" entries for the first MAX_SOURCES distinct sources retrieved."""
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    seen: set[str] = set()
++    entries: list[str] = []
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)
+--- /dev/null
++++ b/tests/test_context.py
+@@ -0,0 +1,35 @@
++from langchain_core.documents import Document
++from langchain_core.tracers.context import collect_runs
++
++from app.context import TRACE_TAG, build_context
++from app.kb import KeywordRetriever
++
++
++def doc(text, source):
++    return Document(page_content=text, metadata={"source": source})
++
++
++def test_one_entry_per_source_capped_and_numbered():
++    docs = [
++        doc("  vpn a \n", "a.md"),
++        doc("vpn b", "a.md"),
++        doc("vpn c", "c.md"),
++        doc("vpn d", "d.md"),
++        doc("vpn e", "e.md"),
++    ]
++    retriever = KeywordRetriever(docs=docs, k=5)
++    assert build_context(retriever, "vpn") == "[1] a.md\nvpn a\n\n[2] c.md\nvpn c\n\n[3] d.md\nvpn d"
++
++
++def test_empty_when_nothing_found():
++    retriever = KeywordRetriever(docs=[doc("vpn", "a.md")])
++    assert build_context(retriever, "kubernetes") == ""
++
++
++def test_lookup_is_tagged():
++    retriever = KeywordRetriever(docs=[doc("vpn", "a.md")])
++    with collect_runs() as runs:
++        build_context(retriever, "vpn")
++    [run] = runs.traced_runs
++    assert run.run_type == "retriever"
++    assert TRACE_TAG in run.tags

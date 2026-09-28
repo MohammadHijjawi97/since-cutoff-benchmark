@@ -1,0 +1,13 @@
+task ant04 (ant04-custom-http-client) project C:\b\runs\main-2026-09-28\ant04_A_r2_b32a
+===== hidden tests: exit 0 in 22.0s
+$ C:\b\runs\main-2026-09-28\_grade\ant04_A_r2_b32a\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\ant04_A_r2_b32a\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\ant04_A_r2_b32a\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\ant04_A_r2_b32a\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\ant04_A_r2_b32a\hidden.xml C:\b\runs\main-2026-09-28\_grade\ant04_A_r2_b32a\proj\_bench_hidden
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\ant04_A_r2_b32a\hidden.xml -
+2 passed in 18.29s
+
+===== visible tests: exit 0 in 2.6s
+$ C:\b\runs\main-2026-09-28\_grade\ant04_A_r2_b32a\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\ant04_A_r2_b32a\visible.xml
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\ant04_A_r2_b32a\visible.xml -
+2 passed in 1.78s
+

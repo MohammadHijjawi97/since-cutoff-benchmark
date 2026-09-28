@@ -1,0 +1,266 @@
+{
+  "schema": "since-cutoff-bench/run@1",
+  "study_id": "main-2026-09-28",
+  "run_id": "hf04_A_r3_9006",
+  "attempt": 1,
+  "attempt_id": "hf04_A_r3_9006",
+  "task_id": "hf04-http-client-errors",
+  "task": "hf04",
+  "task_sha256": "acb254c767a1036c6de6cb6a75beb7e1780fe871818ec1f37a757c7a20906576",
+  "library": "huggingface-hub",
+  "pinned": "2.0.0",
+  "cutoff_version": "1.21.0",
+  "stratum": "post-cutoff",
+  "kind": "post-cutoff-loud",
+  "condition": "A",
+  "rep": 3,
+  "block_id": "hf04#3",
+  "order_index": 25,
+  "pilot": false,
+  "condition_config": {
+    "condition": "A",
+    "claude_md_sha256": "aee74955cc1cd6431365ad7254ae7ce515eec2d415fc115ae9629fab72aaeacf",
+    "notes_sha256": null,
+    "notes_tokens": 0,
+    "notes_covered": null,
+    "mcp": "none",
+    "mcp_config_sha256": "1e0fe4707a42d1cce5d4e89af209cc6317e979348f1a1a3e1eda481a1467821e",
+    "context7_key": null,
+    "settings_sha256": "08f1b1cc94823f762daa4df2882c07fe013ba553efef38ab128b5cddc95f5694",
+    "allowed_tools_extra": null
+  },
+  "agent": {
+    "claude_code_version": "2.1.283",
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "argv": [
+      "C:\\Users\\Mohammad Hijjawi\\.local\\bin\\claude.exe",
+      "-p",
+      "--model",
+      "claude-opus-5-5",
+      "--effort",
+      "medium",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--max-turns",
+      "40",
+      "--max-budget-usd",
+      "3",
+      "--permission-mode",
+      "dontAsk",
+      "--tools",
+      "Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill",
+      "--settings",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\claude_settings.json",
+      "--setting-sources",
+      "project",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\mcp_none.json",
+      "--no-session-persistence"
+    ],
+    "env": {
+      "ALLUSERSPROFILE": "C:\\ProgramData",
+      "APPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Roaming",
+      "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+      "CLAUDE_CODE_GIT_BASH_PATH": "C:\\Program Files\\Git\\bin\\bash.exe",
+      "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
+      "COMMONPROGRAMFILES": "C:\\Program Files\\Common Files",
+      "COMMONPROGRAMFILES(X86)": "C:\\Program Files (x86)\\Common Files",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "DISABLE_AUTOUPDATER": "1",
+      "ENABLE_TOOL_SEARCH": "false",
+      "HF_HOME": "C:\\b\\tmp\\main-2026-09-28\\hf04_A_r3_9006\\hf",
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "<set>",
+      "HOMEDRIVE": "C:",
+      "HOMEPATH": "\\Users\\Mohammad Hijjawi",
+      "LOCALAPPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Local",
+      "MCP_TIMEOUT": "60000",
+      "NUMBER_OF_PROCESSORS": "32",
+      "OS": "Windows_NT",
+      "PATH": "C:\\b\\runs\\main-2026-09-28\\hf04_A_r3_9006\\.venv\\Scripts;C:\\WINDOWS\\System32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0",
+      "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC",
+      "PROCESSOR_ARCHITECTURE": "AMD64",
+      "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+      "PROGRAMDATA": "C:\\ProgramData",
+      "PROGRAMFILES": "C:\\Program Files",
+      "PROGRAMFILES(X86)": "C:\\Program Files (x86)",
+      "PROGRAMW6432": "C:\\Program Files",
+      "PYTEST_ADDOPTS": "--allow-hosts=127.0.0.1,::1",
+      "SYSTEMDRIVE": "C:",
+      "SYSTEMROOT": "C:\\WINDOWS",
+      "TEMP": "C:\\b\\tmp\\main-2026-09-28\\hf04_A_r3_9006",
+      "TMP": "C:\\b\\tmp\\main-2026-09-28\\hf04_A_r3_9006",
+      "USERPROFILE": "C:\\Users\\Mohammad Hijjawi",
+      "VIRTUAL_ENV": "C:\\b\\runs\\main-2026-09-28\\hf04_A_r3_9006\\.venv",
+      "WINDIR": "C:\\WINDOWS"
+    },
+    "init_model": "claude-opus-5-5",
+    "init_version": "2.1.283",
+    "api_key_source": "none"
+  },
+  "harness": {
+    "code_sha256": "9227ebaf60e2e8c4855fd71792a0de25072ac71a01e5e656e03cde701a8d32a8"
+  },
+  "started_at": "2026-09-28T03:33:43+00:00",
+  "ended_at": "2026-09-28T03:35:20+00:00",
+  "wall_s": 97.2,
+  "exit": {
+    "code": 0,
+    "timed_out": false,
+    "subtype": "success",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "orphans_killed": 1
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 27,
+    "duration_ms": 96242,
+    "duration_api_ms": 87639,
+    "total_cost_usd": 0.4920658,
+    "usage": {
+      "input_tokens": 36,
+      "cache_creation_input_tokens": 30599,
+      "cache_read_input_tokens": 428949,
+      "output_tokens": 8067,
+      "output_tokens_details": {
+        "thinking_tokens": 1877
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 30599,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 835,
+          "cache_read_input_tokens": 36688,
+          "cache_creation_input_tokens": 314,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 314
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 36,
+        "outputTokens": 8067,
+        "cacheReadInputTokens": 428949,
+        "cacheCreationInputTokens": 30599,
+        "webSearchRequests": 0,
+        "costUSD": 0.4920658,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1877,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": 3,
+    "permission_denied_tools": [
+      "Bash"
+    ],
+    "terminal_reason": "completed",
+    "result_text": "I implemented both functions in `app/network.py`. `pytest -q` passes (3 tests). Those tests don't cover the new code, so I also checked it with a throwaway script against a stub transport. The requests had the right URL, the `X-Acme-Job: nightly-sync` header and huggingface_hub's own user agent, with timeouts of 5s connect and 60s for read, write and pool.\n\n**`configure_hub_http(transport=None)`** registers a client factory with `huggingface_hub.set_client_factory`, so every `HfApi` instance uses the one shared `httpx2.Client` (huggingface_hub 2.0 uses `httpx2`, not `httpx`). The client uses the given transport, sends the job header, and keeps huggingface_hub's own request hook (offline mode, request IDs, debug logging). It also still follows redirects.\n\n**Issue with the timeouts:** setting them on the client alone doesn't work. Methods like `HfApi.model_info` pass `timeout=None` on each request, and `httpx2` reads that as \"no timeout\", overriding the client default. So I added a small request hook that applies our timeouts when a request has none set. A caller who passes an explicit timeout still gets theirs; I checked this with `timeout=3`.\n\n**`current_revision(repo_id)`** returns `HfApi().model_info(repo_id, revision=\"main\").sha`. On a timeout or network error it logs a warning on `app.network` and returns `None`; anything else raises. I checked all three cases: a normal lookup returned the sha, a timeout returned `None` with the warning, and a 404 raised `RepositoryNotFoundError`.\n\nThree things to know:\n- **Transport reuse:** huggingface_hub closes the shared client after a connection error and builds a new one from the factory, and every new client reuses the same `transport` object. That's fine for a stub transport. A real `httpx2.HTTPTransport` would be closed along with the client, so pass a factory-friendly transport or leave it as `None`.\n- **Async requests aren't covered:** huggingface_hub's async client isn't shared by design, so I didn't configure it. T"
+  },
+  "mcp": {
+    "servers": [],
+    "errors": [],
+    "calls": {},
+    "doc_hit": false,
+    "doc_keys_found": []
+  },
+  "process": {
+    "tool_calls": {
+      "Bash": 4,
+      "Glob": 3,
+      "Grep": 9,
+      "Read": 8,
+      "Write": 2
+    },
+    "denied_calls": 3,
+    "pytest_runs": 1,
+    "failing_pytest_runs": 0,
+    "py_edits": 2,
+    "edits_after_first_failure": 0,
+    "stale_in_first_edit": false,
+    "stale_first_edit_patterns": [],
+    "site_packages_reads": 15,
+    "introspection_cmds": 0,
+    "context7_calls": 0,
+    "context7_calls_by_tool": {},
+    "context7_errors": 0,
+    "doc_hit": false,
+    "doc_keys_found": [],
+    "skills": [],
+    "network_like_cmds": 0,
+    "network_like_examples": [],
+    "api_retries": 0,
+    "bad_stream_lines": 0,
+    "stale_in_final": false,
+    "files_changed": [
+      "app/network.py",
+      "smoke_check.py"
+    ]
+  },
+  "venv": {
+    "added": {},
+    "removed": {},
+    "changed": {},
+    "modified": false
+  },
+  "grade": {
+    "passed": true,
+    "hidden_passed": true,
+    "hidden": {
+      "exit_code": 0,
+      "passed": 7,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 4.65,
+      "timed_out": false
+    },
+    "visible_passed": true,
+    "visible": {
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 1.24,
+      "timed_out": false
+    },
+    "lock_modified": false,
+    "lock_changes": [],
+    "env_lock_sha256": "28be7943facacbf7cf39737c32721a3576cc7c1e29fe4f07a09586a9635c3677",
+    "grade_s": 15.9,
+    "venv_modified": false
+  },
+  "valid": true,
+  "invalid_reason": null,
+  "invalid_detail": null,
+  "artifacts": {
+    "stream": "runs/hf04_A_r3_9006/stream.jsonl",
+    "stderr": "runs/hf04_A_r3_9006/stderr.log",
+    "diff": "runs/hf04_A_r3_9006/final.diff",
+    "claude_md": "runs/hf04_A_r3_9006/CLAUDE.md",
+    "grade_log": "runs/hf04_A_r3_9006/grade.log",
+    "project": "C:\\b\\runs\\main-2026-09-28\\hf04_A_r3_9006"
+  },
+  "cleanup_errors": null
+}

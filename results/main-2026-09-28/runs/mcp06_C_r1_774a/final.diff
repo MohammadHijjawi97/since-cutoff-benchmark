@@ -1,0 +1,62 @@
+--- a/mcpcheck/inproc.py
++++ b/mcpcheck/inproc.py
+@@ -2,10 +2,22 @@
+ 
+ from __future__ import annotations
+ 
+-from typing import Any
++from mcp import Client
++from mcp.server import MCPServer
+ 
+-from mcpcheck.cases import Case, Mismatch
++from mcpcheck.cases import Case, Mismatch, compare
+ 
+ 
+-async def check_server(server: Any, cases: list[Case]) -> list[Mismatch]:
+-    raise NotImplementedError
++async def check_server(server: MCPServer, cases: list[Case]) -> list[Mismatch]:
++    """Connect to `server` in memory, call every case's tool in order and return the mismatches."""
++    mismatches: list[Mismatch] = []
++    # mode="legacy" runs the same initialize handshake and JSON-RPC session as check_command,
++    # just over in-memory streams instead of a subprocess's stdio.
++    async with Client(server, mode="legacy") as client:
++        session = client.session
++        for case in cases:
++            result = await session.call_tool(case.tool, case.arguments)
++            mismatch = compare(case, result)
++            if mismatch is not None:
++                mismatches.append(mismatch)
++    return mismatches
+--- /dev/null
++++ b/tests/test_inproc.py
+@@ -0,0 +1,30 @@
++import anyio
++from mcp.server import MCPServer
++
++from mcpcheck.cases import Case, Mismatch
++from mcpcheck.inproc import check_server
++
++
++def make_server() -> MCPServer:
++    server = MCPServer("demo")
++
++    @server.tool()
++    def add(a: int, b: int) -> int:
++        return a + b
++
++    @server.tool()
++    def greet(name: str) -> str:
++        return f"Hello, {name}!"
++
++    return server
++
++
++def test_check_server():
++    cases = [
++        Case("add", {"a": 2, "b": 3}, "5"),
++        Case("greet", {"name": "Ada"}, "Hi Ada"),
++        Case("greet", {"name": "Bob"}, "Hello, Bob!"),
++        Case("add", {"a": 1, "b": 1}, "3"),
++    ]
++    mismatches = anyio.run(check_server, make_server(), cases)
++    assert mismatches == [Mismatch(cases[1], "Hello, Ada!"), Mismatch(cases[3], "2")]

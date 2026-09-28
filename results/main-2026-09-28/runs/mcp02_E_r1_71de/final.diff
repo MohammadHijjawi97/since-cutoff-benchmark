@@ -1,0 +1,90 @@
+--- /dev/null
++++ b/_e2e_check.py
+@@ -0,0 +1,19 @@
++import sys
++
++import anyio
++
++from opsbot.calls import ToolCallFailed, run_tool
++from opsbot.connection import open_session
++
++
++async def main():
++    async with open_session([sys.executable, "_e2e_server.py"]) as s:
++        print(repr(await run_tool(s, "text", {})))
++        print(repr(await run_tool(s, "structured", {"x": "1"})))
++        try:
++            await run_tool(s, "fail", {})
++        except ToolCallFailed as e:
++            print("raised:", repr(e.tool), repr(e.message))
++
++
++anyio.run(main)
+--- /dev/null
++++ b/_e2e_server.py
+@@ -0,0 +1,36 @@
++import anyio
++from mcp.server import Server, ServerRequestContext
++from mcp.server.stdio import stdio_server
++from mcp.types import CallToolRequestParams, CallToolResult, ImageContent, ListToolsResult, TextContent, Tool
++
++TOOLS = [Tool(name=n, input_schema={"type": "object"}) for n in ("text", "structured", "fail", "zero")]
++
++
++async def list_tools(ctx, params):
++    return ListToolsResult(tools=TOOLS)
++
++
++async def call_tool(ctx: ServerRequestContext, params: CallToolRequestParams) -> CallToolResult:
++    img = ImageContent(type="image", data="aGk=", mime_type="image/png")
++    if params.name == "text":
++        return CallToolResult(content=[TextContent(type="text", text="a"), img, TextContent(type="text", text="b")])
++    if params.name == "structured":
++        return CallToolResult(
++            content=[TextContent(type="text", text="ignored")], structured_content={"ok": True, "args": params.arguments}
++        )
++    if params.name == "zero":
++        return CallToolResult(content=[TextContent(type="text", text="ignored")], structured_content=0)
++    return CallToolResult(
++        content=[TextContent(type="text", text="no such"), img, TextContent(type="text", text="version")], is_error=True
++    )
++
++
++server = Server("t", on_list_tools=list_tools, on_call_tool=call_tool)
++
++
++async def main():
++    async with stdio_server() as (r, w):
++        await server.run(r, w, server.create_initialization_options())
++
++
++anyio.run(main)
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -5,6 +5,7 @@
+ from typing import Any
+ 
+ from mcp import ClientSession
++from mcp.types import CallToolResult, TextContent
+ 
+ 
+ class ToolCallFailed(Exception):
+@@ -16,5 +17,17 @@
+         self.message = message
+ 
+ 
++def _text(result: CallToolResult) -> str:
++    """The result's text blocks joined with newlines."""
++    return "\n".join(block.text for block in result.content if isinstance(block, TextContent))
++
++
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    """Call tool `name` and return its structured output, or else its text."""
++    result = await session.call_tool(name, arguments)
++    if result.is_error:
++        raise ToolCallFailed(name, _text(result))
++    # Structured output may be any JSON value (e.g. 0, [] or ""), so only None means "absent".
++    if result.structured_content is not None:
++        return result.structured_content
++    return _text(result)

@@ -1,0 +1,18 @@
+--- a/app/summary.py
++++ b/app/summary.py
+@@ -3,10 +3,14 @@
+ from __future__ import annotations
+ 
+ from langchain_core.language_models import BaseChatModel
++from langchain_core.messages import HumanMessage, SystemMessage
+ 
+ from app.prompts import SUMMARY_PROMPT
+ from app.tickets import Ticket, ticket_text
+ 
+ 
+ def summarize_ticket(chat: BaseChatModel, ticket: Ticket) -> str:
+-    raise NotImplementedError
++    """A one-line summary of `ticket`; generation stops at the first blank line."""
++    messages = [SystemMessage(SUMMARY_PROMPT), HumanMessage(ticket_text(ticket))]
++    reply = chat.invoke(messages, stop=["\n\n"])
++    return str(reply.text).strip()

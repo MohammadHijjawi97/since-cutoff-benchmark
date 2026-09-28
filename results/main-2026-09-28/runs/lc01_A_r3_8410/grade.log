@@ -1,0 +1,13 @@
+task lc01 (lc01-retriever-context) project C:\b\runs\main-2026-09-28\lc01_A_r3_8410
+===== hidden tests: exit 0 in 13.1s
+$ C:\b\runs\main-2026-09-28\_grade\lc01_A_r3_8410\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\lc01_A_r3_8410\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\lc01_A_r3_8410\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\lc01_A_r3_8410\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\lc01_A_r3_8410\hidden.xml C:\b\runs\main-2026-09-28\_grade\lc01_A_r3_8410\proj\_bench_hidden
+....                                                                     [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\lc01_A_r3_8410\hidden.xml -
+4 passed in 2.18s
+
+===== visible tests: exit 0 in 1.9s
+$ C:\b\runs\main-2026-09-28\_grade\lc01_A_r3_8410\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\lc01_A_r3_8410\visible.xml
+....                                                                     [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\lc01_A_r3_8410\visible.xml -
+4 passed in 0.31s
+

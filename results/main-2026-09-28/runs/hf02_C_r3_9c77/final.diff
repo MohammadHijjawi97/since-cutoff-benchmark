@@ -1,0 +1,63 @@
+--- a/app/publish.py
++++ b/app/publish.py
+@@ -21,5 +21,19 @@
+     return info.commit_url
+ 
+ 
+-def publish_run(run_dir: str | Path, repo_id: str) -> None:
+-    raise NotImplementedError
++def publish_run(run_dir: str | Path, repo_id: str, api: HfApi | None = None) -> None:
++    """Mirror `run_dir` at the root of the private dataset repo `repo_id`, skipping `*.tmp` and `wandb/`.
++
++    With hf_xet (a dependency of huggingface_hub), `upload_folder` splits large folders into several commits and
++    resumes an interrupted upload when called again: files already committed are skipped.
++    """
++    api = api or HfApi()
++    run_dir = Path(run_dir)
++    api.create_repo(repo_id=repo_id, repo_type="dataset", private=True, exist_ok=True)
++    api.upload_folder(
++        repo_id=repo_id,
++        repo_type="dataset",
++        folder_path=run_dir,
++        ignore_patterns=["*.tmp", "wandb/*"],
++        commit_message=f"Upload run {run_dir.name}",
++    )
+--- a/tests/test_publish.py
++++ b/tests/test_publish.py
+@@ -1,6 +1,6 @@
+ from types import SimpleNamespace
+ 
+-from app.publish import SUMMARIES_REPO, publish_summary
++from app.publish import SUMMARIES_REPO, publish_run, publish_summary
+ 
+ 
+ class RecordingApi:
+@@ -24,3 +24,28 @@
+     (call,) = api.calls
+     assert call["repo_id"] == SUMMARIES_REPO and call["repo_type"] == "dataset"
+     assert call["path_in_repo"] == "run-0007/summary.json"
++
++
++class FolderRecordingApi:
++    def __init__(self):
++        self.calls = []
++
++    def create_repo(self, **kwargs):
++        self.calls.append(("create_repo", kwargs))
++
++    def upload_folder(self, **kwargs):
++        self.calls.append(("upload_folder", kwargs))
++
++
++def test_publish_run_creates_private_repo_and_uploads_folder(tmp_path):
++    api = FolderRecordingApi()
++
++    publish_run(tmp_path, "acme-ml/run-0007", api=api)
++
++    (create_name, create), (upload_name, upload) = api.calls
++    assert create_name == "create_repo" and upload_name == "upload_folder"
++    assert create["repo_id"] == "acme-ml/run-0007" and create["repo_type"] == "dataset"
++    assert create["private"] is True and create["exist_ok"] is True
++    assert upload["repo_id"] == "acme-ml/run-0007" and upload["repo_type"] == "dataset"
++    assert upload["folder_path"] == tmp_path and upload.get("path_in_repo") is None
++    assert set(upload["ignore_patterns"]) == {"*.tmp", "wandb/*"}

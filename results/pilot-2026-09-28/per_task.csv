@@ -1,0 +1,3 @@
+task,stratum,A,B,C,D,notes_covered,doc_hit
+ant01,post-cutoff,0/2,1/2,0/2,0/2,True,0/0
+mcp01,post-cutoff,2/2,2/2,2/2,2/2,False,2/2

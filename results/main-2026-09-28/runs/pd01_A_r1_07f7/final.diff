@@ -1,0 +1,56 @@
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -3,5 +3,21 @@
+ import pandas as pd
+ 
+ 
++def _clean_text(s: pd.Series) -> pd.Series:
++    """Strip whitespace from the strings in `s` and turn empty ones into missing."""
++    if isinstance(s.dtype, pd.StringDtype):
++        stripped = s.str.strip()
++    else:
++        # object columns may hold non-string values; leave those untouched
++        stripped = s.map(lambda v: v.strip() if isinstance(v, str) else v)
++    return stripped.mask(stripped.eq("") & stripped.notna())
++
++
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A cleaned copy of the orders frame; `df` itself is left unchanged."""
++    out = df.copy()
++    for col in out.select_dtypes(include=["object", "string"]).columns:
++        out[col] = _clean_text(out[col])
++    if "qty" in out.columns:
++        out["qty"] = out["qty"].fillna(0)
++    return out
+--- /dev/null
++++ b/scratch_check.py
+@@ -0,0 +1,28 @@
++import io
++
++import pandas as pd
++
++from app.clean import clean_orders
++from app.load import load_orders
++
++csv = "sku,qty,note,price\n  A1 ,2, hi ,1.5\nB2,,   ,2\n,3,x,\n"
++df = load_orders(io.StringIO(csv))
++print(dict(df.dtypes))
++before = df.copy()
++out = clean_orders(df)
++print(out)
++print(dict(out.dtypes))
++pd.testing.assert_frame_equal(df, before)
++
++o = pd.DataFrame(
++    {
++        "sku": pd.Series([" a ", "", None, 5], dtype=object),
++        "qty": [1, None, 2, None],
++        "note": ["x", " ", "y", "z"],
++    }
++)
++ob = o.copy()
++r = clean_orders(o)
++print(r)
++print(dict(r.dtypes))
++pd.testing.assert_frame_equal(o, ob)

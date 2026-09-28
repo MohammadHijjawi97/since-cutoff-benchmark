@@ -1,0 +1,60 @@
+--- /dev/null
++++ b/_kbcheck.py
+@@ -0,0 +1,33 @@
++import threading, time, anyio, uvicorn
++from mcp.server import MCPServer
++from kb.remote import search_remote
++
++srv = MCPServer("kb")
++
++
++@srv.tool()
++def search(query: str) -> str:
++    return f"Result for {query}\n\nOnboarding\n"
++
++
++seen = []
++inner = srv.streamable_http_app()
++
++
++async def app(scope, receive, send):
++    if scope["type"] == "http":
++        h = dict(scope["headers"]).get(b"authorization")
++        seen.append((scope["method"], h))
++        if h != b"Bearer s3cret":
++            await send({"type": "http.response.start", "status": 401, "headers": []})
++            await send({"type": "http.response.body", "body": b""})
++            return
++    await inner(scope, receive, send)
++
++
++s = uvicorn.Server(uvicorn.Config(app, port=8765, log_level="warning"))
++threading.Thread(target=s.run, daemon=True).start()
++time.sleep(1.5)
++print(anyio.run(search_remote, "http://127.0.0.1:8765/mcp", "s3cret", "keys"))
++print(seen)
++s.should_exit = True
+--- a/kb/remote.py
++++ b/kb/remote.py
+@@ -2,6 +2,20 @@
+ 
+ from __future__ import annotations
+ 
++import httpx2
++from mcp import ClientSession
++from mcp.client.streamable_http import streamable_http_client
++
++from kb.results import split_titles
++
+ 
+ async def search_remote(url: str, token: str, query: str) -> list[str]:
+-    raise NotImplementedError
++    # Same timeouts as the SDK's default client: the server may hold a response stream open.
++    timeout = httpx2.Timeout(30.0, read=300.0)
++    headers = {"Authorization": f"Bearer {token}"}
++    async with httpx2.AsyncClient(headers=headers, timeout=timeout) as http_client:
++        async with streamable_http_client(url, http_client=http_client) as (read, write):
++            async with ClientSession(read, write) as session:
++                await session.initialize()
++                result = await session.call_tool("search", {"query": query})
++    return split_titles(result)

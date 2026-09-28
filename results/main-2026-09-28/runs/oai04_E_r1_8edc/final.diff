@@ -1,0 +1,23 @@
+--- a/app/drafts.py
++++ b/app/drafts.py
+@@ -45,4 +45,19 @@
+ 
+ 
+ def draft_reply(client: OpenAI, ticket: Ticket) -> Draft:
+-    raise NotImplementedError
++    """A reply draft for the ticket, flagged as truncated if it hit MAX_DRAFT_TOKENS."""
++    response = client.responses.create(
++        model=DRAFT_MODEL,
++        instructions=STYLE_GUIDE,
++        input=f"{ticket.subject}\n\n{ticket.body}",
++        max_output_tokens=MAX_DRAFT_TOKENS,
++        store=False,
++        metadata={"ticket_id": ticket.id},
++    )
++    details = response.incomplete_details
++    truncated = (
++        response.status == "incomplete"
++        and details is not None
++        and details.reason == "max_output_tokens"
++    )
++    return Draft(ticket_id=ticket.id, text=response.output_text.strip(), truncated=truncated)

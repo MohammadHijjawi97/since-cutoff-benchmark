@@ -1,0 +1,61 @@
+--- a/tests/fakes.py
++++ b/tests/fakes.py
+@@ -5,8 +5,10 @@
+ import json
+ from contextlib import contextmanager
+ from typing import Iterator
++from unittest import mock
+ 
+ import httpx
++import httpx2
+ import respx
+ 
+ OPENAI_BASE_URL = "https://api.openai.com/v1"
+@@ -55,4 +57,26 @@
+ 
+     with respx.mock(base_url=OPENAI_BASE_URL, assert_all_called=False) as router:
+         router.post("/chat/completions").mock(side_effect=answer)
+-        yield seen
++        with _route_httpx2_through(router):
++            yield seen
++
++
++@contextmanager
++def _route_httpx2_through(router: respx.Router) -> Iterator[None]:
++    """Send every request of a sync `httpx2.Client` to `router` while the block is active.
++
++    Since openai 3.x the SDK talks HTTP through httpx2, which respx does not patch; respx
++    still covers legacy `httpx.Client` instances passed in as `http_client`. Patching the
++    class method (rather than a transport instance) also catches clients created earlier.
++    """
++
++    def handle(request: httpx2.Request) -> httpx2.Response:
++        # Router.handler raises AllMockedAssertionError for unrouted requests, like respx does.
++        response = router.handler(
++            httpx.Request(request.method, str(request.url), headers=request.headers.raw, content=request.content)
++        )
++        return httpx2.Response(response.status_code, headers=response.headers.raw, content=response.read())
++
++    transport = httpx2.MockTransport(handle)
++    with mock.patch.object(httpx2.Client, "_transport_for_url", lambda self, url: transport):
++        yield
+--- /dev/null
++++ b/tests/test_zz_tmp_check.py
+@@ -0,0 +1,17 @@
++import openai
++import pytest
++from openai import OpenAI
++
++from tests.fakes import mock_openai
++
++
++def test_mock_scope():
++    before = OpenAI(api_key="x", max_retries=0)
++    with mock_openai("one") as seen:
++        inside = OpenAI(api_key="x", max_retries=0)
++        assert before.chat.completions.create(model="m", messages=[]).choices[0].message.content == "one"
++        with pytest.raises(openai.BadRequestError):
++            inside.chat.completions.create(model="m", messages=[])
++    assert len(seen) == 2
++    with pytest.raises(openai.APIConnectionError):
++        before.chat.completions.create(model="m", messages=[])

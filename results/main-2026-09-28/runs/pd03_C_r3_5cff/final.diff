@@ -1,0 +1,43 @@
+--- a/app/gaps.py
++++ b/app/gaps.py
+@@ -6,4 +6,11 @@
+ 
+ 
+ def fill_gaps(readings: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Fill missing ``temp_c`` from the same station: previous value first, else the next one."""
++    filled = readings.copy()
++    # Rows without a station id belong to no group: transform gives NaN for them, so only
++    # use it to fill gaps and never to overwrite an existing reading.
++    by_station = filled.groupby("station", sort=False)["temp_c"]
++    fills = by_station.transform(lambda temps: temps.ffill().bfill())
++    filled["temp_c"] = filled["temp_c"].fillna(fills)
++    return filled
+--- /dev/null
++++ b/scratch_check.py
+@@ -0,0 +1,25 @@
++import numpy as np
++import pandas as pd
++
++from app.gaps import fill_gaps
++from app.readings import load_readings
++
++df = pd.DataFrame(
++    {
++        "station": ["A", "B", "A", "C", "B", "A", None, None, "B"],
++        "ts": pd.date_range("2026-01-01", periods=9, freq="h"),
++        "temp_c": [np.nan, 1.0, 5.0, np.nan, np.nan, np.nan, np.nan, 7.0, np.nan],
++        "battery": [1, 2, 3, 4, 5, 6, 7, 8, 9],
++    },
++    index=[5, 5, 1, 2, 3, 4, 0, 9, 9],
++)
++orig = df.copy()
++out = fill_gaps(df)
++print(out)
++assert df.equals(orig)
++exp = pd.Series([5.0, 1.0, 5.0, np.nan, 1.0, 5.0, np.nan, 7.0, 1.0], index=df.index, name="temp_c")
++pd.testing.assert_series_equal(out["temp_c"], exp)
++pd.testing.assert_frame_equal(out.drop(columns="temp_c"), df.drop(columns="temp_c"))
++r = load_readings("tests/data/reports.csv")
++print(r)
++print(fill_gaps(r))

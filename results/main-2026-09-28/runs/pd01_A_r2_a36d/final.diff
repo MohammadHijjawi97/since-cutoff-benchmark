@@ -1,0 +1,97 @@
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -3,5 +3,27 @@
+ import pandas as pd
+ 
+ 
++def _clean_text(s: pd.Series) -> pd.Series:
++    """Strip whitespace from the strings in ``s`` and turn empty strings into missing values."""
++    if isinstance(s.dtype, pd.StringDtype):
++        stripped = s.str.strip()
++    else:
++        # Object columns can hold non-string values; leave those untouched.
++        stripped = pd.Series(
++            [v.strip() if isinstance(v, str) else v for v in s],
++            index=s.index,
++            dtype=object,
++            name=s.name,
++        )
++    return stripped.mask(stripped.eq("").fillna(False).astype(bool))
++
++
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A cleaned copy of the orders frame; ``df`` itself is left unchanged."""
++    out = df.copy()
++    for col in out.columns:
++        dtype = out[col].dtype
++        if dtype == object or isinstance(dtype, pd.StringDtype):
++            out[col] = _clean_text(out[col])
++    out["qty"] = out["qty"].fillna(0)
++    return out
+--- /dev/null
++++ b/tests/test_clean_orders.py
+@@ -0,0 +1,63 @@
++import io
++
++import numpy as np
++import pandas as pd
++
++from app.clean import clean_orders
++from app.load import load_orders
++
++CSV = "sku,qty,note,price\n a ,1, x ,1.5\n,,  ,\nb,2,,2\nc ,3,ok,3\n"
++
++
++def _orders():
++    return load_orders(io.StringIO(CSV))
++
++
++def test_strips_text_and_blanks_become_missing():
++    out = clean_orders(_orders())
++    assert out["sku"].tolist()[0] == "a"
++    assert pd.isna(out["sku"][1])
++    assert out["sku"][3] == "c"
++    assert out["note"][0] == "x"
++    assert pd.isna(out["note"][1])
++    assert pd.isna(out["note"][2])
++    assert out["note"][3] == "ok"
++
++
++def test_fills_missing_qty_with_zero():
++    out = clean_orders(_orders())
++    assert out["qty"].tolist() == [1, 0, 2, 3]
++
++
++def test_leaves_other_values_alone():
++    out = clean_orders(_orders())
++    assert out["price"][0] == 1.5
++    assert pd.isna(out["price"][1])
++    assert list(out.columns) == ["sku", "qty", "note", "price"]
++
++
++def test_does_not_modify_input():
++    df = _orders()
++    before = df.copy()
++    clean_orders(df)
++    pd.testing.assert_frame_equal(df, before)
++
++
++def test_object_column_with_non_strings():
++    df = pd.DataFrame(
++        {"sku": pd.Series([" a ", "", 5, None], dtype=object), "qty": [1.0, np.nan, 2.0, 3.0]}
++    )
++    out = clean_orders(df)
++    assert out["sku"][0] == "a"
++    assert pd.isna(out["sku"][1])
++    assert out["sku"][2] == 5
++    assert pd.isna(out["sku"][3])
++    assert df["sku"][0] == " a "
++
++
++def test_nullable_string_dtype():
++    df = pd.DataFrame({"sku": pd.array([" a ", " ", None], dtype="string"), "qty": [1, 2, 3]})
++    out = clean_orders(df)
++    assert out["sku"][0] == "a"
++    assert pd.isna(out["sku"][1])
++    assert pd.isna(out["sku"][2])

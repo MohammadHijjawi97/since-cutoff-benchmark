@@ -1,0 +1,51 @@
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -3,5 +3,25 @@
+ import pandas as pd
+ 
+ 
++def _is_text(dtype) -> bool:
++    # pandas 3 stores text in the "str" dtype by default, but object columns
++    # can still show up (e.g. frames built by hand), so accept both.
++    return isinstance(dtype, pd.StringDtype) or pd.api.types.is_object_dtype(dtype)
++
++
++def _clean_text(s: pd.Series) -> pd.Series:
++    # Only touch actual strings, so non-string values in object columns survive.
++    s = s.map(lambda v: v.strip() if isinstance(v, str) else v)
++    empty = s.map(lambda v: isinstance(v, str) and v == "").astype(bool)
++    return s.mask(empty)
++
++
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A copy of the orders frame with tidied text and missing quantities set to 0."""
++    out = df.copy()
++    for col in out.columns:
++        if _is_text(out[col].dtype):
++            out[col] = _clean_text(out[col])
++    if "qty" in out.columns:
++        out["qty"] = out["qty"].fillna(0)
++    return out
+--- /dev/null
++++ b/scratch_check.py
+@@ -0,0 +1,19 @@
++import io
++
++import pandas as pd
++
++from app.clean import clean_orders
++from app.load import load_orders
++
++csv = "sku,qty,note,price\n  A1 ,3,  hi ,1.5\nB2,, ,2.0\n,5,x,\n"
++df = load_orders(io.StringIO(csv))
++before = df.copy()
++out = clean_orders(df)
++print(df.dtypes.to_dict())
++print(out.dtypes.to_dict())
++print(out.to_dict("list"))
++pd.testing.assert_frame_equal(df, before)
++
++obj = pd.DataFrame({"sku": pd.Series([" a ", "", 7, None], dtype=object), "qty": [1, None, 2, None]})
++r = clean_orders(obj)
++print(r.to_dict("list"), r.dtypes.to_dict())

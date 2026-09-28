@@ -1,0 +1,267 @@
+{
+  "schema": "since-cutoff-bench/run@1",
+  "study_id": "main-2026-09-28",
+  "run_id": "mcp06_C_r1_774a",
+  "attempt": 1,
+  "attempt_id": "mcp06_C_r1_774a",
+  "task_id": "mcp06-in-memory-client",
+  "task": "mcp06",
+  "task_sha256": "4e5cf1eb1ca5899972a22ec943e2a432c3871fa392e05e0025538a16da594d15",
+  "library": "mcp",
+  "pinned": "2.2.0",
+  "cutoff_version": "1.28.1",
+  "stratum": "post-cutoff",
+  "kind": "post-cutoff-loud",
+  "condition": "C",
+  "rep": 1,
+  "block_id": "mcp06#1",
+  "order_index": 208,
+  "pilot": false,
+  "condition_config": {
+    "condition": "C",
+    "claude_md_sha256": "4183b5381ff6d5ce5db72a1337996a68663aee68e190ff374061f0c73578baeb",
+    "notes_sha256": "775d51f768ff1318a9946d5fa8d14908ddba7a4d7e250e4ac313c451462b982d",
+    "notes_tokens": 426,
+    "notes_covered": false,
+    "mcp": "none",
+    "mcp_config_sha256": "1e0fe4707a42d1cce5d4e89af209cc6317e979348f1a1a3e1eda481a1467821e",
+    "context7_key": null,
+    "settings_sha256": "08f1b1cc94823f762daa4df2882c07fe013ba553efef38ab128b5cddc95f5694",
+    "allowed_tools_extra": null
+  },
+  "agent": {
+    "claude_code_version": "2.1.283",
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "argv": [
+      "C:\\Users\\Mohammad Hijjawi\\.local\\bin\\claude.exe",
+      "-p",
+      "--model",
+      "claude-opus-5-5",
+      "--effort",
+      "medium",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--max-turns",
+      "40",
+      "--max-budget-usd",
+      "3",
+      "--permission-mode",
+      "dontAsk",
+      "--tools",
+      "Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill",
+      "--settings",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\claude_settings.json",
+      "--setting-sources",
+      "project",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\mcp_none.json",
+      "--no-session-persistence"
+    ],
+    "env": {
+      "ALLUSERSPROFILE": "C:\\ProgramData",
+      "APPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Roaming",
+      "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+      "CLAUDE_CODE_GIT_BASH_PATH": "C:\\Program Files\\Git\\bin\\bash.exe",
+      "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
+      "COMMONPROGRAMFILES": "C:\\Program Files\\Common Files",
+      "COMMONPROGRAMFILES(X86)": "C:\\Program Files (x86)\\Common Files",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "DISABLE_AUTOUPDATER": "1",
+      "ENABLE_TOOL_SEARCH": "false",
+      "HF_HOME": "C:\\b\\tmp\\main-2026-09-28\\mcp06_C_r1_774a\\hf",
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "<set>",
+      "HOMEDRIVE": "C:",
+      "HOMEPATH": "\\Users\\Mohammad Hijjawi",
+      "LOCALAPPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Local",
+      "MCP_TIMEOUT": "60000",
+      "NUMBER_OF_PROCESSORS": "32",
+      "OS": "Windows_NT",
+      "PATH": "C:\\b\\runs\\main-2026-09-28\\mcp06_C_r1_774a\\.venv\\Scripts;C:\\WINDOWS\\System32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0",
+      "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC",
+      "PROCESSOR_ARCHITECTURE": "AMD64",
+      "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+      "PROGRAMDATA": "C:\\ProgramData",
+      "PROGRAMFILES": "C:\\Program Files",
+      "PROGRAMFILES(X86)": "C:\\Program Files (x86)",
+      "PROGRAMW6432": "C:\\Program Files",
+      "PYTEST_ADDOPTS": "--allow-hosts=127.0.0.1,::1",
+      "SYSTEMDRIVE": "C:",
+      "SYSTEMROOT": "C:\\WINDOWS",
+      "TEMP": "C:\\b\\tmp\\main-2026-09-28\\mcp06_C_r1_774a",
+      "TMP": "C:\\b\\tmp\\main-2026-09-28\\mcp06_C_r1_774a",
+      "USERPROFILE": "C:\\Users\\Mohammad Hijjawi",
+      "VIRTUAL_ENV": "C:\\b\\runs\\main-2026-09-28\\mcp06_C_r1_774a\\.venv",
+      "WINDIR": "C:\\WINDOWS"
+    },
+    "init_model": "claude-opus-5-5",
+    "init_version": "2.1.283",
+    "api_key_source": "none"
+  },
+  "harness": {
+    "code_sha256": "90165f07c60f304b318a125d3ba40d4a72da1acdfb24293eaebf9ca1dc5c4342"
+  },
+  "python_isolation": "_hf_isolation.pth",
+  "started_at": "2026-09-28T06:24:19+00:00",
+  "ended_at": "2026-09-28T06:25:10+00:00",
+  "wall_s": 50.2,
+  "exit": {
+    "code": 0,
+    "timed_out": false,
+    "subtype": "success",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "orphans_killed": 1
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 16,
+    "duration_ms": 49207,
+    "duration_api_ms": 37397,
+    "total_cost_usd": 0.2832364,
+    "usage": {
+      "input_tokens": 20,
+      "cache_creation_input_tokens": 21615,
+      "cache_read_input_tokens": 169282,
+      "output_tokens": 3819,
+      "output_tokens_details": {
+        "thinking_tokens": 671
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 21615,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 639,
+          "cache_read_input_tokens": 27187,
+          "cache_creation_input_tokens": 831,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 831
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 20,
+        "outputTokens": 3819,
+        "cacheReadInputTokens": 169282,
+        "cacheCreationInputTokens": 21615,
+        "webSearchRequests": 0,
+        "costUSD": 0.2832364,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 671,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": 1,
+    "permission_denied_tools": [
+      "Bash"
+    ],
+    "terminal_reason": "completed",
+    "result_text": "I implemented `check_server(server, cases)` in `mcpcheck/inproc.py`. All 3 tests pass, including a new one that runs it against a real `MCPServer`.\n\n**How it works:** it opens `mcp.Client(server, mode=\"legacy\")`, which runs the server in a background task and connects to it through in-memory streams, so there's no subprocess and no sockets. It then does what `check_command` does: it calls `session.call_tool(case.tool, case.arguments)` on the underlying `ClientSession` for each case in order and runs each result through the same `compare()`. It returns the mismatches in case order.\n\n- **Why `mode=\"legacy\"`:** by default, mcp 2.2's `Client` talks to an in-process server directly, skipping JSON-RPC framing and the initialize handshake. Legacy mode keeps both, so the in-process path behaves the same as the stdio path.\n- **Why `Client`:** I used it instead of building the session myself because the SDK's in-memory transport is private (`mcp.client._memory`), and connecting an `MCPServer` by hand would mean reaching into its private `_lowlevel_server`. `Client` is the SDK's public way to do this.\n- **Type hint:** `server` is typed as `MCPServer`, the new name for `FastMCP` in mcp 2.2. At runtime a low-level `Server` would also work.\n- **Dependencies:** none added.\n\n**Test:** `tests/test_inproc.py` builds a small server with `@server.tool()` (`add`, `greet`) and runs four cases, two of which fail on purpose. It checks that exactly those two mismatches come back, in order, with the server's actual output. It uses `anyio.run`, which is already installed with mcp, so it needs no async pytest plugin."
+  },
+  "mcp": {
+    "servers": [],
+    "errors": [],
+    "calls": {},
+    "doc_hit": false,
+    "doc_keys_found": []
+  },
+  "process": {
+    "tool_calls": {
+      "Bash": 2,
+      "Glob": 1,
+      "Grep": 3,
+      "Read": 7,
+      "Write": 2
+    },
+    "denied_calls": 1,
+    "pytest_runs": 1,
+    "failing_pytest_runs": 0,
+    "py_edits": 2,
+    "edits_after_first_failure": 0,
+    "stale_in_first_edit": false,
+    "stale_first_edit_patterns": [],
+    "site_packages_reads": 6,
+    "introspection_cmds": 0,
+    "context7_calls": 0,
+    "context7_calls_by_tool": {},
+    "context7_errors": 0,
+    "doc_hit": false,
+    "doc_keys_found": [],
+    "skills": [],
+    "network_like_cmds": 0,
+    "network_like_examples": [],
+    "api_retries": 0,
+    "bad_stream_lines": 0,
+    "stale_in_final": false,
+    "files_changed": [
+      "mcpcheck/inproc.py",
+      "tests/test_inproc.py"
+    ]
+  },
+  "venv": {
+    "added": {},
+    "removed": {},
+    "changed": {},
+    "modified": false
+  },
+  "grade": {
+    "passed": true,
+    "hidden_passed": true,
+    "hidden": {
+      "exit_code": 0,
+      "passed": 2,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 10.89,
+      "timed_out": false
+    },
+    "visible_passed": true,
+    "visible": {
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 1.75,
+      "timed_out": false
+    },
+    "lock_modified": false,
+    "lock_changes": [],
+    "env_lock_sha256": "deac184832707ce90301a3dce10a95aa3d8c3f1680df0244b2278cac41ebd323",
+    "grade_s": 27.1,
+    "venv_modified": false
+  },
+  "valid": true,
+  "invalid_reason": null,
+  "invalid_detail": null,
+  "artifacts": {
+    "stream": "runs/mcp06_C_r1_774a/stream.jsonl",
+    "stderr": "runs/mcp06_C_r1_774a/stderr.log",
+    "diff": "runs/mcp06_C_r1_774a/final.diff",
+    "claude_md": "runs/mcp06_C_r1_774a/CLAUDE.md",
+    "grade_log": "runs/mcp06_C_r1_774a/grade.log",
+    "project": "C:\\b\\runs\\main-2026-09-28\\mcp06_C_r1_774a"
+  },
+  "cleanup_errors": null
+}

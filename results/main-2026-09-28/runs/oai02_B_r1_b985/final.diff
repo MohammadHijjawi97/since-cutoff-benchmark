@@ -1,0 +1,65 @@
+--- a/tests/fakes.py
++++ b/tests/fakes.py
+@@ -5,8 +5,10 @@
+ import json
+ from contextlib import contextmanager
+ from typing import Iterator
++from unittest import mock
+ 
+ import httpx
++import httpx2
+ import respx
+ 
+ OPENAI_BASE_URL = "https://api.openai.com/v1"
+@@ -55,4 +57,27 @@
+ 
+     with respx.mock(base_url=OPENAI_BASE_URL, assert_all_called=False) as router:
+         router.post("/chat/completions").mock(side_effect=answer)
+-        yield seen
++        # respx only patches httpx/httpcore, but openai>=3 sends through httpx2. Route every
++        # httpx2 client (whenever it was created) through the same router while the block runs.
++        with mock.patch.object(httpx2.Client, "_transport_for_url", _via_router(router)):
++            yield seen
++
++
++def _via_router(router: respx.Router):
++    """A stand-in for `httpx2.Client._transport_for_url` that answers requests from `router`."""
++
++    def handle(request: httpx2.Request) -> httpx2.Response:
++        reply = router.handler(
++            httpx.Request(
++                request.method,
++                str(request.url),
++                headers=request.headers.raw,
++                content=request.read(),
++            )
++        )
++        return httpx2.Response(reply.status_code, headers=reply.headers.raw, content=reply.read())
++
++    def transport_for_url(self: httpx2.Client, url: httpx2.URL) -> httpx2.BaseTransport:
++        return httpx2.MockTransport(handle)
++
++    return transport_for_url
+--- /dev/null
++++ b/tests/test_zz_check.py
+@@ -0,0 +1,20 @@
++import openai
++import pytest
++from openai import OpenAI
++
++from tests.fakes import mock_openai
++
++MSG = [{"role": "user", "content": "hi"}]
++
++
++def test_contract():
++    before = OpenAI(api_key="x", max_retries=0)
++    with mock_openai("one") as seen:
++        inside = OpenAI(api_key="x", max_retries=0)
++        r = before.chat.completions.create(model="m", messages=MSG)
++        assert r.choices[0].message.content == "one"
++        with pytest.raises(openai.BadRequestError):
++            inside.chat.completions.create(model="m", messages=MSG)
++    assert len(seen) == 2
++    with pytest.raises(openai.APIConnectionError):
++        before.chat.completions.create(model="m", messages=MSG)

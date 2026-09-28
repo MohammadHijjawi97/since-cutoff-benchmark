@@ -1,0 +1,62 @@
+--- a/mcpcheck/inproc.py
++++ b/mcpcheck/inproc.py
+@@ -4,8 +4,20 @@
+ 
+ from typing import Any
+ 
+-from mcpcheck.cases import Case, Mismatch
++from mcp import Client
++
++from mcpcheck.cases import Case, Mismatch, compare
+ 
+ 
+ async def check_server(server: Any, cases: list[Case]) -> list[Mismatch]:
+-    raise NotImplementedError
++    """Connect to `server` in memory, call every case's tool in order and return the mismatches."""
++    mismatches: list[Mismatch] = []
++    # mode="legacy" runs the initialize handshake over in-memory JSON-RPC streams,
++    # the same protocol path check_command takes over stdio.
++    async with Client(server, mode="legacy") as client:
++        for case in cases:
++            result = await client.session.call_tool(case.tool, case.arguments)
++            mismatch = compare(case, result)
++            if mismatch is not None:
++                mismatches.append(mismatch)
++    return mismatches
+--- /dev/null
++++ b/tests/test_inproc.py
+@@ -0,0 +1,34 @@
++import anyio
++from mcp.server.mcpserver import MCPServer
++
++from mcpcheck.cases import Case, Mismatch
++from mcpcheck.inproc import check_server
++
++
++def make_server() -> MCPServer:
++    server = MCPServer("demo")
++
++    @server.tool()
++    def add(a: int, b: int) -> int:
++        return a + b
++
++    @server.tool()
++    def greet(name: str) -> str:
++        return f"Hello, {name}!"
++
++    return server
++
++
++def test_check_server_passes():
++    cases = [Case("add", {"a": 2, "b": 3}, "5"), Case("greet", {"name": "Ada"}, "Hello, Ada!")]
++    assert anyio.run(check_server, make_server(), cases) == []
++
++
++def test_check_server_reports_mismatches_in_order():
++    bad_add = Case("add", {"a": 2, "b": 2}, "5")
++    good = Case("greet", {"name": "Ada"}, "Hello, Ada!")
++    bad_greet = Case("greet", {"name": "Bob"}, "Hi Bob")
++    assert anyio.run(check_server, make_server(), [bad_add, good, bad_greet]) == [
++        Mismatch(bad_add, "4"),
++        Mismatch(bad_greet, "Hello, Bob!"),
++    ]

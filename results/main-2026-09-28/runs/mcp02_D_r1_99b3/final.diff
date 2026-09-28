@@ -1,0 +1,78 @@
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -4,7 +4,7 @@
+ 
+ from typing import Any
+ 
+-from mcp import ClientSession
++from mcp import ClientSession, types
+ 
+ 
+ class ToolCallFailed(Exception):
+@@ -16,5 +16,15 @@
+         self.message = message
+ 
+ 
++def _text(result: types.CallToolResult) -> str:
++    return "\n".join(block.text for block in result.content if isinstance(block, types.TextContent))
++
++
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    result = await session.call_tool(name, arguments)
++    if result.is_error:
++        raise ToolCallFailed(name, _text(result))
++    # Structured output may be any JSON value (including 0, "" or []), so test against None.
++    if result.structured_content is not None:
++        return result.structured_content
++    return _text(result)
+--- /dev/null
++++ b/tests/test_calls.py
+@@ -0,0 +1,47 @@
++from typing import Any
++
++import anyio
++import pytest
++from mcp import types
++
++from opsbot.calls import ToolCallFailed, run_tool
++
++
++class FakeSession:
++    def __init__(self, result: types.CallToolResult) -> None:
++        self.result = result
++        self.calls: list[tuple[str, dict[str, Any]]] = []
++
++    async def call_tool(self, name: str, arguments: dict[str, Any]) -> types.CallToolResult:
++        self.calls.append((name, arguments))
++        return self.result
++
++
++def text(*lines: str) -> list[types.ContentBlock]:
++    return [types.TextContent(type="text", text=line) for line in lines]
++
++
++def call(result: types.CallToolResult) -> Any:
++    session = FakeSession(result)
++
++    async def go() -> Any:
++        return await run_tool(session, "deploy", {"version": "4.3.0"})  # type: ignore[arg-type]
++
++    value = anyio.run(go)
++    assert session.calls == [("deploy", {"version": "4.3.0"})]
++    return value
++
++
++def test_error_raises_with_joined_text():
++    with pytest.raises(ToolCallFailed) as info:
++        call(types.CallToolResult(content=text("no such", "version"), is_error=True))
++    assert (info.value.tool, info.value.message) == ("deploy", "no such\nversion")
++
++
++def test_structured_content_returned_as_is():
++    assert call(types.CallToolResult(content=text("ignored"), structured_content={"ok": True})) == {"ok": True}
++    assert call(types.CallToolResult(content=text("ignored"), structured_content=[])) == []
++
++
++def test_text_blocks_joined():
++    assert call(types.CallToolResult(content=text("a", "b"))) == "a\nb"

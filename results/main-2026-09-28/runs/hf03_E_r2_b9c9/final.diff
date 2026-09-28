@@ -1,0 +1,44 @@
+--- a/app/catalog.py
++++ b/app/catalog.py
+@@ -17,5 +17,11 @@
+     return {"id": info.id, "downloads": info.downloads, "likes": info.likes}
+ 
+ 
+-def find_candidates(name_fragment: str, task: str, limit: int = 5) -> list[str]:
+-    raise NotImplementedError
++def find_candidates(name_fragment: str, task: str, limit: int = 5, api: HfApi | None = None) -> list[str]:
++    """Ids of the `limit` most downloaded public models matching a name fragment and task.
++
++    Filtering, sorting and limiting all happen server-side in a single listing request.
++    """
++    api = api or HfApi()
++    models = api.list_models(search=name_fragment, pipeline_tag=task, sort="downloads", limit=limit)
++    return [m.id for m in models]
+--- a/tests/test_catalog.py
++++ b/tests/test_catalog.py
+@@ -1,6 +1,6 @@
+ from types import SimpleNamespace
+ 
+-from app.catalog import ORG, org_models
++from app.catalog import ORG, find_candidates, org_models
+ 
+ 
+ class FakeApi:
+@@ -16,3 +16,17 @@
+     api = FakeApi()
+     assert org_models(api=api) == [f"{ORG}/whisper-medium-de", f"{ORG}/whisper-small-nl"]
+     assert api.kwargs["author"] == ORG
++
++
++def test_find_candidates_filters_sorts_and_limits_on_the_hub():
++    api = FakeApi()
++    assert find_candidates("whisper", "automatic-speech-recognition", limit=2, api=api) == [
++        f"{ORG}/whisper-medium-de",
++        f"{ORG}/whisper-small-nl",
++    ]
++    assert api.kwargs == {
++        "search": "whisper",
++        "pipeline_tag": "automatic-speech-recognition",
++        "sort": "downloads",
++        "limit": 2,
++    }

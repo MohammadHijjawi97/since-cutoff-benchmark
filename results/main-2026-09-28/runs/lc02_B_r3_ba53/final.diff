@@ -1,0 +1,52 @@
+--- a/app/summary.py
++++ b/app/summary.py
+@@ -3,10 +3,14 @@
+ from __future__ import annotations
+ 
+ from langchain_core.language_models import BaseChatModel
++from langchain_core.messages import HumanMessage, SystemMessage
+ 
+ from app.prompts import SUMMARY_PROMPT
+ from app.tickets import Ticket, ticket_text
+ 
+ 
+ def summarize_ticket(chat: BaseChatModel, ticket: Ticket) -> str:
+-    raise NotImplementedError
++    messages = [SystemMessage(SUMMARY_PROMPT), HumanMessage(ticket_text(ticket))]
++    reply = chat.invoke(messages, stop=["\n\n"])
++    # .text flattens list-of-blocks content (and is a str subclass), so coerce to plain str.
++    return str(reply.text).strip()
+--- /dev/null
++++ b/tests/test_summary.py
+@@ -0,0 +1,31 @@
++from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
++from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
++
++from app.prompts import SUMMARY_PROMPT
++from app.summary import summarize_ticket
++from app.tickets import Ticket, ticket_text
++
++
++class RecordingChat(GenericFakeChatModel):
++    calls: list = []
++
++    def _generate(self, messages, stop=None, run_manager=None, **kwargs):
++        self.calls.append((messages, stop))
++        return super()._generate(messages, stop, run_manager, **kwargs)
++
++
++def test_summarize_ticket():
++    ticket = Ticket(id=17, customer="Globex", subject="Login loop", body="Users are sent back to login.")
++    reply = AIMessage(content=[{"type": "text", "text": "  Globex users stuck in a login loop.\n"}])
++    chat = RecordingChat(messages=iter([reply]), calls=[])
++
++    summary = summarize_ticket(chat, ticket)
++
++    assert summary == "Globex users stuck in a login loop."
++    assert type(summary) is str
++    assert len(chat.calls) == 1
++    messages, stop = chat.calls[0]
++    assert stop == ["\n\n"]
++    assert [type(m) for m in messages] == [SystemMessage, HumanMessage]
++    assert messages[0].content == SUMMARY_PROMPT
++    assert messages[1].content == ticket_text(ticket)

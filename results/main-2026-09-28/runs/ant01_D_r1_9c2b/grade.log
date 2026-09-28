@@ -1,0 +1,13 @@
+task ant01 (ant01-sampling-params) project C:\b\runs\main-2026-09-28\ant01_D_r1_9c2b
+===== hidden tests: exit 0 in 27.0s
+$ C:\b\runs\main-2026-09-28\_grade\ant01_D_r1_9c2b\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\ant01_D_r1_9c2b\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\ant01_D_r1_9c2b\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\ant01_D_r1_9c2b\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\ant01_D_r1_9c2b\hidden.xml C:\b\runs\main-2026-09-28\_grade\ant01_D_r1_9c2b\proj\_bench_hidden
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\ant01_D_r1_9c2b\hidden.xml -
+2 passed in 23.78s
+
+===== visible tests: exit 0 in 3.6s
+$ C:\b\runs\main-2026-09-28\_grade\ant01_D_r1_9c2b\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\ant01_D_r1_9c2b\visible.xml
+.                                                                        [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\ant01_D_r1_9c2b\visible.xml -
+1 passed in 2.00s
+

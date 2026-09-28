@@ -1,0 +1,16 @@
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -17,4 +17,12 @@
+ 
+ 
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    """Call tool `name` and return its structured output, or else its text."""
++    result = await session.call_tool(name, arguments)
++    text = "\n".join(block.text for block in result.content if block.type == "text")
++    if result.is_error:
++        raise ToolCallFailed(name, text)
++    # Structured output may be any JSON value (0, "", [] included), so test for absence only.
++    if result.structured_content is not None:
++        return result.structured_content
++    return text

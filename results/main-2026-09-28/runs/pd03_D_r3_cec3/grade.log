@@ -1,0 +1,13 @@
+task pd03 (pd03-fill-gaps) project C:\b\runs\main-2026-09-28\pd03_D_r3_cec3
+===== hidden tests: exit 0 in 12.1s
+$ C:\b\runs\main-2026-09-28\_grade\pd03_D_r3_cec3\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\pd03_D_r3_cec3\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\pd03_D_r3_cec3\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\pd03_D_r3_cec3\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\pd03_D_r3_cec3\hidden.xml C:\b\runs\main-2026-09-28\_grade\pd03_D_r3_cec3\proj\_bench_hidden
+....                                                                     [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\pd03_D_r3_cec3\hidden.xml -
+4 passed in 9.85s
+
+===== visible tests: exit 0 in 1.9s
+$ C:\b\runs\main-2026-09-28\_grade\pd03_D_r3_cec3\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\pd03_D_r3_cec3\visible.xml
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\pd03_D_r3_cec3\visible.xml -
+2 passed in 1.28s
+

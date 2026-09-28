@@ -1,0 +1,13 @@
+task hf01 (hf01-tgi-stop) project C:\b\runs\main-2026-09-28\hf01_B_r1_228b
+===== hidden tests: exit 0 in 6.6s
+$ C:\b\runs\main-2026-09-28\_grade\hf01_B_r1_228b\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\hf01_B_r1_228b\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\hf01_B_r1_228b\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\hf01_B_r1_228b\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\hf01_B_r1_228b\hidden.xml C:\b\runs\main-2026-09-28\_grade\hf01_B_r1_228b\proj\_bench_hidden
+.                                                                        [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\hf01_B_r1_228b\hidden.xml -
+1 passed in 4.10s
+
+===== visible tests: exit 0 in 3.4s
+$ C:\b\runs\main-2026-09-28\_grade\hf01_B_r1_228b\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\hf01_B_r1_228b\visible.xml
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\hf01_B_r1_228b\visible.xml -
+2 passed in 2.67s
+

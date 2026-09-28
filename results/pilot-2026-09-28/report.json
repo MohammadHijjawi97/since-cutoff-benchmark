@@ -1,0 +1,862 @@
+{
+  "study_id": "pilot-2026-09-28",
+  "generated_at": "2026-09-28T01:23:46+00:00",
+  "meta": {
+    "schema": "since-cutoff-bench/plan@1",
+    "study_id": "pilot-2026-09-28",
+    "created_at": "2026-09-28T01:02:56+00:00",
+    "seed": 20260928,
+    "reps": 2,
+    "conditions": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "pilot": true,
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "claude_version": "2.1.283",
+    "tasks": {
+      "ant01": "08e4200b2742edf43d24368ddcd1a23811305e0c63c98def96d87bc53b627223",
+      "mcp01": "dbcf153aa3fa8dd8e34e7d76cd8561270d8c787e088bc9cfe6378b3e16b6aae9"
+    },
+    "hidden_sha256": {
+      "ant01": "7f338cdd33b1141ec2d591998511b5d329774bc0e52973ee082320e7a769efa3",
+      "mcp01": "d7a782ff92c04e80254fe7fd54d7af50587c16f95cdc2bd2ddf30f263bd0137c"
+    },
+    "strata": {
+      "ant01": "post-cutoff",
+      "mcp01": "post-cutoff"
+    },
+    "notes_manifest_sha256": "f0795703d6318fac17a3fc05670de29405a3811e0267e5d7ee77f3e8285de16c",
+    "notes_frozen": true,
+    "env_locks": {
+      "anthropic-0.115.0": "9b205092addfe5da0fe136217d22051475018d5292f54f4a6856e83ca30f9fb0",
+      "anthropic-1.8.0": "bfd1f69e46b2723f5b072ddd3e36d1c62305b6abf7ebc2aca8476a6fdef07411",
+      "mcp-1.28.1": "c1f82f8ed8f16c4a98b8f05f3097ef303652427a414e17e9453f4d7eed23e960",
+      "mcp-2.2.0": "deac184832707ce90301a3dce10a95aa3d8c3f1680df0244b2278cac41ebd323"
+    },
+    "code_sha256": "d42545af5c841d190dae398b870d608f02b05434f455112cd964fba53450e247",
+    "config_sha256": "ced1af6de12f9c88697f0975f1e32bac10449a95857aa917ec46de37a1dd5694"
+  },
+  "counts": {
+    "records": 16,
+    "valid": 16,
+    "invalid": 0,
+    "analysed": 16,
+    "ungraded": 0,
+    "pilot": 16
+  },
+  "pass_rates": {
+    "post-cutoff": {
+      "A": {
+        "n_tasks": 2,
+        "mean": 0.5,
+        "ci": [
+          0.0,
+          1.0
+        ]
+      },
+      "B": {
+        "n_tasks": 2,
+        "mean": 0.75,
+        "ci": [
+          0.5,
+          1.0
+        ]
+      },
+      "C": {
+        "n_tasks": 2,
+        "mean": 0.5,
+        "ci": [
+          0.0,
+          1.0
+        ]
+      },
+      "D": {
+        "n_tasks": 2,
+        "mean": 0.5,
+        "ci": [
+          0.0,
+          1.0
+        ]
+      }
+    }
+  },
+  "contrasts": {
+    "C-A": {
+      "treatment": "C",
+      "control": "A",
+      "n_tasks": 2,
+      "delta": 0.0,
+      "ci_lo": 0.0,
+      "ci_hi": 0.0,
+      "p": 1.0,
+      "p_holm": 1.0
+    },
+    "D-B": {
+      "treatment": "D",
+      "control": "B",
+      "n_tasks": 2,
+      "delta": -0.25,
+      "ci_lo": -0.5,
+      "ci_hi": 0.0,
+      "p": 1.0,
+      "p_holm": 1.0
+    },
+    "B-A": {
+      "treatment": "B",
+      "control": "A",
+      "n_tasks": 2,
+      "delta": 0.25,
+      "ci_lo": 0.0,
+      "ci_hi": 0.5,
+      "p": 1.0,
+      "p_holm": 1.0
+    },
+    "D-C": {
+      "treatment": "D",
+      "control": "C",
+      "n_tasks": 2,
+      "delta": 0.0,
+      "ci_lo": 0.0,
+      "ci_hi": 0.0,
+      "p": 1.0,
+      "p_holm": 1.0
+    }
+  },
+  "contrast_C-B": {
+    "treatment": "C",
+    "control": "B",
+    "n_tasks": 2,
+    "delta": -0.25,
+    "ci_lo": -0.5,
+    "ci_hi": 0.0,
+    "p": 1.0,
+    "p_holm": null
+  },
+  "mcnemar_majority": {
+    "C-A": {
+      "fixed": 0,
+      "broke": 0,
+      "both": 1,
+      "neither": 1,
+      "p": 1.0
+    },
+    "D-B": {
+      "fixed": 0,
+      "broke": 0,
+      "both": 1,
+      "neither": 1,
+      "p": 1.0
+    },
+    "B-A": {
+      "fixed": 0,
+      "broke": 0,
+      "both": 1,
+      "neither": 1,
+      "p": 1.0
+    },
+    "D-C": {
+      "fixed": 0,
+      "broke": 0,
+      "both": 1,
+      "neither": 1,
+      "p": 1.0
+    },
+    "C-B": {
+      "fixed": 0,
+      "broke": 0,
+      "both": 1,
+      "neither": 1,
+      "p": 1.0
+    }
+  },
+  "cost": {
+    "cost_usd": {
+      "median_of_task_medians": {
+        "A": 0.39994025,
+        "B": 0.40422440000000004,
+        "C": 0.1976912,
+        "D": 0.1980543
+      },
+      "ratios": {
+        "C/A": {
+          "ratio": 0.5117016664730687,
+          "lo": 0.32189211609308455,
+          "hi": 0.8134358761231584,
+          "n": 2,
+          "offset": 0.0
+        },
+        "D/B": {
+          "ratio": 0.49968737693691556,
+          "lo": 0.2592566422487318,
+          "hi": 0.9630899810487559,
+          "n": 2,
+          "offset": 0.0
+        },
+        "B/A": {
+          "ratio": 0.9941916928504292,
+          "lo": 0.9445268789877936,
+          "hi": 1.0464679662605723,
+          "n": 2,
+          "offset": 0.0
+        },
+        "D/C": {
+          "ratio": 0.9708489765081679,
+          "lo": 0.8428406835385793,
+          "hi": 1.1182988120955055,
+          "n": 2,
+          "offset": 0.0
+        },
+        "C/B": {
+          "ratio": 0.5146911507638713,
+          "lo": 0.3075986331844704,
+          "hi": 0.8612098757791631,
+          "n": 2,
+          "offset": 0.0
+        }
+      }
+    },
+    "turns": {
+      "median_of_task_medians": {
+        "A": 15.75,
+        "B": 14.75,
+        "C": 16.25,
+        "D": 14.5
+      },
+      "ratios": {
+        "C/A": {
+          "ratio": 1.0529232878566532,
+          "lo": 0.975609756097561,
+          "hi": 1.1363636363636365,
+          "n": 2,
+          "offset": 0.0
+        },
+        "D/B": {
+          "ratio": 0.9662613174814221,
+          "lo": 0.9090909090909091,
+          "hi": 1.027027027027027,
+          "n": 2,
+          "offset": 0.0
+        },
+        "B/A": {
+          "ratio": 0.9499679070317291,
+          "lo": 0.9024390243902439,
+          "hi": 1.0,
+          "n": 2,
+          "offset": 0.0
+        },
+        "D/C": {
+          "ratio": 0.8717797887081347,
+          "lo": 0.8,
+          "hi": 0.95,
+          "n": 2,
+          "offset": 0.0
+        },
+        "C/B": {
+          "ratio": 1.1083777463036817,
+          "lo": 1.0810810810810811,
+          "hi": 1.1363636363636365,
+          "n": 2,
+          "offset": 0.0
+        }
+      }
+    },
+    "wall_s": {
+      "median_of_task_medians": {
+        "A": 53.25,
+        "B": 61.3,
+        "C": 53.175,
+        "D": 53.55
+      },
+      "ratios": {
+        "C/A": {
+          "ratio": 1.0093676625783372,
+          "lo": 0.9165316045380875,
+          "hi": 1.1116071428571428,
+          "n": 2,
+          "offset": 0.0
+        },
+        "D/B": {
+          "ratio": 0.8697293866646552,
+          "lo": 0.804149377593361,
+          "hi": 0.9406575781876503,
+          "n": 2,
+          "offset": 0.0
+        },
+        "B/A": {
+          "ratio": 1.1657761485040474,
+          "lo": 1.0105348460291734,
+          "hi": 1.3448660714285716,
+          "n": 2,
+          "offset": 0.0
+        },
+        "D/C": {
+          "ratio": 1.0044999579605804,
+          "lo": 0.9728915662650603,
+          "hi": 1.0371352785145889,
+          "n": 2,
+          "offset": 0.0
+        },
+        "C/B": {
+          "ratio": 0.8658331737817613,
+          "lo": 0.8265560165975103,
+          "hi": 0.9069767441860465,
+          "n": 2,
+          "offset": 0.0
+        }
+      }
+    },
+    "output_tokens": {
+      "median_of_task_medians": {
+        "A": 2997.25,
+        "B": 3341.75,
+        "C": 3351.5,
+        "D": 2961.25
+      },
+      "ratios": {
+        "C/A": {
+          "ratio": 1.1752799409812933,
+          "lo": 0.9668734491315136,
+          "hi": 1.4286077882412829,
+          "n": 2,
+          "offset": 0.0
+        },
+        "D/B": {
+          "ratio": 0.8832965292697671,
+          "lo": 0.8691709844559585,
+          "hi": 0.8976516388295869,
+          "n": 2,
+          "offset": 0.0
+        },
+        "B/A": {
+          "ratio": 1.1657018688465515,
+          "lo": 0.9879652605459057,
+          "hi": 1.3754135912445915,
+          "n": 2,
+          "offset": 0.0
+        },
+        "D/C": {
+          "ratio": 0.8760980078122759,
+          "lo": 0.8368074113664707,
+          "hi": 0.9172334146028487,
+          "n": 2,
+          "offset": 0.0
+        },
+        "C/B": {
+          "ratio": 1.0082165709695732,
+          "lo": 0.978651262087153,
+          "hi": 1.0386750555144337,
+          "n": 2,
+          "offset": 0.0
+        }
+      }
+    },
+    "total_tokens": {
+      "median_of_task_medians": {
+        "A": 283607.5,
+        "B": 297471.25,
+        "C": 151324.75,
+        "D": 184180.25
+      },
+      "ratios": {
+        "C/A": {
+          "ratio": 0.5217416129127199,
+          "lo": 0.3908894240311206,
+          "hi": 0.6963972261963632,
+          "n": 2,
+          "offset": 0.0
+        },
+        "D/B": {
+          "ratio": 0.5844889126777384,
+          "lo": 0.2953774756308768,
+          "hi": 1.1565786738259114,
+          "n": 2,
+          "offset": 0.0
+        },
+        "B/A": {
+          "ratio": 1.0183101524569709,
+          "lo": 0.8443472614917689,
+          "hi": 1.22811503499742,
+          "n": 2,
+          "offset": 0.0
+        },
+        "D/C": {
+          "ratio": 1.1407773101622318,
+          "lo": 0.9280310402897545,
+          "hi": 1.402294551456658,
+          "n": 2,
+          "offset": 0.0
+        },
+        "C/B": {
+          "ratio": 0.5123602191865275,
+          "lo": 0.31828404741575517,
+          "hi": 0.8247758451492913,
+          "n": 2,
+          "offset": 0.0
+        }
+      }
+    },
+    "cost_per_solved_task": {
+      "A": {
+        "total_cost_usd": 1.599761,
+        "passes": 2,
+        "runs": 4,
+        "cost_per_solved": 0.7998805
+      },
+      "B": {
+        "total_cost_usd": 1.6168976,
+        "passes": 3,
+        "runs": 4,
+        "cost_per_solved": 0.5389658666666667
+      },
+      "C": {
+        "total_cost_usd": 0.7907648,
+        "passes": 2,
+        "runs": 4,
+        "cost_per_solved": 0.3953824
+      },
+      "D": {
+        "total_cost_usd": 0.7922172,
+        "passes": 2,
+        "runs": 4,
+        "cost_per_solved": 0.3961086
+      }
+    }
+  },
+  "process": {
+    "A": {
+      "runs": 4,
+      "stale_in_first_edit_rate": 0.5,
+      "stale_in_final_rate": 0.5,
+      "mean_pytest_runs": 1.0,
+      "mean_failing_pytest_runs": 0.0,
+      "mean_edits_after_first_failure": 0.0,
+      "mean_site_packages_reads": 3.5,
+      "mean_introspection_cmds": 0.0,
+      "mean_network_like_cmds": 0.0,
+      "context7_call_rate": 0.0,
+      "mean_context7_calls": 0.0,
+      "doc_hit_rate": NaN,
+      "skill_use_rate": 0.5,
+      "skills": {
+        "claude-api": 2
+      },
+      "lock_modified": 0,
+      "venv_modified": 0,
+      "timeouts": 0,
+      "subtypes": {
+        "success": 4
+      },
+      "flakiness": 0.0
+    },
+    "B": {
+      "runs": 4,
+      "stale_in_first_edit_rate": 0.5,
+      "stale_in_final_rate": 0.25,
+      "mean_pytest_runs": 1.25,
+      "mean_failing_pytest_runs": 0.0,
+      "mean_edits_after_first_failure": 0.0,
+      "mean_site_packages_reads": 2.0,
+      "mean_introspection_cmds": 0.5,
+      "mean_network_like_cmds": 0.0,
+      "context7_call_rate": 0.5,
+      "mean_context7_calls": 1.0,
+      "doc_hit_rate": 1.0,
+      "skill_use_rate": 0.5,
+      "skills": {
+        "claude-api": 2
+      },
+      "lock_modified": 0,
+      "venv_modified": 0,
+      "timeouts": 0,
+      "subtypes": {
+        "success": 4
+      },
+      "flakiness": 0.5
+    },
+    "C": {
+      "runs": 4,
+      "stale_in_first_edit_rate": 0.0,
+      "stale_in_final_rate": 0.0,
+      "mean_pytest_runs": 1.0,
+      "mean_failing_pytest_runs": 0.0,
+      "mean_edits_after_first_failure": 0.0,
+      "mean_site_packages_reads": 5.25,
+      "mean_introspection_cmds": 1.25,
+      "mean_network_like_cmds": 0.0,
+      "context7_call_rate": 0.0,
+      "mean_context7_calls": 0.0,
+      "doc_hit_rate": NaN,
+      "skill_use_rate": 0.0,
+      "skills": {},
+      "lock_modified": 0,
+      "venv_modified": 0,
+      "timeouts": 0,
+      "subtypes": {
+        "success": 4
+      },
+      "flakiness": 0.0
+    },
+    "D": {
+      "runs": 4,
+      "stale_in_first_edit_rate": 0.0,
+      "stale_in_final_rate": 0.0,
+      "mean_pytest_runs": 1.0,
+      "mean_failing_pytest_runs": 0.0,
+      "mean_edits_after_first_failure": 0.0,
+      "mean_site_packages_reads": 4.75,
+      "mean_introspection_cmds": 1.0,
+      "mean_network_like_cmds": 0.0,
+      "context7_call_rate": 0.0,
+      "mean_context7_calls": 0.0,
+      "doc_hit_rate": NaN,
+      "skill_use_rate": 0.0,
+      "skills": {},
+      "lock_modified": 0,
+      "venv_modified": 0,
+      "timeouts": 0,
+      "subtypes": {
+        "success": 4
+      },
+      "flakiness": 0.0
+    }
+  },
+  "process_tests": {
+    "C-A:pytest_runs": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "C/A:pytest_runs:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "C-A:edits_after_first_failure": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "C/A:edits_after_first_failure:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "C-A:failing_pytest_runs": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "C/A:failing_pytest_runs:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "D-B:pytest_runs": {
+      "n": 1,
+      "w_plus": 0,
+      "w_minus": 1.0,
+      "statistic": 0,
+      "p": 1.0
+    },
+    "D/B:pytest_runs:ratio_offset1": {
+      "ratio": 0.8944271909999159,
+      "lo": 0.8,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "D-B:edits_after_first_failure": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "D/B:edits_after_first_failure:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "D-B:failing_pytest_runs": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "D/B:failing_pytest_runs:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "B-A:pytest_runs": {
+      "n": 1,
+      "w_plus": 1.0,
+      "w_minus": 0,
+      "statistic": 0,
+      "p": 1.0
+    },
+    "B/A:pytest_runs:ratio_offset1": {
+      "ratio": 1.118033988749895,
+      "lo": 1.0,
+      "hi": 1.25,
+      "n": 2,
+      "offset": 1.0
+    },
+    "B-A:edits_after_first_failure": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "B/A:edits_after_first_failure:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "B-A:failing_pytest_runs": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "B/A:failing_pytest_runs:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "D-C:pytest_runs": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "D/C:pytest_runs:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "D-C:edits_after_first_failure": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "D/C:edits_after_first_failure:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "D-C:failing_pytest_runs": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "D/C:failing_pytest_runs:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "C-B:pytest_runs": {
+      "n": 1,
+      "w_plus": 0,
+      "w_minus": 1.0,
+      "statistic": 0,
+      "p": 1.0
+    },
+    "C/B:pytest_runs:ratio_offset1": {
+      "ratio": 0.8944271909999159,
+      "lo": 0.8,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "C-B:edits_after_first_failure": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "C/B:edits_after_first_failure:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    },
+    "C-B:failing_pytest_runs": {
+      "n": 0,
+      "w_plus": 0.0,
+      "w_minus": 0.0,
+      "statistic": 0.0,
+      "p": 1.0
+    },
+    "C/B:failing_pytest_runs:ratio_offset1": {
+      "ratio": 1.0,
+      "lo": 1.0,
+      "hi": 1.0,
+      "n": 2,
+      "offset": 1.0
+    }
+  },
+  "noninferiority": {
+    "C-A": {
+      "n_tasks": 0,
+      "delta": NaN,
+      "lower": NaN,
+      "margin": -0.1,
+      "non_inferior": false
+    },
+    "D-A": {
+      "n_tasks": 0,
+      "delta": NaN,
+      "lower": NaN,
+      "margin": -0.1,
+      "non_inferior": false
+    }
+  },
+  "table": [
+    {
+      "task": "ant01",
+      "stratum": "post-cutoff",
+      "A": "0/2",
+      "B": "1/2",
+      "C": "0/2",
+      "D": "0/2",
+      "notes_covered": true,
+      "notes_coverage": 1.0,
+      "doc_hit": "0/0"
+    },
+    {
+      "task": "mcp01",
+      "stratum": "post-cutoff",
+      "A": "2/2",
+      "B": "2/2",
+      "C": "2/2",
+      "D": "2/2",
+      "notes_covered": false,
+      "notes_coverage": 0.0,
+      "doc_hit": "2/2"
+    }
+  ],
+  "invalid_runs": [],
+  "missing_runs": [],
+  "ungraded_runs": [],
+  "claims": [
+    {
+      "rule": "ceiling (A >= 90% on post-cutoff tasks): no pass-rate claim",
+      "met": false,
+      "evidence": "A = 50.0%"
+    },
+    {
+      "rule": "notes reduce stale-API failures: C-A CI lower > 0, Holm p < .05, lower stale_in_first_edit in C",
+      "met": false,
+      "evidence": "C-A +0.0 pp [+0.0 pp, +0.0 pp], Holm p 1.000; stale first edit A 50.0% vs C 0.0%"
+    },
+    {
+      "rule": "notes add value on top of documentation access: D-B CI lower > 0",
+      "met": false,
+      "evidence": "D-B -25.0 pp [-50.0 pp, +0.0 pp]"
+    },
+    {
+      "rule": "notes are cheaper than doc lookups for the same success: C-B CI within +-10 pp and C/B cost CI upper < 1",
+      "met": false,
+      "evidence": "C-B [-50.0 pp, +0.0 pp]; C/B cost 0.51 [0.31, 0.86]"
+    },
+    {
+      "rule": "notes and Context7 complement each other: D >= max(B, C) and D/B cost <= 1",
+      "met": false,
+      "evidence": "B 75.0%, C 50.0%, D 50.0%; D/B cost 0.50"
+    },
+    {
+      "rule": "notes don't hurt: one-sided 95% lower bound of C-A on controls >= -10 pp",
+      "met": false,
+      "evidence": "0 control tasks, C-A n/a, lower n/a"
+    },
+    {
+      "rule": "notes reduce correction attempts / time / cost: a C/A ratio CI below 1",
+      "met": true,
+      "evidence": "cost C/A 0.51 [0.32, 0.81]; turns C/A 1.05 [0.98, 1.14]; wall time C/A 1.01 [0.92, 1.11]; failing pytest runs C/A (+1) 1.00 [1.00, 1.00]"
+    },
+    {
+      "rule": "low Context7 use (B call rate < 80%): C-vs-B compares notes with an unused tool",
+      "met": true,
+      "evidence": "B Context7 call rate 50.0%"
+    },
+    {
+      "rule": "per-task coverage decides the wording (C wins only where notes covered the change?)",
+      "met": null,
+      "evidence": "ant01: C-A +0.0 pp (notes covered: True); mcp01: C-A +0.0 pp (notes covered: False)"
+    }
+  ],
+  "pilot_study": true,
+  "go_no_go": [
+    {
+      "rule": "Context7 connected in 100% of B/D runs",
+      "value": "8/8",
+      "fires": false,
+      "action": "fix the infrastructure before the main run"
+    },
+    {
+      "rule": "B's Context7 call rate below 80%",
+      "value": "2/4",
+      "fires": true,
+      "action": "add the B-forced arm"
+    },
+    {
+      "rule": "median cost per session above $1.50",
+      "value": "$0.257 (n=16)",
+      "fires": false,
+      "action": "2 reps, stated in PROTOCOL.md before the main run"
+    },
+    {
+      "rule": "median time per session above 8 minutes",
+      "value": "54.1 s (n=16)",
+      "fires": false,
+      "action": "2 reps, stated in PROTOCOL.md before the main run"
+    },
+    {
+      "rule": "A passes every pilot run",
+      "value": "2/4",
+      "fires": false,
+      "action": "expect the ceiling rule"
+    }
+  ]
+}

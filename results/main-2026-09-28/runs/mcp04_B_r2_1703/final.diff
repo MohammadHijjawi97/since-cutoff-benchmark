@@ -1,0 +1,29 @@
+--- /dev/null
++++ b/_smoke_client.py
+@@ -0,0 +1,15 @@
++import anyio
++from mcp.client.session import ClientSession
++from mcp.client.streamable_http import streamable_http_client
++
++
++async def main():
++    async with streamable_http_client("http://127.0.0.1:8765/mcp") as streams:
++        async with ClientSession(streams[0], streams[1]) as s:
++            await s.initialize()
++            print([t.name for t in (await s.list_tools()).tools])
++            print((await s.call_tool("stock", {"sku": "MS-330"})).content)
++            print((await s.call_tool("reserve", {"sku": "MS-330", "quantity": 2})).content)
++
++
++anyio.run(main)
+--- a/app/server.py
++++ b/app/server.py
+@@ -26,7 +26,7 @@
+ 
+ 
+ def serve_http(host: str, port: int) -> None:
+-    raise NotImplementedError
++    build_server().run("streamable-http", host=host, port=port)
+ 
+ 
+ def main(argv: list[str] | None = None) -> None:

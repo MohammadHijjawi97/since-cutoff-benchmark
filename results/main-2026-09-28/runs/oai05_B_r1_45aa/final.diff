@@ -1,0 +1,60 @@
+--- /dev/null
++++ b/_check.py
+@@ -0,0 +1,24 @@
++import logging
++
++import httpx
++
++logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s %(message)s")
++logging.getLogger("openai").setLevel(logging.WARNING)
++logging.getLogger("httpx").setLevel(logging.WARNING)
++
++from app.llm_client import build_client
++
++calls = []
++
++
++def handler(req):
++    calls.append(req)
++    if len(calls) == 1:
++        return httpx.Response(500, json={"error": {"message": "boom"}})
++    return httpx.Response(200, json={"object": "list", "data": []})
++
++
++c = build_client("sk-test", transport=httpx.MockTransport(handler))
++c.models.list()
++print("calls:", len(calls), "timeout:", c.timeout, c._client.timeout, "retries:", c.max_retries)
++print("req timeout ext:", calls[-1].extensions.get("timeout"))
+--- a/app/llm_client.py
++++ b/app/llm_client.py
+@@ -2,10 +2,28 @@
+ 
+ import logging
+ 
+-from openai import OpenAI
++import httpx
++from openai import DefaultHttpxClient, OpenAI
+ 
+ logger = logging.getLogger("app.http")
+ 
++TIMEOUT = httpx.Timeout(30.0, connect=5.0)
++MAX_RETRIES = 2
++
++
++def _log_request(request: httpx.Request) -> None:
++    logger.info("%s %s", request.method, request.url)
++
+ 
+ def build_client(api_key: str, transport=None) -> OpenAI:
+-    raise NotImplementedError
++    http_client = DefaultHttpxClient(
++        timeout=TIMEOUT,
++        transport=transport,
++        event_hooks={"request": [_log_request]},
++    )
++    return OpenAI(
++        api_key=api_key,
++        timeout=TIMEOUT,
++        max_retries=MAX_RETRIES,
++        http_client=http_client,
++    )

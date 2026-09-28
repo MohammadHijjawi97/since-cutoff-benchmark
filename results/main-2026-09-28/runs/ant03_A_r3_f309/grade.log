@@ -1,0 +1,13 @@
+task ant03 (ant03-beta-structured-output) project C:\b\runs\main-2026-09-28\ant03_A_r3_f309
+===== hidden tests: exit 0 in 16.8s
+$ C:\b\runs\main-2026-09-28\_grade\ant03_A_r3_f309\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\ant03_A_r3_f309\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\ant03_A_r3_f309\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\ant03_A_r3_f309\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\ant03_A_r3_f309\hidden.xml C:\b\runs\main-2026-09-28\_grade\ant03_A_r3_f309\proj\_bench_hidden
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\ant03_A_r3_f309\hidden.xml -
+2 passed in 14.23s
+
+===== visible tests: exit 0 in 2.7s
+$ C:\b\runs\main-2026-09-28\_grade\ant03_A_r3_f309\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\ant03_A_r3_f309\visible.xml
+..                                                                       [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\ant03_A_r3_f309\visible.xml -
+2 passed in 1.58s
+

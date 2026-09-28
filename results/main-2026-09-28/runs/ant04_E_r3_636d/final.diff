@@ -1,0 +1,70 @@
+--- /dev/null
++++ b/_check_claude.py
+@@ -0,0 +1,30 @@
++import logging
++
++import httpx2
++
++from app.claude import ask, build_claude
++
++logging.basicConfig(level=logging.WARNING, format="%(name)s %(message)s")
++logging.getLogger("app.egress").setLevel(logging.INFO)
++seen = []
++
++
++def handler(req):
++    seen.append(req)
++    if len(seen) < 3:
++        return httpx2.Response(
++            529,
++            json={"type": "error", "error": {"type": "overloaded_error", "message": "x"}},
++            headers={"retry-after-ms": "1"},
++        )
++    return httpx2.Response(200, json={
++        "id": "m", "type": "message", "role": "assistant", "model": "claude-opus-5-5",
++        "content": [{"type": "text", "text": "ok"}], "stop_reason": "end_turn",
++        "stop_sequence": None, "usage": {"input_tokens": 1, "output_tokens": 1},
++    })
++
++
++c = build_claude("k", transport=httpx2.MockTransport(handler))
++print(ask(c, "hi"))
++print(len(seen), [r.headers["x-egress-tag"] for r in seen])
++print(seen[0].extensions["timeout"], c.timeout, c.max_retries)
+--- a/app/claude.py
++++ b/app/claude.py
+@@ -1,12 +1,32 @@
+ """Claude access for the assistant."""
+ 
+-from anthropic import Anthropic
++import httpx2
++from anthropic import Anthropic, DefaultHttpxClient
++
++from app.http import CONNECT_TIMEOUT, EGRESS_TAG, READ_TIMEOUT, log_egress
+ 
+ MODEL = "claude-opus-5-5"
+ 
++# The SDK runs on httpx2 and rejects httpx objects, so app.http's httpx client and
++# Timeout can't be passed in directly; rebuild them from the same settings.
++TIMEOUT = httpx2.Timeout(READ_TIMEOUT, connect=CONNECT_TIMEOUT)
++
+ 
+ def build_claude(api_key: str, transport=None) -> Anthropic:
+-    raise NotImplementedError
++    client_kwargs = {
++        "timeout": TIMEOUT,
++        "headers": {"X-Egress-Tag": EGRESS_TAG},
++        "event_hooks": {"request": [log_egress]},
++    }
++    if transport is not None:
++        client_kwargs["transport"] = transport
++    return Anthropic(
++        api_key=api_key,
++        max_retries=2,
++        # The SDK sends its own per-request timeout, so set it here as well as on the client.
++        timeout=TIMEOUT,
++        http_client=DefaultHttpxClient(**client_kwargs),
++    )
+ 
+ 
+ def ask(client: Anthropic, question: str) -> str:

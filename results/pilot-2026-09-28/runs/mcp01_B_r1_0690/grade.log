@@ -1,0 +1,13 @@
+task mcp01 (mcp01-server-tools) project C:\b\runs\pilot-2026-09-28\mcp01_B_r1_0690
+===== hidden tests: exit 0 in 9.7s
+$ C:\b\runs\pilot-2026-09-28\_grade\mcp01_B_r1_0690\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\pilot-2026-09-28\_grade\mcp01_B_r1_0690\bench_pytest.ini --rootdir C:\b\runs\pilot-2026-09-28\_grade\mcp01_B_r1_0690\proj --confcutdir C:\b\runs\pilot-2026-09-28\_grade\mcp01_B_r1_0690\proj\_bench_hidden --junitxml C:\b\runs\pilot-2026-09-28\_grade\mcp01_B_r1_0690\hidden.xml C:\b\runs\pilot-2026-09-28\_grade\mcp01_B_r1_0690\proj\_bench_hidden
+.                                                                        [100%]
+- generated xml file: C:\b\runs\pilot-2026-09-28\_grade\mcp01_B_r1_0690\hidden.xml -
+1 passed in 7.03s
+
+===== visible tests: exit 0 in 1.7s
+$ C:\b\runs\pilot-2026-09-28\_grade\mcp01_B_r1_0690\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\pilot-2026-09-28\_grade\mcp01_B_r1_0690\visible.xml
+.                                                                        [100%]
+- generated xml file: C:\b\runs\pilot-2026-09-28\_grade\mcp01_B_r1_0690\visible.xml -
+1 passed in 0.89s
+

@@ -1,0 +1,13 @@
+Implement the two functions in app/network.py, the network settings of our nightly sync job.
+
+1. `configure_hub_http(transport=None)`: from then on, every request huggingface_hub makes (from any
+   HfApi instance) must go through one shared HTTP client that we configure:
+   - connect timeout 5 seconds; read, write and pool timeouts 60 seconds;
+   - every request carries the header `X-Acme-Job: nightly-sync` (huggingface_hub's own headers,
+     such as its user agent, must still be sent);
+   - when `transport` is given (the tests pass a stub transport), the client must use it.
+2. `current_revision(repo_id)`: return the commit sha of the model repo's main branch. When the Hub
+   cannot be reached (connection failure or timeout), log a warning on the "app.network" logger and
+   return None. Every other error, for example a repo that does not exist, must still raise.
+
+The lockfile is fixed: do not add or install dependencies. You can run the tests with `pytest`.

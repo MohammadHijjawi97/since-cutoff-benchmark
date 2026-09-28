@@ -1,0 +1,152 @@
+--- a/app/chat.py
++++ b/app/chat.py
+@@ -5,9 +5,9 @@
+ import logging
+ from collections.abc import Iterable, Iterator
+ 
+-from openai import OpenAI
++from openai import APIConnectionError, APITimeoutError, OpenAI
+ 
+-from app.errors import UpstreamTimeout, UpstreamUnavailable  # noqa: F401  (for answer())
++from app.errors import UpstreamTimeout, UpstreamUnavailable
+ 
+ MODEL = "gpt-5.5"
+ SYSTEM_PROMPT = "You are the help-desk assistant for Northwind Cloud. Answer briefly and concretely."
+@@ -38,6 +38,31 @@
+             yield chunk.choices[0].delta.content
+ 
+ 
++def _network_reason(err: BaseException) -> str:
++    """The underlying network error's message; the SDK's own is just "Connection error."."""
++    reason = str(err)
++    cause = err.__cause__
++    while cause is not None:
++        if str(cause):
++            reason = str(cause)
++        cause = cause.__cause__
++    return reason
++
++
+ def answer(client: OpenAI, question: str, history: Iterable[tuple[str, str]] = ()) -> str:
+-    """The complete answer to `question` (used by the e-mail channel)."""
+-    raise NotImplementedError
++    """The complete answer to `question` (used by the e-mail channel).
++
++    Retries the whole request, up to ATTEMPTS times, when the connection fails or drops
++    mid-stream. Raises UpstreamTimeout at once if the provider stops sending data, and
++    UpstreamUnavailable if every attempt fails.
++    """
++    history = list(history)  # may be a one-shot iterator, and each attempt needs it
++    for attempt in range(1, ATTEMPTS + 1):
++        try:
++            return "".join(iter_answer(client, question, history))
++        except APITimeoutError as err:  # subclass of APIConnectionError, so check it first
++            raise UpstreamTimeout(f"the model provider timed out: {_network_reason(err)}") from err
++        except APIConnectionError as err:
++            logger.warning("Answer attempt %d/%d failed: %s", attempt, ATTEMPTS, _network_reason(err))
++            last_error = err
++    raise UpstreamUnavailable(f"no answer after {ATTEMPTS} attempts") from last_error
+--- a/tests/test_chat.py
++++ b/tests/test_chat.py
+@@ -1,6 +1,13 @@
++import json
++import logging
+ from types import SimpleNamespace
+ 
++import httpx2
++import pytest
++from openai import OpenAI
++
+ from app import chat
++from app.errors import UpstreamTimeout, UpstreamUnavailable
+ 
+ 
+ def test_build_messages_keeps_history_in_order():
+@@ -27,3 +34,87 @@
+     assert list(chat.iter_answer(client, "How do I log in?")) == ["Reset ", "your password"]
+     assert completions.calls[0]["stream"] is True
+     assert completions.calls[0]["model"] == chat.MODEL
++
++
++def sse(*deltas):
++    for d in deltas:
++        chunk = {
++            "id": "c",
++            "object": "chat.completion.chunk",
++            "created": 0,
++            "model": chat.MODEL,
++            "choices": [{"index": 0, "delta": {"content": d}, "finish_reason": None}],
++        }
++        yield f"data: {json.dumps(chunk)}\n\n".encode()
++
++
++class Body(httpx2.SyncByteStream):
++    """Streams the SSE chunks, then optionally fails the way a flaky link does."""
++
++    def __init__(self, deltas, error=None):
++        self.deltas, self.error = deltas, error
++
++    def __iter__(self):
++        yield from sse(*self.deltas)
++        if self.error:
++            raise self.error
++        yield b"data: [DONE]\n\n"
++
++
++def provider(*outcomes):
++    """A real OpenAI client (SDK retries off) whose n-th request gets outcomes[n]."""
++    requests = []
++
++    def handle(request):
++        requests.append(json.loads(request.content))
++        outcome = outcomes[len(requests) - 1]
++        if isinstance(outcome, Exception):
++            raise outcome
++        return httpx2.Response(200, headers={"content-type": "text/event-stream"}, stream=outcome)
++
++    http_client = httpx2.Client(transport=httpx2.MockTransport(handle))
++    return OpenAI(api_key="test", max_retries=0, http_client=http_client), requests
++
++
++DROP = "peer closed connection without sending complete message body"
++
++
++def test_answer_returns_the_whole_streamed_text():
++    client, requests = provider(Body(["Reset ", "your password."]))
++    assert chat.answer(client, "How do I log in?") == "Reset your password."
++    assert len(requests) == 1
++
++
++def test_answer_retries_and_keeps_only_the_completed_attempt(caplog):
++    client, requests = provider(
++        httpx2.ConnectError("[Errno 111] Connection refused"),
++        Body(["Reset your pass"], error=httpx2.RemoteProtocolError(DROP)),
++        Body(["Reset ", "your password."]),
++    )
++    history = iter([("Hi", "Hello!")])  # one-shot: must survive the retries
++    with caplog.at_level(logging.WARNING, logger="app.chat"):
++        assert chat.answer(client, "How do I log in?", history) == "Reset your password."
++    assert len(requests) == 3
++    assert all(len(r["messages"]) == 4 for r in requests)
++    warnings = [r for r in caplog.records if r.name == "app.chat" and r.levelno == logging.WARNING]
++    assert len(warnings) == 2
++    assert "Connection refused" in warnings[0].getMessage()
++    assert DROP in warnings[1].getMessage()
++
++
++def test_answer_gives_up_after_all_attempts_fail(caplog):
++    client, requests = provider(*(Body(["partial"], error=httpx2.RemoteProtocolError(DROP)) for _ in range(3)))
++    with caplog.at_level(logging.WARNING, logger="app.chat"), pytest.raises(UpstreamUnavailable):
++        chat.answer(client, "How do I log in?")
++    assert len(requests) == chat.ATTEMPTS == 3
++    assert len([r for r in caplog.records if r.name == "app.chat"]) == 3
++
++
++@pytest.mark.parametrize("stall", ["before the response", "mid-stream"])
++def test_answer_does_not_retry_a_timeout(stall):
++    timeout = httpx2.ReadTimeout("The read operation timed out")
++    first = timeout if stall == "before the response" else Body(["Reset "], error=timeout)
++    client, requests = provider(first, Body(["never sent"]))
++    with pytest.raises(UpstreamTimeout):
++        chat.answer(client, "How do I log in?")
++    assert len(requests) == 1

@@ -1,0 +1,11 @@
+Implement `find_candidates(name_fragment, task, limit=5)` in app/catalog.py.
+
+We need a shortlist of public models to evaluate: models on the Hugging Face Hub whose name
+contains `name_fragment` (for example "whisper") and whose pipeline task is `task` (for example
+"automatic-speech-recognition"). Return the ids of the `limit` most downloaded ones, most
+downloaded first.
+
+There are millions of models on the Hub, so the filtering, sorting and limiting must happen on
+the Hub side, in one listing request; do not fetch everything and filter locally. Use
+huggingface_hub like the rest of the module. Do not add dependencies. You can run the tests
+with `pytest`.

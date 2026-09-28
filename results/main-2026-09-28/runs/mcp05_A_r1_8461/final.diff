@@ -1,0 +1,70 @@
+--- /dev/null
++++ b/_e2e_check.py
+@@ -0,0 +1,44 @@
++import anyio
++import uvicorn
++from mcp.server.mcpserver import MCPServer
++from starlette.responses import PlainTextResponse
++
++from kb.remote import search_remote
++
++server = MCPServer("kb")
++seen = []
++
++
++@server.tool()
++def search(query: str) -> str:
++    return f"Result for {query}\n\nOnboarding\n"
++
++
++inner = server.streamable_http_app()
++
++
++async def app(scope, receive, send):
++    if scope["type"] == "http":
++        headers = dict(scope["headers"])
++        auth = headers.get(b"authorization")
++        seen.append((scope["method"], auth))
++        if auth != b"Bearer s3cret":
++            await PlainTextResponse("no", status_code=401)(scope, receive, send)
++            return
++    await inner(scope, receive, send)
++
++
++async def main():
++    config = uvicorn.Config(app, host="127.0.0.1", port=8765, log_level="warning")
++    srv = uvicorn.Server(config)
++    async with anyio.create_task_group() as tg:
++        tg.start_soon(srv.serve)
++        while not srv.started:
++            await anyio.sleep(0.05)
++        print(await search_remote("http://127.0.0.1:8765/mcp", "s3cret", "keys"))
++        await anyio.sleep(0.3)
++        srv.should_exit = True
++    print(seen)
++
++
++anyio.run(main)
+--- a/kb/remote.py
++++ b/kb/remote.py
+@@ -2,6 +2,19 @@
+ 
+ from __future__ import annotations
+ 
++from mcp import ClientSession
++from mcp.client.streamable_http import streamable_http_client
++from mcp.shared._httpx_utils import create_mcp_http_client
++
++from kb.results import split_titles
++
+ 
+ async def search_remote(url: str, token: str, query: str) -> list[str]:
+-    raise NotImplementedError
++    # Headers set on the client go out with every request the transport makes (POST, GET stream, DELETE).
++    headers = {"Authorization": f"Bearer {token}"}
++    async with create_mcp_http_client(headers=headers) as http_client:
++        async with streamable_http_client(url, http_client=http_client) as (read, write):
++            async with ClientSession(read, write) as session:
++                await session.initialize()
++                result = await session.call_tool("search", {"query": query})
++    return split_titles(result)

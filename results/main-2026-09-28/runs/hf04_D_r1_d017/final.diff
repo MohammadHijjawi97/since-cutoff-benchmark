@@ -1,0 +1,85 @@
+--- a/app/network.py
++++ b/app/network.py
+@@ -2,14 +2,40 @@
+ 
+ import logging
+ 
+-from huggingface_hub import HfApi
++import httpx2
++from huggingface_hub import HfApi, set_client_factory
++from huggingface_hub.utils._http import hf_request_event_hook
+ 
+ logger = logging.getLogger("app.network")
+ 
++HUB_TIMEOUT = httpx2.Timeout(60.0, connect=5.0)
++JOB_HEADERS = {"X-Acme-Job": "nightly-sync"}
++
++
++def _enforce_timeout(request: httpx2.Request) -> None:
++    # HfApi methods pass `timeout=None` per request, which in httpx2 means "no timeout" rather than
++    # "use the client default", so the client-level timeout alone would be ignored.
++    request.extensions["timeout"] = HUB_TIMEOUT.as_dict()
++
+ 
+ def configure_hub_http(transport=None) -> None:
+-    raise NotImplementedError
++    def client_factory() -> httpx2.Client:
++        return httpx2.Client(
++            # Keep huggingface_hub's own hook (offline mode, request id, debug logging).
++            event_hooks={"request": [hf_request_event_hook, _enforce_timeout]},
++            follow_redirects=True,
++            timeout=HUB_TIMEOUT,
++            # Merged with the per-request headers, so huggingface_hub's user agent and auth are still sent.
++            headers=JOB_HEADERS,
++            transport=transport,
++        )
++
++    set_client_factory(client_factory)
+ 
+ 
+ def current_revision(repo_id: str) -> str | None:
+-    raise NotImplementedError
++    try:
++        return HfApi().model_info(repo_id, revision="main").sha
++    except (httpx2.ConnectError, httpx2.TimeoutException) as exc:
++        logger.warning("Cannot reach the Hugging Face Hub for %s: %s", repo_id, exc)
++        return None
+--- /dev/null
++++ b/verify_net.py
+@@ -0,0 +1,36 @@
++import logging
++
++import httpx2
++import pytest
++from huggingface_hub import HfApi, get_session
++from huggingface_hub.errors import RepositoryNotFoundError
++
++from app.network import configure_hub_http, current_revision
++
++seen = []
++
++
++def handler(req):
++    seen.append(req)
++    if "missing" in str(req.url):
++        return httpx2.Response(404, headers={"X-Error-Code": "RepoNotFound"}, json={"error": "nope"}, request=req)
++    if "down" in str(req.url):
++        raise httpx2.ConnectError("refused", request=req)
++    if "slow" in str(req.url):
++        raise httpx2.ReadTimeout("slow", request=req)
++    return httpx2.Response(200, json={"id": "a/b", "sha": "deadbeef", "siblings": []}, request=req)
++
++
++configure_hub_http(transport=httpx2.MockTransport(handler))
++assert current_revision("a/b") == "deadbeef"
++HfApi().model_info("a/b")
++r = seen[-1]
++assert r.headers["X-Acme-Job"] == "nightly-sync" and "hf_hub/" in r.headers["user-agent"]
++assert r.extensions["timeout"] == {"connect": 5.0, "read": 60.0, "write": 60.0, "pool": 60.0}
++assert get_session() is get_session()
++logging.basicConfig()
++assert current_revision("a/down") is None
++assert current_revision("a/slow") is None
++with pytest.raises(RepositoryNotFoundError):
++    current_revision("a/missing")
++print("OK")

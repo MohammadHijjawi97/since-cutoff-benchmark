@@ -1,0 +1,73 @@
+--- /dev/null
++++ b/_e2e_check.py
+@@ -0,0 +1,42 @@
++import anyio
++from mcp import Client
++from mcp.server.mcpserver import MCPServer
++
++from opsbot.calls import ToolCallFailed, run_tool
++
++srv = MCPServer("t")
++
++
++@srv.tool(structured_output=True)
++def status(service: str) -> dict[str, object]:
++    return {"service": service, "up": True}
++
++
++@srv.tool(structured_output=True)
++def empty() -> dict[str, object]:
++    return {}
++
++
++@srv.tool(structured_output=False)
++def echo(msg: str) -> str:
++    return msg
++
++
++@srv.tool()
++def boom() -> str:
++    raise ValueError("no such version")
++
++
++async def main():
++    async with Client(srv) as c:
++        s = c.session
++        print(repr(await run_tool(s, "status", {"service": "api"})))
++        print(repr(await run_tool(s, "empty", {})))
++        print(repr(await run_tool(s, "echo", {"msg": "hi"})))
++        try:
++            await run_tool(s, "boom", {})
++        except ToolCallFailed as e:
++            print("failed:", e.tool, repr(e.message))
++
++
++anyio.run(main)
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -5,6 +5,7 @@
+ from typing import Any
+ 
+ from mcp import ClientSession
++from mcp.types import CallToolResult, TextContent
+ 
+ 
+ class ToolCallFailed(Exception):
+@@ -16,5 +17,16 @@
+         self.message = message
+ 
+ 
++def _text(result: CallToolResult) -> str:
++    return "\n".join(block.text for block in result.content if isinstance(block, TextContent))
++
++
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    """Call tool `name`; return its structured output if any, else its text."""
++    result = await session.call_tool(name, arguments)
++    if result.is_error:
++        raise ToolCallFailed(name, _text(result))
++    # Structured output may be any JSON value, including falsy ones like {} or 0.
++    if result.structured_content is not None:
++        return result.structured_content
++    return _text(result)

@@ -1,0 +1,267 @@
+{
+  "schema": "since-cutoff-bench/run@1",
+  "study_id": "main-2026-09-28",
+  "run_id": "oai02_A_r1_dcfa",
+  "attempt": 1,
+  "attempt_id": "oai02_A_r1_dcfa",
+  "task_id": "oai02-respx-test-double",
+  "task": "oai02",
+  "task_sha256": "983151d679f25bb2c54ed7ae3ffa77739938dec5c8eabdee7668c303d1f54cdc",
+  "library": "openai",
+  "pinned": "3.19.2",
+  "cutoff_version": "2.44.0",
+  "stratum": "post-cutoff",
+  "kind": "post-cutoff-silent",
+  "condition": "A",
+  "rep": 1,
+  "block_id": "oai02#1",
+  "order_index": 170,
+  "pilot": false,
+  "condition_config": {
+    "condition": "A",
+    "claude_md_sha256": "aee74955cc1cd6431365ad7254ae7ce515eec2d415fc115ae9629fab72aaeacf",
+    "notes_sha256": null,
+    "notes_tokens": 0,
+    "notes_covered": null,
+    "mcp": "none",
+    "mcp_config_sha256": "1e0fe4707a42d1cce5d4e89af209cc6317e979348f1a1a3e1eda481a1467821e",
+    "context7_key": null,
+    "settings_sha256": "08f1b1cc94823f762daa4df2882c07fe013ba553efef38ab128b5cddc95f5694",
+    "allowed_tools_extra": null
+  },
+  "agent": {
+    "claude_code_version": "2.1.283",
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "argv": [
+      "C:\\Users\\Mohammad Hijjawi\\.local\\bin\\claude.exe",
+      "-p",
+      "--model",
+      "claude-opus-5-5",
+      "--effort",
+      "medium",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--max-turns",
+      "40",
+      "--max-budget-usd",
+      "3",
+      "--permission-mode",
+      "dontAsk",
+      "--tools",
+      "Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill",
+      "--settings",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\claude_settings.json",
+      "--setting-sources",
+      "project",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "C:\\b\\runs\\main-2026-09-28\\_harness\\mcp_none.json",
+      "--no-session-persistence"
+    ],
+    "env": {
+      "ALLUSERSPROFILE": "C:\\ProgramData",
+      "APPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Roaming",
+      "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+      "CLAUDE_CODE_GIT_BASH_PATH": "C:\\Program Files\\Git\\bin\\bash.exe",
+      "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
+      "COMMONPROGRAMFILES": "C:\\Program Files\\Common Files",
+      "COMMONPROGRAMFILES(X86)": "C:\\Program Files (x86)\\Common Files",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "DISABLE_AUTOUPDATER": "1",
+      "ENABLE_TOOL_SEARCH": "false",
+      "HF_HOME": "C:\\b\\tmp\\main-2026-09-28\\oai02_A_r1_dcfa\\hf",
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "<set>",
+      "HOMEDRIVE": "C:",
+      "HOMEPATH": "\\Users\\Mohammad Hijjawi",
+      "LOCALAPPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Local",
+      "MCP_TIMEOUT": "60000",
+      "NUMBER_OF_PROCESSORS": "32",
+      "OS": "Windows_NT",
+      "PATH": "C:\\b\\runs\\main-2026-09-28\\oai02_A_r1_dcfa\\.venv\\Scripts;C:\\WINDOWS\\System32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0",
+      "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC",
+      "PROCESSOR_ARCHITECTURE": "AMD64",
+      "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+      "PROGRAMDATA": "C:\\ProgramData",
+      "PROGRAMFILES": "C:\\Program Files",
+      "PROGRAMFILES(X86)": "C:\\Program Files (x86)",
+      "PROGRAMW6432": "C:\\Program Files",
+      "PYTEST_ADDOPTS": "--allow-hosts=127.0.0.1,::1",
+      "SYSTEMDRIVE": "C:",
+      "SYSTEMROOT": "C:\\WINDOWS",
+      "TEMP": "C:\\b\\tmp\\main-2026-09-28\\oai02_A_r1_dcfa",
+      "TMP": "C:\\b\\tmp\\main-2026-09-28\\oai02_A_r1_dcfa",
+      "USERPROFILE": "C:\\Users\\Mohammad Hijjawi",
+      "VIRTUAL_ENV": "C:\\b\\runs\\main-2026-09-28\\oai02_A_r1_dcfa\\.venv",
+      "WINDIR": "C:\\WINDOWS"
+    },
+    "init_model": "claude-opus-5-5",
+    "init_version": "2.1.283",
+    "api_key_source": "none"
+  },
+  "harness": {
+    "code_sha256": "9227ebaf60e2e8c4855fd71792a0de25072ac71a01e5e656e03cde701a8d32a8"
+  },
+  "started_at": "2026-09-28T05:02:10+00:00",
+  "ended_at": "2026-09-28T05:04:03+00:00",
+  "wall_s": 112.9,
+  "exit": {
+    "code": 0,
+    "timed_out": false,
+    "subtype": "success",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "orphans_killed": 1
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 30,
+    "duration_ms": 111947,
+    "duration_api_ms": 92785,
+    "total_cost_usd": 0.5429236000000001,
+    "usage": {
+      "input_tokens": 42,
+      "cache_creation_input_tokens": 34255,
+      "cache_read_input_tokens": 509178,
+      "output_tokens": 8344,
+      "output_tokens_details": {
+        "thinking_tokens": 2158
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 34255,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 879,
+          "cache_read_input_tokens": 40189,
+          "cache_creation_input_tokens": 469,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 469
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 42,
+        "outputTokens": 8344,
+        "cacheReadInputTokens": 509178,
+        "cacheCreationInputTokens": 34255,
+        "webSearchRequests": 0,
+        "costUSD": 0.5429236000000001,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 2158,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": 7,
+    "permission_denied_tools": [
+      "Bash"
+    ],
+    "terminal_reason": "completed",
+    "result_text": "I fixed `mock_openai()` in `tests/fakes.py` and both digest tests pass now. One cleanup item needs you: I couldn't delete a scratch test file I made (details at the end).\n\n**Cause:** openai 3.19.2 no longer sends requests through `httpx`. It uses the `httpx2`/`httpcore2` fork (`openai/_base_client.py:932`). respx 0.23.1 only patches `httpx`/`httpcore`, so its mocks stayed active but never saw any OpenAI traffic.\n\n**Fix:** only `tests/fakes.py` changed, and the helper works the same way from the outside.\n- While the `with` block is open, the helper temporarily replaces `httpx2.Client._transport_for_url`. That's the method every httpx2 client uses to choose how a request gets sent. For URLs under `https://api.openai.com/v1/` it returns an `httpx2.MockTransport` that gives the canned replies. Because the replacement is on the class, it covers app.digest's cached client, clients created before the block and clients created inside it. `mock.patch.object` puts the original back when the block exits, even if an exception was raised.\n- `POST /v1/chat/completions` gets the next canned reply, or a 400 once none are left, as before. Any other OpenAI endpoint gets a 404 whose message names the unexpected request, so it fails clearly instead of silently reaching the network.\n- The respx router is still there, so an OpenAI client given a plain `httpx.Client` via `http_client=` is still mocked too.\n- Nothing in `app/`, the pytest configuration or the dependencies changed.\n\n**Verification:** `pytest -q` gives 2 passed. I also ran a scratch test that checked:\n- A client created before the block gets canned replies.\n- app.digest's cached client gets canned replies.\n- A client created inside the block gets the 400 once the replies run out.\n- All three requests show up in the list the helper yields.\n- The original method is back after the block.\n\nAll of those passed. The scratch test's last step, a request after the block, failed only because I guessed the wrong exception: the request "
+  },
+  "mcp": {
+    "servers": [],
+    "errors": [],
+    "calls": {},
+    "doc_hit": false,
+    "doc_keys_found": []
+  },
+  "process": {
+    "tool_calls": {
+      "Bash": 12,
+      "Edit": 2,
+      "Glob": 4,
+      "Grep": 2,
+      "Read": 8,
+      "Write": 1
+    },
+    "denied_calls": 7,
+    "pytest_runs": 3,
+    "failing_pytest_runs": 2,
+    "py_edits": 3,
+    "edits_after_first_failure": 3,
+    "stale_in_first_edit": false,
+    "stale_first_edit_patterns": [],
+    "site_packages_reads": 9,
+    "introspection_cmds": 3,
+    "context7_calls": 0,
+    "context7_calls_by_tool": {},
+    "context7_errors": 0,
+    "doc_hit": false,
+    "doc_keys_found": [],
+    "skills": [],
+    "network_like_cmds": 0,
+    "network_like_examples": [],
+    "api_retries": 0,
+    "bad_stream_lines": 0,
+    "stale_in_final": false,
+    "files_changed": [
+      "tests/fakes.py",
+      "tests/test_zz_check.py"
+    ]
+  },
+  "venv": {
+    "added": {},
+    "removed": {},
+    "changed": {},
+    "modified": false
+  },
+  "grade": {
+    "passed": true,
+    "hidden_passed": true,
+    "hidden": {
+      "exit_code": 0,
+      "passed": 4,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 15.11,
+      "timed_out": false
+    },
+    "visible_passed": true,
+    "visible": {
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 4.03,
+      "timed_out": false
+    },
+    "lock_modified": false,
+    "lock_changes": [],
+    "env_lock_sha256": "fd9a9361ff23407e1e6dc07078793422cb6e56c84a9a071ec29c48cb5292412d",
+    "grade_s": 32.2,
+    "venv_modified": false
+  },
+  "valid": true,
+  "invalid_reason": null,
+  "invalid_detail": null,
+  "artifacts": {
+    "stream": "runs/oai02_A_r1_dcfa/stream.jsonl",
+    "stderr": "runs/oai02_A_r1_dcfa/stderr.log",
+    "diff": "runs/oai02_A_r1_dcfa/final.diff",
+    "claude_md": "runs/oai02_A_r1_dcfa/CLAUDE.md",
+    "grade_log": "runs/oai02_A_r1_dcfa/grade.log",
+    "project": "C:\\b\\runs\\main-2026-09-28\\oai02_A_r1_dcfa"
+  },
+  "cleanup_errors": null
+}

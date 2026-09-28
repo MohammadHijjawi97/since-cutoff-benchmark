@@ -1,0 +1,67 @@
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,16 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    """Numbered context entries, one per source, in retrieval order (empty string if none)."""
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    seen: set[str] = set()
++    entries: list[str] = []
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)
+--- /dev/null
++++ b/tests/test_context.py
+@@ -0,0 +1,44 @@
++from langchain_core.documents import Document
++
++from app.context import MAX_SOURCES, TRACE_TAG, build_context
++from app.kb import KeywordRetriever
++
++
++def doc(source, text):
++    return Document(page_content=text, metadata={"source": source})
++
++
++class TagRecordingRetriever(KeywordRetriever):
++    seen_tags: list[str] | None = None
++
++    def _get_relevant_documents(self, query, *, run_manager):
++        self.seen_tags = run_manager.tags
++        return super()._get_relevant_documents(query, run_manager=run_manager)
++
++
++DOCS = [
++    doc("a.md", "  vpn one \n"),
++    doc("a.md", "vpn two"),
++    doc("b.md", "vpn three"),
++    doc("c.md", "vpn four"),
++    doc("d.md", "vpn five"),
++]
++
++
++def test_one_entry_per_source_capped_and_stripped():
++    retriever = KeywordRetriever(docs=DOCS, k=5)
++    assert MAX_SOURCES == 3
++    assert build_context(retriever, "vpn") == (
++        "[1] a.md\nvpn one\n\n[2] b.md\nvpn three\n\n[3] c.md\nvpn four"
++    )
++
++
++def test_empty_when_nothing_found():
++    assert build_context(KeywordRetriever(docs=DOCS), "kubernetes") == ""
++
++
++def test_lookup_carries_trace_tag():
++    retriever = TagRecordingRetriever(docs=DOCS)
++    build_context(retriever, "vpn")
++    assert TRACE_TAG in retriever.seen_tags
++    assert retriever.tags is None

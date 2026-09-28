@@ -1,0 +1,74 @@
+--- /dev/null
++++ b/_scratch_client.py
+@@ -0,0 +1,19 @@
++import sys
++
++import anyio
++
++from opsbot.calls import ToolCallFailed, run_tool
++from opsbot.connection import open_session
++
++
++async def main() -> None:
++    async with open_session([sys.executable, "_scratch_server.py"]) as s:
++        print("status:", repr(await run_tool(s, "status", {"service": "api"})))
++        print("echo:", repr(await run_tool(s, "echo", {"text": "hi"})))
++        try:
++            await run_tool(s, "boom", {"reason": "no such version"})
++        except ToolCallFailed as exc:
++            print("boom raised:", exc.tool, "|", exc.message)
++
++
++anyio.run(main)
+--- /dev/null
++++ b/_scratch_server.py
+@@ -0,0 +1,22 @@
++from mcp.server import MCPServer
++
++app = MCPServer("scratch")
++
++
++@app.tool()
++def status(service: str) -> dict:
++    return {"service": service, "up": True}
++
++
++@app.tool()
++def echo(text: str) -> str:
++    return text
++
++
++@app.tool()
++def boom(reason: str) -> str:
++    raise ValueError(reason)
++
++
++if __name__ == "__main__":
++    app.run()
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -5,6 +5,7 @@
+ from typing import Any
+ 
+ from mcp import ClientSession
++from mcp.types import CallToolResult, TextContent
+ 
+ 
+ class ToolCallFailed(Exception):
+@@ -16,5 +17,15 @@
+         self.message = message
+ 
+ 
++def _text_of(result: CallToolResult) -> str:
++    return "\n".join(block.text for block in result.content if isinstance(block, TextContent))
++
++
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    result = await session.call_tool(name, arguments)
++    if result.is_error:
++        raise ToolCallFailed(name, _text_of(result))
++    # Structured content may be any JSON value (e.g. 0, [], ""), so test for None, not falsiness.
++    if result.structured_content is not None:
++        return result.structured_content
++    return _text_of(result)

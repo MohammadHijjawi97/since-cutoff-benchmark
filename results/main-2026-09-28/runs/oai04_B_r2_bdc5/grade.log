@@ -1,0 +1,13 @@
+task oai04 (oai04-responses-draft-control) project C:\b\runs\main-2026-09-28\oai04_B_r2_bdc5
+===== hidden tests: exit 0 in 9.2s
+$ C:\b\runs\main-2026-09-28\_grade\oai04_B_r2_bdc5\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\oai04_B_r2_bdc5\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\oai04_B_r2_bdc5\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\oai04_B_r2_bdc5\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\oai04_B_r2_bdc5\hidden.xml C:\b\runs\main-2026-09-28\_grade\oai04_B_r2_bdc5\proj\_bench_hidden
+...                                                                      [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\oai04_B_r2_bdc5\hidden.xml -
+3 passed in 6.44s
+
+===== visible tests: exit 0 in 1.6s
+$ C:\b\runs\main-2026-09-28\_grade\oai04_B_r2_bdc5\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\oai04_B_r2_bdc5\visible.xml
+.....                                                                    [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\oai04_B_r2_bdc5\visible.xml -
+5 passed in 0.76s
+

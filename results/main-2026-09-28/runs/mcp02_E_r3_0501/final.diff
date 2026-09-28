@@ -1,0 +1,114 @@
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -5,6 +5,7 @@
+ from typing import Any
+ 
+ from mcp import ClientSession
++from mcp.types import TextContent
+ 
+ 
+ class ToolCallFailed(Exception):
+@@ -17,4 +18,12 @@
+ 
+ 
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    result = await session.call_tool(name, arguments)
++    text = "\n".join(block.text for block in result.content if isinstance(block, TextContent))
++    if result.is_error:
++        raise ToolCallFailed(name, text)
++    # Structured output may be any JSON value (including null, 0, [] ...), so
++    # check whether the server sent it rather than testing its truthiness.
++    if "structured_content" in result.model_fields_set:
++        return result.structured_content
++    return text
+--- /dev/null
++++ b/tests/test_calls.py
+@@ -0,0 +1,87 @@
++import anyio
++import pytest
++from mcp.client.session import ClientSession
++from mcp.server import Server, ServerRequestContext
++from mcp.shared.memory import create_client_server_memory_streams
++from mcp.types import (
++    CallToolRequestParams,
++    CallToolResult,
++    ImageContent,
++    ListToolsResult,
++    PaginatedRequestParams,
++    TextContent,
++    Tool,
++)
++
++from opsbot.calls import ToolCallFailed, run_tool
++
++IMAGE = ImageContent(type="image", data="aGk=", mime_type="image/png")
++
++
++def text(s):
++    return TextContent(type="text", text=s)
++
++
++RESULTS = {
++    "status": CallToolResult(content=[text("api: up"), IMAGE, text("db: up")]),
++    "count": CallToolResult(content=[text("0 pending")], structured_content={"pending": 0}),
++    "zero": CallToolResult(content=[text("0")], structured_content={}),
++    "deploy": CallToolResult(content=[text("no such version"), IMAGE, text("try 4.2.0")], is_error=True),
++}
++
++
++async def list_tools(ctx: ServerRequestContext, params: PaginatedRequestParams | None) -> ListToolsResult:
++    return ListToolsResult(tools=[Tool(name=n, input_schema={"type": "object"}) for n in RESULTS])
++
++
++async def call_tool(ctx: ServerRequestContext, params: CallToolRequestParams) -> CallToolResult:
++    assert params.arguments == {"service": "api"}
++    return RESULTS[params.name]
++
++
++server = Server("ops", on_list_tools=list_tools, on_call_tool=call_tool)
++
++
++@pytest.fixture
++def anyio_backend():
++    return "asyncio"
++
++
++async def call(name):
++    # Catch inside the task groups so a ToolCallFailed isn't wrapped in an ExceptionGroup.
++    outcome = None
++    async with create_client_server_memory_streams() as (client_streams, server_streams):
++        async with anyio.create_task_group() as tg:
++            tg.start_soon(lambda: server.run(*server_streams, server.create_initialization_options()))
++            async with ClientSession(*client_streams) as session:
++                await session.initialize()
++                try:
++                    outcome = await run_tool(session, name, {"service": "api"})
++                except ToolCallFailed as exc:
++                    outcome = exc
++            tg.cancel_scope.cancel()
++    if isinstance(outcome, ToolCallFailed):
++        raise outcome
++    return outcome
++
++
++@pytest.mark.anyio
++async def test_returns_joined_text():
++    assert await call("status") == "api: up\ndb: up"
++
++
++@pytest.mark.anyio
++async def test_returns_structured_content():
++    assert await call("count") == {"pending": 0}
++
++
++@pytest.mark.anyio
++async def test_returns_empty_structured_content():
++    assert await call("zero") == {}
++
++
++@pytest.mark.anyio
++async def test_raises_on_error():
++    with pytest.raises(ToolCallFailed) as info:
++        await call("deploy")
++    assert (info.value.tool, info.value.message) == ("deploy", "no such version\ntry 4.2.0")

@@ -1,0 +1,134 @@
+--- a/app/chat.py
++++ b/app/chat.py
+@@ -5,9 +5,9 @@
+ import logging
+ from collections.abc import Iterable, Iterator
+ 
+-from openai import OpenAI
++from openai import APIConnectionError, APITimeoutError, OpenAI
+ 
+-from app.errors import UpstreamTimeout, UpstreamUnavailable  # noqa: F401  (for answer())
++from app.errors import UpstreamTimeout, UpstreamUnavailable
+ 
+ MODEL = "gpt-5.5"
+ SYSTEM_PROMPT = "You are the help-desk assistant for Northwind Cloud. Answer briefly and concretely."
+@@ -40,4 +40,18 @@
+ 
+ def answer(client: OpenAI, question: str, history: Iterable[tuple[str, str]] = ()) -> str:
+     """The complete answer to `question` (used by the e-mail channel)."""
+-    raise NotImplementedError
++    history = list(history)  # may be a one-shot iterable; every attempt needs it
++    for attempt in range(1, ATTEMPTS + 1):
++        try:
++            return "".join(iter_answer(client, question, history))
++        except APITimeoutError as err:  # subclass of APIConnectionError, so check it first
++            raise UpstreamTimeout(str(err.__cause__ or err)) from err
++        except APIConnectionError as err:
++            # The SDK's own message is just "Connection error."; the network error is the cause.
++            cause = err.__cause__ or err
++            logger.warning(
++                "Attempt %d/%d to reach the model failed: %s: %s",
++                attempt, ATTEMPTS, type(cause).__name__, cause,
++            )
++            last_error = err
++    raise UpstreamUnavailable(f"No answer after {ATTEMPTS} attempts") from last_error
+--- a/tests/test_chat.py
++++ b/tests/test_chat.py
+@@ -1,6 +1,12 @@
++import logging
+ from types import SimpleNamespace
+ 
++import httpx2
++import pytest
++from openai import APIConnectionError, APITimeoutError
++
+ from app import chat
++from app.errors import UpstreamTimeout, UpstreamUnavailable
+ 
+ 
+ def test_build_messages_keeps_history_in_order():
+@@ -27,3 +33,84 @@
+     assert list(chat.iter_answer(client, "How do I log in?")) == ["Reset ", "your password"]
+     assert completions.calls[0]["stream"] is True
+     assert completions.calls[0]["model"] == chat.MODEL
++
++
++REQUEST = httpx2.Request("POST", "https://api.example/v1/chat/completions")
++
++
++def chunk(text):
++    return SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content=text))])
++
++
++def wrapped(cause, error_type=APIConnectionError):
++    """`cause` wrapped the way the SDK does it (`raise APIConnectionError(...) from cause`)."""
++    try:
++        raise cause
++    except Exception as err:
++        try:
++            raise error_type(request=REQUEST) from err
++        except APIConnectionError as sdk_error:
++            return sdk_error
++
++
++def dropped(error, *texts):
++    """A stream that yields `texts`, then raises `error`."""
++    for text in texts:
++        yield chunk(text)
++    raise error
++
++
++class ScriptedCompletions:
++    def __init__(self, *outcomes):
++        self.outcomes = list(outcomes)
++        self.calls = []
++
++    def create(self, **kwargs):
++        self.calls.append(kwargs)
++        outcome = self.outcomes.pop(0)
++        if isinstance(outcome, Exception):
++            raise outcome
++        return outcome
++
++
++def make_client(*outcomes):
++    completions = ScriptedCompletions(*outcomes)
++    return SimpleNamespace(chat=SimpleNamespace(completions=completions)), completions
++
++
++def test_answer_joins_the_stream():
++    client, completions = make_client(iter([chunk("Hi "), chunk(None), chunk("there")]))
++    assert chat.answer(client, "Hello?") == "Hi there"
++    assert len(completions.calls) == 1
++
++
++def test_answer_retries_dropped_stream_without_fragments(caplog):
++    peer = "peer closed connection without sending complete message body"
++    client, completions = make_client(
++        wrapped(httpx2.ConnectError("Connection reset by peer")),
++        dropped(wrapped(httpx2.RemoteProtocolError(peer)), "Partial "),
++        iter([chunk("Full "), chunk("answer")]),
++    )
++    with caplog.at_level(logging.WARNING, logger="app.chat"):
++        assert chat.answer(client, "Q2", iter([("Q1", "A1")])) == "Full answer"
++    assert len(completions.calls) == 3
++    assert all(len(call["messages"]) == 4 for call in completions.calls)
++    warnings = [r.getMessage() for r in caplog.records if r.name == "app.chat" and r.levelno == logging.WARNING]
++    assert len(warnings) == 2
++    assert "Connection reset by peer" in warnings[0]
++    assert peer in warnings[1]
++
++
++def test_answer_gives_up_after_all_attempts():
++    client, completions = make_client(*(wrapped(httpx2.ConnectError("boom")) for _ in range(chat.ATTEMPTS)))
++    with pytest.raises(UpstreamUnavailable):
++        chat.answer(client, "Q")
++    assert len(completions.calls) == chat.ATTEMPTS
++
++
++def test_answer_does_not_retry_timeouts():
++    timeout = wrapped(httpx2.ReadTimeout("The read operation timed out"), APITimeoutError)
++    client, completions = make_client(dropped(timeout, "Part"), iter([chunk("never used")]))
++    with pytest.raises(UpstreamTimeout):
++        chat.answer(client, "Q")
++    assert len(completions.calls) == 1

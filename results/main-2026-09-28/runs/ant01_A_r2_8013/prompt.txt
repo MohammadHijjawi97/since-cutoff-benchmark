@@ -1,0 +1,9 @@
+Implement `label_ticket` in app/labeler.py.
+
+It must send exactly one Messages API request to the model in `MODEL` with max_tokens=5,
+a system prompt telling the model to answer with exactly one word from LABELS, and the
+ticket text as the user message. The labeler must be deterministic on this model, so every
+request must be sent with temperature 0.
+
+Return the model's reply lower-cased and stripped; if that is not one of LABELS, return
+"question". Do not add dependencies. You can run the tests with `pytest`.

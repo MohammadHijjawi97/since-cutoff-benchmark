@@ -1,0 +1,35 @@
+--- a/app/server.py
++++ b/app/server.py
+@@ -26,7 +26,7 @@
+ 
+ 
+ def serve_http(host: str, port: int) -> None:
+-    raise NotImplementedError
++    build_server().run("streamable-http", host=host, port=port)
+ 
+ 
+ def main(argv: list[str] | None = None) -> None:
+--- /dev/null
++++ b/smoke_http.py
+@@ -0,0 +1,21 @@
++import anyio
++from mcp import ClientSession
++from mcp.client.streamable_http import streamable_http_client
++
++
++async def main():
++    err = None
++    for _ in range(20):
++        try:
++            async with streamable_http_client("http://127.0.0.1:8765/mcp") as (r, w, *_):
++                async with ClientSession(r, w) as s:
++                    await s.initialize()
++                    print([t.name for t in (await s.list_tools()).tools])
++                    return
++        except Exception as e:
++            err = e
++            await anyio.sleep(0.5)
++    raise err
++
++
++anyio.run(main)

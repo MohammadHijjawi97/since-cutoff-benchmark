@@ -1,0 +1,60 @@
+--- a/app/report.py
++++ b/app/report.py
+@@ -5,5 +5,18 @@
+ import pandas as pd
+ 
+ 
++def _format_amount(value: float) -> str:
++    """Accounting-style text for one amount: 1,234.50 / (634.20) / - / blank."""
++    if pd.isna(value):
++        return ""
++    amount = round(float(value), 2)
++    # Anything that shows as 0.00 (including float noise and -0.0) is a zero.
++    if amount == 0:
++        return "-"
++    text = f"{abs(amount):,.2f}"
++    return f"({text})" if amount < 0 else text
++
++
+ def format_for_display(table: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Return a copy of the account x month table with every cell formatted as accounting text."""
++    return table.map(_format_amount)
+--- /dev/null
++++ b/tests/test_report.py
+@@ -0,0 +1,35 @@
++from pathlib import Path
++
++import pandas as pd
++
++from app.ledger import load_ledger, monthly_pnl
++from app.report import format_for_display
++
++DATA = Path(__file__).parent / "data" / "ledger.csv"
++
++
++def test_format_for_display_uses_accounting_style():
++    table = monthly_pnl(load_ledger(DATA))
++    shown = format_for_display(table)
++    assert shown.index.equals(table.index)
++    assert shown.columns.equals(table.columns)
++    assert shown.loc["Revenue", "2026-07"] == "12,500.00"
++    assert shown.loc["Revenue", "2026-08"] == "11,250.50"
++    assert shown.loc["Salaries", "2026-08"] == "(8,200.00)"
++    assert shown.loc["Travel", "2026-08"] == "(634.20)"
++    assert shown.loc["Refunds", "2026-08"] == "-"
++    assert shown.loc["Travel", "2026-07"] == ""
++    assert all(isinstance(cell, str) for cell in shown.to_numpy().ravel())
++
++
++def test_format_for_display_treats_rounded_zero_as_zero():
++    table = pd.DataFrame({"m": [-0.0, 1e-9, -0.004, 0.005, 1234567.891]}, index=list("abcde"))
++    shown = format_for_display(table)
++    assert list(shown["m"]) == ["-", "-", "-", "0.01", "1,234,567.89"]
++
++
++def test_format_for_display_leaves_input_untouched():
++    table = monthly_pnl(load_ledger(DATA))
++    before = table.copy()
++    format_for_display(table)
++    pd.testing.assert_frame_equal(table, before)

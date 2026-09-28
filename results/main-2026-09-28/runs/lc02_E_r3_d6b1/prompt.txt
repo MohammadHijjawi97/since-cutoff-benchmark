@@ -1,0 +1,7 @@
+Implement `summarize_ticket(chat, ticket)` in app/summary.py. `chat` can be any LangChain chat
+model. Make exactly one request to it with two messages: a system message with SUMMARY_PROMPT and
+a user message with the ticket rendered by `ticket_text`. Generation must stop at the first blank
+line (stop sequence "\n\n"). Return the model's reply as a plain str with surrounding whitespace
+removed.
+
+Do not add dependencies. You can run the tests with `pytest`.

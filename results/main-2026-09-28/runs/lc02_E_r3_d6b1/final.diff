@@ -1,0 +1,65 @@
+--- a/app/summary.py
++++ b/app/summary.py
+@@ -3,10 +3,15 @@
+ from __future__ import annotations
+ 
+ from langchain_core.language_models import BaseChatModel
++from langchain_core.messages import HumanMessage, SystemMessage
+ 
+ from app.prompts import SUMMARY_PROMPT
+ from app.tickets import Ticket, ticket_text
+ 
+ 
+ def summarize_ticket(chat: BaseChatModel, ticket: Ticket) -> str:
+-    raise NotImplementedError
++    """A one-sentence summary of the ticket; generation stops at the first blank line."""
++    messages = [SystemMessage(SUMMARY_PROMPT), HumanMessage(ticket_text(ticket))]
++    reply = chat.invoke(messages, stop=["\n\n"])
++    # `.text` also flattens list-of-blocks content, which some providers return.
++    return str(reply.text).strip()
+--- /dev/null
++++ b/tests/test_summary.py
+@@ -0,0 +1,43 @@
++from typing import Any
++
++from langchain_core.language_models import BaseChatModel
++from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
++from langchain_core.outputs import ChatGeneration, ChatResult
++
++from app.prompts import SUMMARY_PROMPT
++from app.summary import summarize_ticket
++from app.tickets import Ticket, ticket_text
++
++
++class RecordingChat(BaseChatModel):
++    content: Any
++    calls: list = []
++
++    @property
++    def _llm_type(self) -> str:
++        return "recording"
++
++    def _generate(self, messages: list[BaseMessage], stop=None, run_manager=None, **kwargs) -> ChatResult:
++        self.calls.append((messages, stop))
++        return ChatResult(generations=[ChatGeneration(message=AIMessage(content=self.content))])
++
++
++TICKET = Ticket(id=17, customer="Globex", subject="Login loop", body="Users are sent back to login.")
++
++
++def test_summarize_ticket_request_and_reply():
++    chat = RecordingChat(content="  Globex users are stuck in a login loop.\n", calls=[])
++    assert summarize_ticket(chat, TICKET) == "Globex users are stuck in a login loop."
++    assert len(chat.calls) == 1
++    messages, stop = chat.calls[0]
++    assert [type(m) for m in messages] == [SystemMessage, HumanMessage]
++    assert messages[0].content == SUMMARY_PROMPT
++    assert messages[1].content == ticket_text(TICKET)
++    assert stop == ["\n\n"]
++
++
++def test_summarize_ticket_content_blocks():
++    chat = RecordingChat(content=[{"type": "text", "text": " Login loop for Globex. "}], calls=[])
++    result = summarize_ticket(chat, TICKET)
++    assert result == "Login loop for Globex."
++    assert type(result) is str

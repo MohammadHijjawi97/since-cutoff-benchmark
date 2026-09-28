@@ -1,0 +1,74 @@
+--- /dev/null
++++ b/_check_remote.py
+@@ -0,0 +1,46 @@
++import socket
++import threading
++import time
++
++import anyio
++import uvicorn
++from starlette.responses import PlainTextResponse
++
++from mcp.server.mcpserver import MCPServer
++from kb.remote import search_remote
++
++server = MCPServer("kb")
++
++
++@server.tool()
++def search(query: str) -> str:
++    return f"Rotating API keys\n\n  {query} \n"
++
++
++seen = []
++inner = server.streamable_http_app()
++
++
++async def app(scope, receive, send):
++    if scope["type"] == "http":
++        auth = dict(scope["headers"]).get(b"authorization")
++        seen.append((scope["method"], auth))
++        if auth != b"Bearer s3cret":
++            return await PlainTextResponse("no", 401)(scope, receive, send)
++    await inner(scope, receive, send)
++
++
++sock = socket.socket()
++sock.bind(("127.0.0.1", 0))
++port = sock.getsockname()[1]
++sock.close()
++uv = uvicorn.Server(uvicorn.Config(app, port=port, log_level="warning"))
++threading.Thread(target=uv.run, daemon=True).start()
++while not uv.started:
++    time.sleep(0.05)
++
++print(anyio.run(search_remote, f"http://127.0.0.1:{port}/mcp", "s3cret", "Onboarding"))
++time.sleep(0.3)
++print(seen)
++assert seen and all(a == b"Bearer s3cret" for _, a in seen)
++uv.should_exit = True
+--- a/kb/remote.py
++++ b/kb/remote.py
+@@ -2,6 +2,21 @@
+ 
+ from __future__ import annotations
+ 
++import httpx2
++from mcp import ClientSession
++from mcp.client.streamable_http import streamable_http_client
++
++from kb.results import split_titles
++
++# The MCP SDK's default client timeouts: servers may hold response streams open.
++TIMEOUT = httpx2.Timeout(30.0, read=300.0)
++
+ 
+ async def search_remote(url: str, token: str, query: str) -> list[str]:
+-    raise NotImplementedError
++    headers = {"Authorization": f"Bearer {token}"}
++    async with httpx2.AsyncClient(headers=headers, timeout=TIMEOUT) as http_client:
++        async with streamable_http_client(url, http_client=http_client) as (read, write):
++            async with ClientSession(read, write) as session:
++                await session.initialize()
++                result = await session.call_tool("search", {"query": query})
++    return split_titles(result)

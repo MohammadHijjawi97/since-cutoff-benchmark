@@ -1,0 +1,66 @@
+--- a/app/drafts.py
++++ b/app/drafts.py
+@@ -45,4 +45,17 @@
+ 
+ 
+ def draft_reply(client: OpenAI, ticket: Ticket) -> Draft:
+-    raise NotImplementedError
++    """A reply draft for the ticket, flagged as truncated when it hit MAX_DRAFT_TOKENS."""
++    response = client.responses.create(
++        model=DRAFT_MODEL,
++        instructions=STYLE_GUIDE,
++        input=f"{ticket.subject}\n\n{ticket.body}",
++        max_output_tokens=MAX_DRAFT_TOKENS,
++        store=False,
++        metadata={"ticket_id": ticket.id},
++    )
++    # incomplete_details is None for a finished response; other reasons (e.g. content_filter)
++    # are not a token-cap cut-off.
++    details = getattr(response, "incomplete_details", None)
++    truncated = getattr(details, "reason", None) == "max_output_tokens"
++    return Draft(ticket_id=ticket.id, text=response.output_text.strip(), truncated=truncated)
+--- /dev/null
++++ b/tests/test_drafts.py
+@@ -0,0 +1,42 @@
++from types import SimpleNamespace
++
++from app.drafts import DRAFT_MODEL, MAX_DRAFT_TOKENS, STYLE_GUIDE, Ticket, draft_reply
++
++TICKET = Ticket(id="T-88", subject="Charged twice", body="My card was charged twice for September.")
++
++
++class FakeResponses:
++    def __init__(self, text, incomplete_details=None):
++        self.text = text
++        self.incomplete_details = incomplete_details
++        self.calls = []
++
++    def create(self, **kwargs):
++        self.calls.append(kwargs)
++        return SimpleNamespace(output_text=self.text, incomplete_details=self.incomplete_details)
++
++
++def test_draft_reply_sends_the_expected_request():
++    responses = FakeResponses("  Hi there,\n\nSorry about that.\n")
++    draft = draft_reply(SimpleNamespace(responses=responses), TICKET)
++
++    assert draft.ticket_id == "T-88"
++    assert draft.text == "Hi there,\n\nSorry about that."
++    assert draft.truncated is False
++    call = responses.calls[0]
++    assert call["model"] == DRAFT_MODEL
++    assert call["instructions"] == STYLE_GUIDE
++    assert "Charged twice" in call["input"] and TICKET.body in call["input"]
++    assert call["max_output_tokens"] == MAX_DRAFT_TOKENS
++    assert call["store"] is False
++    assert call["metadata"] == {"ticket_id": "T-88"}
++
++
++def test_draft_hitting_the_token_cap_is_truncated():
++    responses = FakeResponses("Hi there, sorry", SimpleNamespace(reason="max_output_tokens"))
++    assert draft_reply(SimpleNamespace(responses=responses), TICKET).truncated is True
++
++
++def test_draft_stopped_for_another_reason_is_not_truncated():
++    responses = FakeResponses("Hi", SimpleNamespace(reason="content_filter"))
++    assert draft_reply(SimpleNamespace(responses=responses), TICKET).truncated is False

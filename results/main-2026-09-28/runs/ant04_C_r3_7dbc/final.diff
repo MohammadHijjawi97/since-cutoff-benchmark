@@ -1,0 +1,62 @@
+--- a/app/claude.py
++++ b/app/claude.py
+@@ -1,12 +1,30 @@
+ """Claude access for the assistant."""
+ 
+-from anthropic import Anthropic
++from anthropic import Anthropic, DefaultHttpxClient, Timeout
++
++from app.http import CONNECT_TIMEOUT, EGRESS_TAG, READ_TIMEOUT, log_egress
+ 
+ MODEL = "claude-opus-5-5"
+ 
++# anthropic 1.x runs on httpx2 and rejects httpx objects, so app.http.TIMEOUT can't be reused
++# directly; build the equivalent httpx2 timeout from the same values.
++CLAUDE_TIMEOUT = Timeout(READ_TIMEOUT, connect=CONNECT_TIMEOUT)
++
+ 
+ def build_claude(api_key: str, transport=None) -> Anthropic:
+-    raise NotImplementedError
++    """The Claude client, sending through the service's egress settings (see app.http)."""
++    http_client = DefaultHttpxClient(
++        timeout=CLAUDE_TIMEOUT,
++        headers={"X-Egress-Tag": EGRESS_TAG},
++        event_hooks={"request": [log_egress]},
++        **({"transport": transport} if transport is not None else {}),
++    )
++    return Anthropic(
++        api_key=api_key,
++        http_client=http_client,
++        timeout=CLAUDE_TIMEOUT,
++        max_retries=2,
++    )
+ 
+ 
+ def ask(client: Anthropic, question: str) -> str:
+--- /dev/null
++++ b/check_claude.py
+@@ -0,0 +1,24 @@
++import logging
++
++import httpx2
++
++from app.claude import ask, build_claude
++
++logging.basicConfig(level=logging.INFO, format="%(name)s %(message)s")
++seen = []
++
++
++def handler(req):
++    seen.append(req)
++    if len(seen) == 1:
++        return httpx2.Response(500, json={"type": "error", "error": {"type": "api_error", "message": "x"}})
++    return httpx2.Response(200, json={
++        "id": "m", "type": "message", "role": "assistant", "model": "claude-opus-5-5",
++        "content": [{"type": "text", "text": "ok"}], "stop_reason": "end_turn", "stop_sequence": None,
++        "usage": {"input_tokens": 1, "output_tokens": 1},
++    })
++
++
++c = build_claude("k", transport=httpx2.MockTransport(handler))
++print(ask(c, "hi"), len(seen), [r.headers.get("x-egress-tag") for r in seen])
++print(seen[-1].extensions.get("timeout"), c.max_retries)

@@ -1,0 +1,150 @@
+--- a/app/chat.py
++++ b/app/chat.py
+@@ -5,9 +5,9 @@
+ import logging
+ from collections.abc import Iterable, Iterator
+ 
+-from openai import OpenAI
++from openai import APIConnectionError, APITimeoutError, OpenAI
+ 
+-from app.errors import UpstreamTimeout, UpstreamUnavailable  # noqa: F401  (for answer())
++from app.errors import UpstreamTimeout, UpstreamUnavailable
+ 
+ MODEL = "gpt-5.5"
+ SYSTEM_PROMPT = "You are the help-desk assistant for Northwind Cloud. Answer briefly and concretely."
+@@ -39,5 +39,25 @@
+ 
+ 
+ def answer(client: OpenAI, question: str, history: Iterable[tuple[str, str]] = ()) -> str:
+-    """The complete answer to `question` (used by the e-mail channel)."""
+-    raise NotImplementedError
++    """The complete answer to `question` (used by the e-mail channel).
++
++    A failed or dropped connection restarts the request from scratch, up to ATTEMPTS
++    times in total; a timeout is not retried.
++    """
++    history = list(history)  # may be a one-shot iterable, and every attempt needs it
++    for attempt in range(1, ATTEMPTS + 1):
++        try:
++            return "".join(iter_answer(client, question, history))
++        except APITimeoutError as err:
++            # Checked first: APITimeoutError is a subclass of APIConnectionError.
++            raise UpstreamTimeout("the model provider stopped sending data") from err
++        except APIConnectionError as err:
++            # openai's own message is just "Connection error."; the network error it
++            # wraps says what actually happened.
++            cause = err.__cause__ or err
++            logger.warning(
++                "Attempt %d/%d to reach the model provider failed: %s: %s",
++                attempt, ATTEMPTS, type(cause).__name__, cause,
++            )
++            last_error = err
++    raise UpstreamUnavailable(f"the model provider could not be reached in {ATTEMPTS} attempts") from last_error
+--- a/tests/test_chat.py
++++ b/tests/test_chat.py
+@@ -1,6 +1,12 @@
++import logging
+ from types import SimpleNamespace
+ 
++import httpx2
++import openai
++import pytest
++
+ from app import chat
++from app.errors import UpstreamTimeout, UpstreamUnavailable
+ 
+ 
+ def test_build_messages_keeps_history_in_order():
+@@ -27,3 +33,92 @@
+     assert list(chat.iter_answer(client, "How do I log in?")) == ["Reset ", "your password"]
+     assert completions.calls[0]["stream"] is True
+     assert completions.calls[0]["model"] == chat.MODEL
++
++
++REQUEST = httpx2.Request("POST", "https://api.openai.com/v1/chat/completions")
++
++
++def wrapped(wrapper, cause):
++    """`wrapper` raised from `cause`, the way openai wraps network errors."""
++    try:
++        raise cause
++    except Exception as err:
++        try:
++            raise wrapper from err
++        except Exception as exc:
++            return exc
++
++
++def dropped(message="peer closed connection without sending complete message body"):
++    return wrapped(openai.APIConnectionError(request=REQUEST), httpx2.RemoteProtocolError(message))
++
++
++def timed_out():
++    return wrapped(openai.APITimeoutError(request=REQUEST), httpx2.ReadTimeout("The read operation timed out"))
++
++
++class ScriptedCompletions:
++    """Each call plays the next script: an exception, or text deltas that may end in one."""
++
++    def __init__(self, *scripts):
++        self.scripts = list(scripts)
++        self.calls = 0
++
++    def create(self, **kwargs):
++        script = self.scripts[self.calls]
++        self.calls += 1
++        if isinstance(script, Exception):
++            raise script
++
++        def chunks():
++            for item in script:
++                if isinstance(item, Exception):
++                    raise item
++                yield SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content=item))])
++
++        return chunks()
++
++
++def client_for(completions):
++    return SimpleNamespace(chat=SimpleNamespace(completions=completions))
++
++
++def chat_warnings(caplog):
++    return [r.getMessage() for r in caplog.records if r.name == "app.chat" and r.levelno == logging.WARNING]
++
++
++def test_answer_returns_the_whole_text():
++    completions = ScriptedCompletions(["Reset ", "your password."])
++    assert chat.answer(client_for(completions), "How do I log in?") == "Reset your password."
++    assert completions.calls == 1
++
++
++def test_answer_retries_a_dropped_stream_and_keeps_only_the_complete_attempt(caplog):
++    completions = ScriptedCompletions(
++        ["Reset ", "your pa", dropped()],
++        dropped("[Errno 104] Connection reset by peer"),
++        ["Reset ", "your password."],
++    )
++    history = iter([("Hi", "Hello!")])
++    with caplog.at_level(logging.WARNING, logger="app.chat"):
++        assert chat.answer(client_for(completions), "How do I log in?", history) == "Reset your password."
++    assert completions.calls == 3
++    warnings = chat_warnings(caplog)
++    assert len(warnings) == 2
++    assert "peer closed connection without sending complete message body" in warnings[0]
++    assert "Connection reset by peer" in warnings[1]
++
++
++def test_answer_gives_up_after_all_attempts_fail(caplog):
++    completions = ScriptedCompletions(*[["partial", dropped()] for _ in range(chat.ATTEMPTS)])
++    with caplog.at_level(logging.WARNING, logger="app.chat"), pytest.raises(UpstreamUnavailable):
++        chat.answer(client_for(completions), "How do I log in?")
++    assert completions.calls == chat.ATTEMPTS
++    assert len(chat_warnings(caplog)) == chat.ATTEMPTS
++
++
++def test_answer_does_not_retry_a_timeout():
++    completions = ScriptedCompletions(["Reset ", timed_out()], ["Reset your password."])
++    with pytest.raises(UpstreamTimeout):
++        chat.answer(client_for(completions), "How do I log in?")
++    assert completions.calls == 1

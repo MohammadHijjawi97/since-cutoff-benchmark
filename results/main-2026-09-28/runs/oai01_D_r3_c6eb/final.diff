@@ -1,0 +1,60 @@
+--- /dev/null
++++ b/_check.py
+@@ -0,0 +1,23 @@
++import logging
++
++import httpx2
++
++logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s %(message)s")
++logging.getLogger("openai").setLevel(logging.WARNING)
++from app.llm_client import build_client
++
++calls = []
++
++
++def handler(req):
++    calls.append(req.extensions.get("timeout"))
++    return httpx2.Response(500, json={"error": {"message": "boom"}})
++
++
++c = build_client("sk-test", transport=httpx2.MockTransport(handler))
++print("max_retries", c.max_retries, "timeout", c.timeout, c._client.timeout)
++try:
++    c.models.list()
++except Exception as e:
++    print(type(e).__name__)
++print(len(calls), calls[0])
+--- a/app/llm_client.py
++++ b/app/llm_client.py
+@@ -2,10 +2,29 @@
+ 
+ import logging
+ 
+-from openai import OpenAI
++import httpx2
++from openai import DefaultHttpxClient, OpenAI
+ 
+ logger = logging.getLogger("app.http")
+ 
++TIMEOUT = httpx2.Timeout(30.0, connect=5.0)
++MAX_RETRIES = 2
++
++
++def _log_request(request: httpx2.Request) -> None:
++    logger.info("%s %s", request.method, request.url)
++
+ 
+ def build_client(api_key: str, transport=None) -> OpenAI:
+-    raise NotImplementedError
++    # The request hook runs on every send, so each retry is logged too.
++    http_client = DefaultHttpxClient(
++        timeout=TIMEOUT,
++        transport=transport,
++        event_hooks={"request": [_log_request]},
++    )
++    return OpenAI(
++        api_key=api_key,
++        timeout=TIMEOUT,
++        max_retries=MAX_RETRIES,
++        http_client=http_client,
++    )

@@ -1,0 +1,63 @@
+--- /dev/null
++++ b/_check_client.py
+@@ -0,0 +1,24 @@
++import logging
++
++import httpx2
++
++logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s %(message)s")
++logging.getLogger("openai").setLevel(logging.WARNING)
++
++from app.llm_client import build_client
++
++calls = []
++
++
++def handler(req):
++    calls.append(req.extensions.get("timeout"))
++    return httpx2.Response(500, json={"error": {"message": "boom"}})
++
++
++c = build_client("sk-test", transport=httpx2.MockTransport(handler))
++print("max_retries", c.max_retries, "timeout", c.timeout, "http timeout", c._client.timeout)
++try:
++    c.models.list()
++except Exception as e:
++    print(type(e).__name__)
++print("attempts", len(calls), "per-request timeout", calls[0])
+--- a/app/llm_client.py
++++ b/app/llm_client.py
+@@ -2,10 +2,31 @@
+ 
+ import logging
+ 
+-from openai import OpenAI
++import httpx2
++from openai import DefaultHttpx2Client, OpenAI
+ 
+ logger = logging.getLogger("app.http")
+ 
++TIMEOUT = httpx2.Timeout(30.0, connect=5.0)
++MAX_RETRIES = 2
++
++
++def _log_request(request: httpx2.Request) -> None:
++    logger.info("%s %s", request.method, request.url)
++
+ 
+ def build_client(api_key: str, transport=None) -> OpenAI:
+-    raise NotImplementedError
++    http_client_kwargs = {
++        "timeout": TIMEOUT,
++        "event_hooks": {"request": [_log_request]},
++    }
++    if transport is not None:
++        http_client_kwargs["transport"] = transport
++
++    return OpenAI(
++        api_key=api_key,
++        # Set on the OpenAI client too: the SDK passes its own timeout on every request.
++        timeout=TIMEOUT,
++        max_retries=MAX_RETRIES,
++        http_client=DefaultHttpx2Client(**http_client_kwargs),
++    )

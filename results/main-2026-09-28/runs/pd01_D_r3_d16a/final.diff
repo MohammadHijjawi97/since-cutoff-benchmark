@@ -1,0 +1,83 @@
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -3,5 +3,26 @@
+ import pandas as pd
+ 
+ 
++def _strip(value):
++    return value.strip() if isinstance(value, str) else value
++
++
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A copy of the orders frame with text tidied and missing ``qty`` set to 0.
++
++    Text columns (``object`` or string dtype) have surrounding whitespace
++    stripped and empty strings turned into missing values; non-string values
++    in object columns are left untouched.
++    """
++    out = df.copy()
++    for col in out.select_dtypes(include=["object", "string"]).columns:
++        s = out[col]
++        if isinstance(s.dtype, pd.StringDtype):
++            s = s.str.strip()
++        else:
++            # Element-wise so non-string values in object columns survive.
++            s = s.map(_strip).astype(s.dtype)
++        out[col] = s.mask(s.eq(""))
++    if "qty" in out.columns:
++        out["qty"] = out["qty"].fillna(0)
++    return out
+--- /dev/null
++++ b/tests/test_clean_orders.py
+@@ -0,0 +1,50 @@
++import numpy as np
++import pandas as pd
++
++from app.clean import clean_orders
++
++
++def _frame():
++    return pd.DataFrame(
++        {
++            "sku": ["  A1 ", "", "B2", None],
++            "qty": [1.0, np.nan, 3.0, np.nan],
++            "note": ["   ", " ok", np.nan, "x"],
++            "price": [9.5, 1.0, np.nan, 2.0],
++        }
++    )
++
++
++def test_strips_text_and_blanks_become_missing():
++    out = clean_orders(_frame())
++    assert out["sku"].iloc[0] == "A1"
++    assert pd.isna(out["sku"].iloc[1])
++    assert out["sku"].iloc[2] == "B2"
++    assert pd.isna(out["sku"].iloc[3])
++    assert pd.isna(out["note"].iloc[0])
++    assert out["note"].iloc[1] == "ok"
++    assert out["note"].iloc[3] == "x"
++
++
++def test_qty_filled_other_numbers_untouched():
++    out = clean_orders(_frame())
++    assert out["qty"].tolist() == [1.0, 0.0, 3.0, 0.0]
++    assert pd.isna(out["price"].iloc[2])
++
++
++def test_input_not_modified_and_dtypes_kept():
++    df = _frame()
++    before = df.copy()
++    out = clean_orders(df)
++    pd.testing.assert_frame_equal(df, before)
++    assert (out.dtypes == df.dtypes).all()
++
++
++def test_object_column_with_non_strings():
++    df = pd.DataFrame({"note": pd.Series([" a ", 5, "", None], dtype=object), "qty": [1, 2, 3, 4]})
++    out = clean_orders(df)
++    assert out["note"].dtype == object
++    assert out["note"].iloc[0] == "a"
++    assert out["note"].iloc[1] == 5
++    assert pd.isna(out["note"].iloc[2])
++    assert out["qty"].tolist() == [1, 2, 3, 4]

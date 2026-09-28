@@ -1,0 +1,266 @@
+{
+  "schema": "since-cutoff-bench/run@1",
+  "study_id": "pilot-2026-09-28",
+  "run_id": "mcp01_A_r1_aed5",
+  "attempt": 1,
+  "attempt_id": "mcp01_A_r1_aed5",
+  "task_id": "mcp01-server-tools",
+  "task": "mcp01",
+  "task_sha256": "dbcf153aa3fa8dd8e34e7d76cd8561270d8c787e088bc9cfe6378b3e16b6aae9",
+  "library": "mcp",
+  "pinned": "2.2.0",
+  "cutoff_version": "1.28.1",
+  "stratum": "post-cutoff",
+  "kind": "post-cutoff-loud+silent",
+  "condition": "A",
+  "rep": 1,
+  "block_id": "mcp01#1",
+  "order_index": 14,
+  "pilot": true,
+  "condition_config": {
+    "condition": "A",
+    "claude_md_sha256": "aee74955cc1cd6431365ad7254ae7ce515eec2d415fc115ae9629fab72aaeacf",
+    "notes_sha256": null,
+    "notes_tokens": 0,
+    "notes_covered": null,
+    "mcp": "none",
+    "mcp_config_sha256": "1e0fe4707a42d1cce5d4e89af209cc6317e979348f1a1a3e1eda481a1467821e",
+    "context7_key": null,
+    "settings_sha256": "08f1b1cc94823f762daa4df2882c07fe013ba553efef38ab128b5cddc95f5694",
+    "allowed_tools_extra": null
+  },
+  "agent": {
+    "claude_code_version": "2.1.283",
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "argv": [
+      "C:\\Users\\Mohammad Hijjawi\\.local\\bin\\claude.exe",
+      "-p",
+      "--model",
+      "claude-opus-5-5",
+      "--effort",
+      "medium",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--max-turns",
+      "40",
+      "--max-budget-usd",
+      "3",
+      "--permission-mode",
+      "dontAsk",
+      "--tools",
+      "Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill",
+      "--settings",
+      "C:\\b\\runs\\pilot-2026-09-28\\_harness\\claude_settings.json",
+      "--setting-sources",
+      "project",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "C:\\b\\runs\\pilot-2026-09-28\\_harness\\mcp_none.json",
+      "--no-session-persistence"
+    ],
+    "env": {
+      "ALLUSERSPROFILE": "C:\\ProgramData",
+      "APPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Roaming",
+      "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+      "CLAUDE_CODE_GIT_BASH_PATH": "C:\\Program Files\\Git\\bin\\bash.exe",
+      "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
+      "COMMONPROGRAMFILES": "C:\\Program Files\\Common Files",
+      "COMMONPROGRAMFILES(X86)": "C:\\Program Files (x86)\\Common Files",
+      "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
+      "DISABLE_AUTOUPDATER": "1",
+      "ENABLE_TOOL_SEARCH": "false",
+      "HF_HOME": "C:\\b\\tmp\\pilot-2026-09-28\\mcp01_A_r1_aed5\\hf",
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "<set>",
+      "HOMEDRIVE": "C:",
+      "HOMEPATH": "\\Users\\Mohammad Hijjawi",
+      "LOCALAPPDATA": "C:\\Users\\Mohammad Hijjawi\\AppData\\Local",
+      "MCP_TIMEOUT": "60000",
+      "NUMBER_OF_PROCESSORS": "32",
+      "OS": "Windows_NT",
+      "PATH": "C:\\b\\runs\\pilot-2026-09-28\\mcp01_A_r1_aed5\\.venv\\Scripts;C:\\WINDOWS\\System32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0",
+      "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC",
+      "PROCESSOR_ARCHITECTURE": "AMD64",
+      "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+      "PROGRAMDATA": "C:\\ProgramData",
+      "PROGRAMFILES": "C:\\Program Files",
+      "PROGRAMFILES(X86)": "C:\\Program Files (x86)",
+      "PROGRAMW6432": "C:\\Program Files",
+      "PYTEST_ADDOPTS": "--allow-hosts=127.0.0.1,::1",
+      "SYSTEMDRIVE": "C:",
+      "SYSTEMROOT": "C:\\WINDOWS",
+      "TEMP": "C:\\b\\tmp\\pilot-2026-09-28\\mcp01_A_r1_aed5",
+      "TMP": "C:\\b\\tmp\\pilot-2026-09-28\\mcp01_A_r1_aed5",
+      "USERPROFILE": "C:\\Users\\Mohammad Hijjawi",
+      "VIRTUAL_ENV": "C:\\b\\runs\\pilot-2026-09-28\\mcp01_A_r1_aed5\\.venv",
+      "WINDIR": "C:\\WINDOWS"
+    },
+    "init_model": "claude-opus-5-5",
+    "init_version": "2.1.283",
+    "api_key_source": "none"
+  },
+  "harness": {
+    "code_sha256": "d42545af5c841d190dae398b870d608f02b05434f455112cd964fba53450e247"
+  },
+  "started_at": "2026-09-28T01:14:36+00:00",
+  "ended_at": "2026-09-28T01:15:35+00:00",
+  "wall_s": 58.5,
+  "exit": {
+    "code": 0,
+    "timed_out": false,
+    "subtype": "success",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "orphans_killed": 1
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 19,
+    "duration_ms": 57308,
+    "duration_api_ms": 42348,
+    "total_cost_usd": 0.2714992,
+    "usage": {
+      "input_tokens": 24,
+      "cache_creation_input_tokens": 18886,
+      "cache_read_input_tokens": 208376,
+      "output_tokens": 3932,
+      "output_tokens_details": {
+        "thinking_tokens": 267
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 18886,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 616,
+          "cache_read_input_tokens": 24938,
+          "cache_creation_input_tokens": 351,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 351
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 24,
+        "outputTokens": 3932,
+        "cacheReadInputTokens": 208376,
+        "cacheCreationInputTokens": 18886,
+        "webSearchRequests": 0,
+        "costUSD": 0.2714992,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 267,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": 3,
+    "permission_denied_tools": [
+      "Bash"
+    ],
+    "terminal_reason": "completed",
+    "result_text": "`build_server()` in `app/server.py` now returns a server named \"notes\" with both tools. Tests pass, `python -m app.smoke` lists `add_note` and `word_count` over stdio, and a real stdio client call of both tools worked, including the error case.\n\nThe pinned `mcp==2.2.0` is version 2 of the SDK, which renamed `FastMCP` to `MCPServer`. Importing `mcp.server.fastmcp` now raises an error on purpose. So the code uses the v2 equivalent:\n\n```python\nfrom mcp.server.mcpserver import MCPServer\nfrom mcp.server.mcpserver.exceptions import ToolError\n```\n\n- **Tools:** both are registered with `@server.tool()`. `add_note` stores the note in `NOTES` and returns `saved <title>`. `word_count` returns `len(body.split())`.\n- **Unknown title:** `word_count` raises `ToolError(\"no such note: <title>\")`. In SDK v2, that exception becomes a tool result marked as an error, with your message included, so the model can read why it failed. Any other exception type would reach the client only as a generic `Error executing tool word_count` without the reason.\n- **Stdio:** `python -m app.server` still calls `build_server().run()`, which serves over stdio by default.\n\n**Test results:**\n- `pytest -q`: 1 passed.\n- `add_note(\"a\", \"one two  three\\nfour\")` returned `saved a`.\n- `word_count(\"a\")` returned `4`.\n- `word_count(\"zzz\")` came back as an error result with the text `Error executing tool word_count: no such note: zzz`.\n\nNo dependencies were added.\n\nOne leftover: the end-to-end check used a temporary script at `e2e_check.py` in the project root. Deleting it needed approval, so it's still there and you can remove it."
+  },
+  "mcp": {
+    "servers": [],
+    "errors": [],
+    "calls": {},
+    "doc_hit": false,
+    "doc_keys_found": []
+  },
+  "process": {
+    "tool_calls": {
+      "Bash": 4,
+      "Glob": 3,
+      "Grep": 1,
+      "Read": 8,
+      "Write": 2
+    },
+    "denied_calls": 3,
+    "pytest_runs": 1,
+    "failing_pytest_runs": 0,
+    "py_edits": 2,
+    "edits_after_first_failure": 0,
+    "stale_in_first_edit": false,
+    "stale_first_edit_patterns": [],
+    "site_packages_reads": 7,
+    "introspection_cmds": 0,
+    "context7_calls": 0,
+    "context7_calls_by_tool": {},
+    "context7_errors": 0,
+    "doc_hit": false,
+    "doc_keys_found": [],
+    "skills": [],
+    "network_like_cmds": 0,
+    "network_like_examples": [],
+    "api_retries": 0,
+    "bad_stream_lines": 0,
+    "stale_in_final": false,
+    "files_changed": [
+      "app/server.py",
+      "e2e_check.py"
+    ]
+  },
+  "venv": {
+    "added": {},
+    "removed": {},
+    "changed": {},
+    "modified": false
+  },
+  "grade": {
+    "passed": true,
+    "hidden_passed": true,
+    "hidden": {
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 8.29,
+      "timed_out": false
+    },
+    "visible_passed": true,
+    "visible": {
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_s": 1.86,
+      "timed_out": false
+    },
+    "lock_modified": false,
+    "lock_changes": [],
+    "env_lock_sha256": "deac184832707ce90301a3dce10a95aa3d8c3f1680df0244b2278cac41ebd323",
+    "grade_s": 20.8,
+    "venv_modified": false
+  },
+  "valid": true,
+  "invalid_reason": null,
+  "invalid_detail": null,
+  "artifacts": {
+    "stream": "runs/mcp01_A_r1_aed5/stream.jsonl",
+    "stderr": "runs/mcp01_A_r1_aed5/stderr.log",
+    "diff": "runs/mcp01_A_r1_aed5/final.diff",
+    "claude_md": "runs/mcp01_A_r1_aed5/CLAUDE.md",
+    "grade_log": "runs/mcp01_A_r1_aed5/grade.log",
+    "project": "C:\\b\\runs\\pilot-2026-09-28\\mcp01_A_r1_aed5"
+  },
+  "cleanup_errors": null
+}

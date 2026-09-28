@@ -1,0 +1,52 @@
+--- /dev/null
++++ b/_check_labeler.py
+@@ -0,0 +1,23 @@
++import json
++
++import httpx2
++from anthropic import Anthropic, DefaultHttpxClient
++
++from app.labeler import label_ticket
++
++sent = []
++REPLY = {
++    "id": "m", "type": "message", "role": "assistant", "model": "x",
++    "content": [{"type": "text", "text": " Bug\n"}],
++    "stop_reason": "end_turn", "stop_sequence": None,
++    "usage": {"input_tokens": 1, "output_tokens": 1},
++}
++
++
++def handler(req):
++    sent.append(json.loads(req.content))
++    return httpx2.Response(200, json=REPLY)
++
++
++c = Anthropic(api_key="k", max_retries=0, http_client=DefaultHttpxClient(transport=httpx2.MockTransport(handler)))
++print(label_ticket(c, "app crashes"), len(sent), sent[0])
+--- a/app/labeler.py
++++ b/app/labeler.py
+@@ -6,5 +6,22 @@
+ MODEL = "claude-sonnet-4-6"
+ 
+ 
++SYSTEM_PROMPT = (
++    "Classify the support ticket. Answer with exactly one word from this list: "
++    + ", ".join(LABELS)
++    + "."
++)
++
++
+ def label_ticket(client: Anthropic, text: str) -> str:
+-    raise NotImplementedError
++    """One of LABELS; falls back to "question" when the reply is not a known label."""
++    message = client.messages.create(
++        model=MODEL,
++        max_tokens=5,
++        system=SYSTEM_PROMPT,
++        messages=[{"role": "user", "content": text}],
++        # anthropic 1.x dropped the temperature kwarg; the API still accepts it in the body.
++        extra_body={"temperature": 0},
++    )
++    reply = "".join(block.text for block in message.content if block.type == "text").strip().lower()
++    return reply if reply in LABELS else "question"

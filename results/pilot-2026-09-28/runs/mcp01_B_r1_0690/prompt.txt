@@ -1,0 +1,11 @@
+Implement `build_server()` in app/server.py with the official MCP Python SDK (`mcp`, pinned in
+pyproject.toml), using its high-level decorator API. The server is named "notes" and exposes two
+tools:
+
+  add_note(title: str, body: str) -> str   stores the note in NOTES and returns "saved <title>";
+  word_count(title: str) -> int            returns the number of whitespace-separated words in
+                                           the stored note.
+
+For an unknown title, word_count must fail as a tool error whose message contains
+"no such note", so the calling model can read why it failed. Keep `python -m app.server`
+serving over stdio. Do not add dependencies. You can run the tests with `pytest`.

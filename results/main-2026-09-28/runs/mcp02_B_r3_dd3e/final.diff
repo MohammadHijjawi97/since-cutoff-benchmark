@@ -1,0 +1,57 @@
+--- a/opsbot/calls.py
++++ b/opsbot/calls.py
+@@ -17,4 +17,12 @@
+ 
+ 
+ async def run_tool(session: ClientSession, name: str, arguments: dict[str, Any]) -> Any:
+-    raise NotImplementedError
++    """Call `name` and return its structured output, or else its text."""
++    result = await session.call_tool(name, arguments)
++    text = "\n".join(block.text for block in result.content if block.type == "text")
++    if result.is_error:
++        raise ToolCallFailed(name, text)
++    # Any JSON value is valid structured output (0, [], "" included); None means there is none.
++    if result.structured_content is not None:
++        return result.structured_content
++    return text
+--- /dev/null
++++ b/tests/test_scratch_run_tool.py
+@@ -0,0 +1,38 @@
++import anyio
++import pytest
++from mcp_types import CallToolResult, ImageContent, TextContent
++
++from opsbot.calls import ToolCallFailed, run_tool
++
++
++class FakeSession:
++    def __init__(self, result):
++        self.result = result
++
++    async def call_tool(self, name, arguments):
++        return self.result
++
++
++def call(result, name="x"):
++    return anyio.run(run_tool, FakeSession(result), name, {})
++
++
++def t(s):
++    return TextContent(text=s)
++
++
++def test_text():
++    img = ImageContent(data="", mime_type="image/png")
++    assert call(CallToolResult(content=[t("a"), img, t("b")])) == "a\nb"
++
++
++def test_structured():
++    assert call(CallToolResult(content=[t("a")], structured_content={"k": 1})) == {"k": 1}
++    assert call(CallToolResult(content=[t("0")], structured_content=0)) == 0
++
++
++def test_error():
++    r = CallToolResult(content=[t("bad"), t("worse")], is_error=True, structured_content={"k": 1})
++    with pytest.raises(ToolCallFailed) as ei:
++        call(r, "deploy")
++    assert (ei.value.tool, ei.value.message) == ("deploy", "bad\nworse")

@@ -1,0 +1,132 @@
+task ant01 (ant01-sampling-params) project C:\b\runs\main-2026-09-28\ant01_A_r2_8013
+===== hidden tests: exit 1 in 20.9s
+$ C:\b\runs\main-2026-09-28\_grade\ant01_A_r2_8013\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\ant01_A_r2_8013\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\ant01_A_r2_8013\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\ant01_A_r2_8013\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\ant01_A_r2_8013\hidden.xml C:\b\runs\main-2026-09-28\_grade\ant01_A_r2_8013\proj\_bench_hidden
+FF                                                                       [100%]
+================================== FAILURES ===================================
+________________ test_sends_temperature_zero_and_parses_label _________________
+
+    def test_sends_temperature_zero_and_parses_label():
+        seen: list = []
+>       assert label_ticket(make_client(" Bug\n", seen), "App crashes on save") == "bug"
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+_bench_hidden\test_hidden_ant01.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+app\labeler.py:18: in label_ticket
+    message = client.messages.create(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (<anthropic.resources.messages.messages.Messages object at 0x00000293755EF770>,)
+kwargs = {'max_tokens': 5, 'messages': [{'content': 'App crashes on save', 'role': 'user'}], 'model': 'claude-sonnet-4-6', 'system': 'Classify the support ticket. Answer with exactly one word from this list: bug, feature, question.', ...}
+i = 0
+_ = <anthropic.resources.messages.messages.Messages object at 0x00000293755EF770>
+key = 'messages', variant = ['max_tokens', 'messages', 'model'], matches = True
+
+    @functools.wraps(func)
+    def wrapper(*args: object, **kwargs: object) -> object:
+        given_params: set[str] = set()
+        for i, _ in enumerate(args):
+            try:
+                given_params.add(positional[i])
+            except IndexError:
+                raise TypeError(
+                    f"{func.__name__}() takes {len(positional)} argument(s) but {len(args)} were given"
+                ) from None
+    
+        for key in kwargs.keys():
+            given_params.add(key)
+    
+        for variant in variants:
+            matches = all((param in given_params for param in variant))
+            if matches:
+                break
+        else:  # no break
+            if len(variants) > 1:
+                variations = human_join(
+                    ["(" + human_join([quote(arg) for arg in variant], final="and") + ")" for variant in variants]
+                )
+                msg = f"Missing required arguments; Expected either {variations} arguments to be given"
+            else:
+                assert len(variants) > 0
+    
+                # TODO: this error message is not deterministic
+                missing = list(set(variants[0]) - given_params)
+                if len(missing) > 1:
+                    msg = f"Missing required arguments: {human_join([quote(arg) for arg in missing])}"
+                else:
+                    msg = f"Missing required argument: {quote(missing[0])}"
+            raise TypeError(msg)
+>       return func(*args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: Messages.create() got an unexpected keyword argument 'temperature'
+
+..\venv\Lib\site-packages\anthropic\_utils\_utils.py:294: TypeError
+__________________ test_unknown_reply_falls_back_to_question __________________
+
+    def test_unknown_reply_falls_back_to_question():
+>       assert label_ticket(make_client("maybe?", []), "hello") == "question"
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+_bench_hidden\test_hidden_ant01.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+app\labeler.py:18: in label_ticket
+    message = client.messages.create(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (<anthropic.resources.messages.messages.Messages object at 0x00000293758D8B90>,)
+kwargs = {'max_tokens': 5, 'messages': [{'content': 'hello', 'role': 'user'}], 'model': 'claude-sonnet-4-6', 'system': 'Classify the support ticket. Answer with exactly one word from this list: bug, feature, question.', ...}
+i = 0
+_ = <anthropic.resources.messages.messages.Messages object at 0x00000293758D8B90>
+key = 'messages', variant = ['max_tokens', 'messages', 'model'], matches = True
+
+    @functools.wraps(func)
+    def wrapper(*args: object, **kwargs: object) -> object:
+        given_params: set[str] = set()
+        for i, _ in enumerate(args):
+            try:
+                given_params.add(positional[i])
+            except IndexError:
+                raise TypeError(
+                    f"{func.__name__}() takes {len(positional)} argument(s) but {len(args)} were given"
+                ) from None
+    
+        for key in kwargs.keys():
+            given_params.add(key)
+    
+        for variant in variants:
+            matches = all((param in given_params for param in variant))
+            if matches:
+                break
+        else:  # no break
+            if len(variants) > 1:
+                variations = human_join(
+                    ["(" + human_join([quote(arg) for arg in variant], final="and") + ")" for variant in variants]
+                )
+                msg = f"Missing required arguments; Expected either {variations} arguments to be given"
+            else:
+                assert len(variants) > 0
+    
+                # TODO: this error message is not deterministic
+                missing = list(set(variants[0]) - given_params)
+                if len(missing) > 1:
+                    msg = f"Missing required arguments: {human_join([quote(arg) for arg in missing])}"
+                else:
+                    msg = f"Missing required argument: {quote(missing[0])}"
+            raise TypeError(msg)
+>       return func(*args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: Messages.create() got an unexpected keyword argument 'temperature'
+
+..\venv\Lib\site-packages\anthropic\_utils\_utils.py:294: TypeError
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\ant01_A_r2_8013\hidden.xml -
+=========================== short test summary info ===========================
+FAILED _bench_hidden/test_hidden_ant01.py::test_sends_temperature_zero_and_parses_label
+FAILED _bench_hidden/test_hidden_ant01.py::test_unknown_reply_falls_back_to_question
+2 failed in 18.23s
+
+===== visible tests: exit 0 in 2.1s
+$ C:\b\runs\main-2026-09-28\_grade\ant01_A_r2_8013\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\ant01_A_r2_8013\visible.xml
+.                                                                        [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\ant01_A_r2_8013\visible.xml -
+1 passed in 1.26s
+

@@ -1,0 +1,66 @@
+--- a/app/gaps.py
++++ b/app/gaps.py
+@@ -6,4 +6,17 @@
+ 
+ 
+ def fill_gaps(readings: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Fill missing ``temp_c`` from the same station's previous report, else its next one.
++
++    Rows keep their order and the other columns are untouched; the input is not modified.
++    A station with no temperatures at all (or a row with no station) stays missing.
++    """
++    filled = readings.copy()
++    # Group by position rather than by index label so duplicate labels can't misalign rows.
++    stations = readings["station"].to_numpy()
++    forward = readings["temp_c"].groupby(stations, sort=False).ffill()
++    both = forward.groupby(stations, sort=False).bfill()
++    # Rows without a station are left out of the groups; keep their original values.
++    temps = readings["temp_c"]
++    filled["temp_c"] = temps.where(temps.notna(), both.to_numpy())
++    return filled
+--- /dev/null
++++ b/tests/test_gaps.py
+@@ -0,0 +1,42 @@
++import numpy as np
++import pandas as pd
++
++from app.gaps import fill_gaps
++
++
++def _readings():
++    return pd.DataFrame(
++        {
++            "station": ["A", "B", "A", "C", "B", "A", "B", "A"],
++            "ts": pd.date_range("2026-01-01", periods=8, freq="h"),
++            "temp_c": [np.nan, 1.0, np.nan, np.nan, np.nan, 5.0, np.nan, np.nan],
++            "battery": [9, 8, 7, 6, 5, 4, 3, 2],
++        }
++    )
++
++
++def test_fills_within_station_only():
++    out = fill_gaps(_readings())
++    # A: leading gaps take its first later value, trailing gap its previous one.
++    # B: forward fill. C: no temperatures at all, stays missing.
++    expected = [5.0, 1.0, 5.0, np.nan, 1.0, 5.0, 1.0, 5.0]
++    np.testing.assert_array_equal(out["temp_c"].to_numpy(), expected)
++
++
++def test_other_columns_order_and_input_unchanged():
++    readings = _readings()
++    original = readings.copy()
++    out = fill_gaps(readings)
++    pd.testing.assert_frame_equal(readings, original)
++    pd.testing.assert_frame_equal(out.drop(columns="temp_c"), original.drop(columns="temp_c"))
++    assert out is not readings
++
++
++def test_duplicate_index_labels():
++    readings = _readings()
++    readings.index = [0, 0, 1, 1, 2, 2, 3, 3]
++    out = fill_gaps(readings)
++    assert list(out.index) == list(readings.index)
++    np.testing.assert_array_equal(
++        out["temp_c"].to_numpy(), [5.0, 1.0, 5.0, np.nan, 1.0, 5.0, 1.0, 5.0]
++    )

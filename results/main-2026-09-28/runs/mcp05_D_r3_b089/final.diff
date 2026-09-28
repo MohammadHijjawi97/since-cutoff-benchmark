@@ -1,0 +1,26 @@
+--- a/kb/remote.py
++++ b/kb/remote.py
+@@ -2,6 +2,22 @@
+ 
+ from __future__ import annotations
+ 
++import httpx2
++from mcp import ClientSession
++from mcp.client.streamable_http import streamable_http_client
++
++from kb.results import split_titles
++
+ 
+ async def search_remote(url: str, token: str, query: str) -> list[str]:
+-    raise NotImplementedError
++    # Client-level headers go out on every request the transport makes (POST, GET stream, DELETE).
++    http_client = httpx2.AsyncClient(
++        headers={"Authorization": f"Bearer {token}"},
++        timeout=httpx2.Timeout(30.0, read=300.0),
++    )
++    async with http_client:
++        async with streamable_http_client(url, http_client=http_client) as (read, write):
++            async with ClientSession(read, write) as session:
++                await session.initialize()
++                result = await session.call_tool("search", {"query": query})
++    return split_titles(result)

@@ -1,0 +1,11 @@
+--- a/app/server.py
++++ b/app/server.py
+@@ -26,7 +26,7 @@
+ 
+ 
+ def serve_http(host: str, port: int) -> None:
+-    raise NotImplementedError
++    build_server().run("streamable-http", host=host, port=port)
+ 
+ 
+ def main(argv: list[str] | None = None) -> None:

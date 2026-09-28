@@ -1,0 +1,53 @@
+--- a/app/gaps.py
++++ b/app/gaps.py
+@@ -6,4 +6,15 @@
+ 
+ 
+ def fill_gaps(readings: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Fill missing temperatures from the same station only.
++
++    A gap takes the station's most recent earlier temperature or, failing that, its
++    first later one. Rows without a station are never filled.
++    """
++    filled = readings.copy()
++    # Work on a positional index so duplicate or unordered labels cannot misalign values.
++    temp = readings["temp_c"].reset_index(drop=True)
++    by_station = temp.groupby(readings["station"].reset_index(drop=True), sort=False)
++    temp = temp.fillna(by_station.ffill()).fillna(by_station.bfill())
++    filled["temp_c"] = temp.to_numpy()
++    return filled
+--- /dev/null
++++ b/tests/test_gaps.py
+@@ -0,0 +1,31 @@
++import numpy as np
++import pandas as pd
++
++from app.gaps import fill_gaps
++
++
++def _readings():
++    return pd.DataFrame(
++        {
++            "station": ["A", "B", "A", "C", "B", "A", None, "B"],
++            "ts": pd.date_range("2026-01-01", periods=8, freq="h"),
++            "temp_c": [np.nan, 5.0, 1.0, np.nan, np.nan, np.nan, 7.0, np.nan],
++            "battery": [1, 2, 3, 4, 5, 6, 7, 8],
++        },
++        index=[5, 5, 3, 1, 0, 2, 9, 9],
++    )
++
++
++def test_fills_within_station_only():
++    out = fill_gaps(_readings())
++    expected = [1.0, 5.0, 1.0, np.nan, 5.0, 1.0, 7.0, 5.0]
++    np.testing.assert_array_equal(out["temp_c"].to_numpy(), expected)
++
++
++def test_other_columns_order_and_input_unchanged():
++    readings = _readings()
++    original = readings.copy()
++    out = fill_gaps(readings)
++    pd.testing.assert_frame_equal(readings, original)
++    assert out.index.equals(readings.index)
++    pd.testing.assert_frame_equal(out.drop(columns="temp_c"), readings.drop(columns="temp_c"))

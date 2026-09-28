@@ -1,0 +1,86 @@
+--- a/app/publish.py
++++ b/app/publish.py
+@@ -2,9 +2,11 @@
+ 
+ from pathlib import Path
+ 
+-from huggingface_hub import HfApi
++from huggingface_hub import HfApi, constants
++from huggingface_hub.utils import is_package_available
+ 
+ SUMMARIES_REPO = "acme-ml/run-summaries"  # dataset repo with one summary.json per run
++RUN_IGNORE_PATTERNS = ("*.tmp", "wandb/*")  # fnmatch-style, matched against paths relative to run_dir
+ 
+ 
+ def publish_summary(run_dir: str | Path, api: HfApi | None = None) -> str:
+@@ -21,5 +23,21 @@
+     return info.commit_url
+ 
+ 
+-def publish_run(run_dir: str | Path, repo_id: str) -> None:
+-    raise NotImplementedError
++def publish_run(run_dir: str | Path, repo_id: str, api: HfApi | None = None) -> None:
++    """Mirror `run_dir` at the root of the private dataset repo `repo_id`, creating the repo if needed.
++
++    With hf_xet, `upload_folder` commits large folders in several batches and resumes an interrupted
++    upload when called again (committed files are skipped, uploaded data is deduplicated).
++    """
++    if constants.HF_HUB_DISABLE_XET or not is_package_available("hf_xet"):
++        # Without hf_xet, upload_folder falls back to one huge, non-resumable commit.
++        raise RuntimeError("publish_run needs hf_xet enabled for batched, resumable uploads of large folders")
++    api = api or HfApi()
++    api.create_repo(repo_id, repo_type="dataset", private=True, exist_ok=True)
++    api.upload_folder(
++        repo_id=repo_id,
++        repo_type="dataset",
++        folder_path=Path(run_dir),
++        ignore_patterns=list(RUN_IGNORE_PATTERNS),
++        commit_message=f"Upload run {Path(run_dir).name}",
++    )
+--- a/tests/test_publish.py
++++ b/tests/test_publish.py
+@@ -1,6 +1,8 @@
+ from types import SimpleNamespace
+ 
+-from app.publish import SUMMARIES_REPO, publish_summary
++from huggingface_hub.utils import filter_repo_objects
++
++from app.publish import RUN_IGNORE_PATTERNS, SUMMARIES_REPO, publish_run, publish_summary
+ 
+ 
+ class RecordingApi:
+@@ -10,6 +12,34 @@
+     def upload_file(self, **kwargs):
+         self.calls.append(kwargs)
+         return SimpleNamespace(commit_url="https://huggingface.co/datasets/acme-ml/run-summaries/commit/abc")
++
++    def create_repo(self, repo_id, **kwargs):
++        self.calls.append(("create_repo", repo_id, kwargs))
++
++    def upload_folder(self, **kwargs):
++        self.calls.append(("upload_folder", kwargs))
++
++
++def test_publish_run_creates_private_dataset_and_uploads_folder_at_root(tmp_path):
++    api = RecordingApi()
++
++    publish_run(tmp_path, "acme-ml/run-0007", api=api)
++
++    (_, repo_id, create_kwargs), (_, upload_kwargs) = api.calls
++    assert repo_id == "acme-ml/run-0007"
++    assert create_kwargs == {"repo_type": "dataset", "private": True, "exist_ok": True}
++    assert upload_kwargs["repo_id"] == "acme-ml/run-0007" and upload_kwargs["repo_type"] == "dataset"
++    assert upload_kwargs["folder_path"] == tmp_path
++    assert upload_kwargs.get("path_in_repo") in (None, "")
++
++
++def test_run_ignore_patterns_skip_tmp_files_and_wandb():
++    paths = ["metrics.json", "ckpt/step-100/model.safetensors", "ckpt/step-100/model.tmp", "shard.tmp",
++             "wandb/run-1/files/log.txt", "data/wandb.parquet"]
++
++    kept = list(filter_repo_objects(paths, ignore_patterns=list(RUN_IGNORE_PATTERNS)))
++
++    assert kept == ["metrics.json", "ckpt/step-100/model.safetensors", "data/wandb.parquet"]
+ 
+ 
+ def test_publish_summary_uploads_into_the_run_folder(tmp_path):

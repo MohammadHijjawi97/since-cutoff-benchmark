@@ -1,0 +1,92 @@
+--- /dev/null
++++ b/_parity_check.py
+@@ -0,0 +1,28 @@
++import sys
++
++import anyio
++
++sys.path.insert(0, "tests")
++from test_inproc import make_server  # noqa: E402
++
++from mcpcheck.cases import Case  # noqa: E402
++from mcpcheck.inproc import check_server  # noqa: E402
++from mcpcheck.stdio import check_command  # noqa: E402
++
++if __name__ == "__main__" and "--serve" in sys.argv:
++    make_server().run()
++    sys.exit()
++
++cases = [
++    Case("add", {"a": 2, "b": 2}, "5"),
++    Case("greet", {"name": "Ada"}, "Hello, Ada!"),
++    Case("nope", {}, "x"),
++    Case("add", {"a": "q"}, "x"),
++]
++a = anyio.run(check_command, [sys.executable, __file__, "--serve"], cases)
++b = anyio.run(check_server, make_server(), cases)
++for m in a:
++    print("stdio ", m)
++for m in b:
++    print("inproc", m)
++print("IDENTICAL" if a == b else "DIFFERENT")
+--- a/mcpcheck/inproc.py
++++ b/mcpcheck/inproc.py
+@@ -4,8 +4,21 @@
+ 
+ from typing import Any
+ 
+-from mcpcheck.cases import Case, Mismatch
++from mcp import Client
++
++from mcpcheck.cases import Case, Mismatch, compare
+ 
+ 
+ async def check_server(server: Any, cases: list[Case]) -> list[Mismatch]:
+-    raise NotImplementedError
++    """Connect to `server` in memory, call every case's tool in order and return the mismatches."""
++    mismatches: list[Mismatch] = []
++    # mode="legacy" runs the same initialize handshake over in-memory streams that
++    # check_command runs over stdio; the plain ClientSession mirrors its calls.
++    async with Client(server, mode="legacy", cache=None) as client:
++        session = client.session
++        for case in cases:
++            result = await session.call_tool(case.tool, case.arguments)
++            mismatch = compare(case, result)
++            if mismatch is not None:
++                mismatches.append(mismatch)
++    return mismatches
+--- /dev/null
++++ b/tests/test_inproc.py
+@@ -0,0 +1,32 @@
++import anyio
++from mcp.server.mcpserver import MCPServer
++
++from mcpcheck.cases import Case, Mismatch
++from mcpcheck.inproc import check_server
++
++
++def make_server() -> MCPServer:
++    server = MCPServer("demo")
++
++    @server.tool()
++    def add(a: int, b: int) -> int:
++        return a + b
++
++    @server.tool()
++    def greet(name: str) -> str:
++        return f"Hello, {name}!"
++
++    return server
++
++
++def test_check_server_passes():
++    cases = [Case("add", {"a": 2, "b": 3}, "5"), Case("greet", {"name": "Ada"}, "Hello, Ada!")]
++    assert anyio.run(check_server, make_server(), cases) == []
++
++
++def test_check_server_reports_mismatches_in_order():
++    wrong_add = Case("add", {"a": 2, "b": 2}, "5")
++    right = Case("greet", {"name": "Ada"}, "Hello, Ada!")
++    wrong_greet = Case("greet", {"name": "Bob"}, "Hi Bob")
++    mismatches = anyio.run(check_server, make_server(), [wrong_add, right, wrong_greet])
++    assert mismatches == [Mismatch(wrong_add, "4"), Mismatch(wrong_greet, "Hello, Bob!")]

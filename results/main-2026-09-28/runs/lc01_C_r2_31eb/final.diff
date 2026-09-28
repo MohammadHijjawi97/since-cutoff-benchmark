@@ -1,0 +1,48 @@
+--- /dev/null
++++ b/_check.py
+@@ -0,0 +1,26 @@
++from langchain_core.callbacks import BaseCallbackHandler
++from langchain_core.documents import Document
++
++from app.context import build_context
++from app.kb import KeywordRetriever
++
++
++class H(BaseCallbackHandler):
++    def on_retriever_start(self, s, q, *, tags=None, **kw):
++        print("tags:", tags)
++
++
++docs = [
++    Document(page_content="  vpn a \n", metadata={"source": "a.md"}),
++    Document(page_content="vpn b", metadata={"source": "a.md"}),
++    Document(page_content="vpn c", metadata={"source": "c.md"}),
++    Document(page_content="vpn d", metadata={"source": "d.md"}),
++    Document(page_content="vpn e", metadata={"source": "e.md"}),
++]
++from langchain_core.tracers.context import collect_runs
++
++r = KeywordRetriever(docs=docs, k=5)
++with collect_runs() as cb:
++    print(repr(build_context(r, "vpn")))
++print("tags:", [run.tags for run in cb.traced_runs])
++print(repr(build_context(r, "nothing")))
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,15 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    entries: list[str] = []
++    seen: set[str] = set()
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)

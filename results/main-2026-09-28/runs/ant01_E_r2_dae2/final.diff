@@ -1,0 +1,18 @@
+--- a/app/labeler.py
++++ b/app/labeler.py
+@@ -7,4 +7,14 @@
+ 
+ 
+ def label_ticket(client: Anthropic, text: str) -> str:
+-    raise NotImplementedError
++    """One of LABELS; falls back to "question" on any other reply."""
++    message = client.messages.create(
++        model=MODEL,
++        max_tokens=5,
++        system=f"Label the support ticket. Answer with exactly one word from: {', '.join(LABELS)}.",
++        messages=[{"role": "user", "content": text}],
++        # anthropic 1.x dropped the temperature kwarg; the model still honors it on the wire.
++        extra_body={"temperature": 0},
++    )
++    label = "".join(block.text for block in message.content if block.type == "text").strip().lower()
++    return label if label in LABELS else "question"

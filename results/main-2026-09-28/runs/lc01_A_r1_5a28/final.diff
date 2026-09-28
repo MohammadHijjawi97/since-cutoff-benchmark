@@ -1,0 +1,38 @@
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,15 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    entries: list[str] = []
++    seen: set[str] = set()
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)
+--- /dev/null
++++ b/check_ctx.py
+@@ -0,0 +1,16 @@
++from langchain_core.callbacks import BaseCallbackHandler
++from langchain_core.documents import Document
++
++from app.context import build_context
++from app.kb import KeywordRetriever, load_notes
++
++
++class H(BaseCallbackHandler):
++    def on_retriever_start(self, serialized, query, *, tags=None, **kw):
++        print("tags:", tags)
++
++
++docs = load_notes("tests/data/notes") + [Document(page_content="  vpn dup  \n", metadata={"source": "vpn.md"})]
++r = KeywordRetriever(docs=docs, tags=["own"]).with_config(callbacks=[H()], tags=["outer"])
++print(repr(build_context(r, "vpn for the staging database expenses printer")))
++print(repr(build_context(r, "kubernetes")))

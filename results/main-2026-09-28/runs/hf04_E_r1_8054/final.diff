@@ -1,0 +1,103 @@
+--- a/app/network.py
++++ b/app/network.py
+@@ -2,14 +2,40 @@
+ 
+ import logging
+ 
+-from huggingface_hub import HfApi
++import httpx2
++from huggingface_hub import HfApi, set_client_factory
++from huggingface_hub.utils._http import hf_request_event_hook
+ 
+ logger = logging.getLogger("app.network")
+ 
++HUB_TIMEOUT = httpx2.Timeout(60.0, connect=5.0)
++JOB_HEADERS = {"X-Acme-Job": "nightly-sync"}
++
++
++def _enforce_timeout(request: httpx2.Request) -> None:
++    # HfApi passes `timeout=None` explicitly on most calls, which httpx2 treats as "no timeout"
++    # rather than "use the client default", so the client's timeout alone is not enough.
++    request.extensions["timeout"] = HUB_TIMEOUT.as_dict()
++
+ 
+ def configure_hub_http(transport=None) -> None:
+-    raise NotImplementedError
++    def client_factory() -> httpx2.Client:
++        return httpx2.Client(
++            # Keep huggingface_hub's own hook (offline mode, request id, download counter).
++            event_hooks={"request": [hf_request_event_hook, _enforce_timeout]},
++            follow_redirects=True,
++            timeout=HUB_TIMEOUT,
++            headers=JOB_HEADERS,
++            transport=transport,
++        )
++
++    # Also closes the current shared client, so the next request uses the new one.
++    set_client_factory(client_factory)
+ 
+ 
+ def current_revision(repo_id: str) -> str | None:
+-    raise NotImplementedError
++    try:
++        return HfApi().model_info(repo_id, revision="main").sha
++    except (httpx2.ConnectError, httpx2.TimeoutException) as exc:
++        logger.warning("Cannot reach the Hugging Face Hub for %s: %s", repo_id, exc)
++        return None
+--- /dev/null
++++ b/tests/test_network.py
+@@ -0,0 +1,54 @@
++import logging
++
++import httpx2
++import pytest
++from huggingface_hub import HfApi
++from huggingface_hub.errors import RepositoryNotFoundError
++from huggingface_hub.utils import close_session
++
++from app.network import configure_hub_http, current_revision
++
++
++@pytest.fixture(autouse=True)
++def _reset_session():
++    yield
++    close_session()
++
++
++def test_requests_use_configured_client():
++    seen = []
++
++    def handler(request):
++        seen.append(request)
++        return httpx2.Response(200, json={"id": "acme-ml/ner-large", "sha": "abc123", "siblings": []})
++
++    configure_hub_http(transport=httpx2.MockTransport(handler))
++    assert current_revision("acme-ml/ner-large") == "abc123"
++    HfApi().model_info("acme-ml/ner-large")
++
++    assert len(seen) == 2
++    for request in seen:
++        assert request.headers["X-Acme-Job"] == "nightly-sync"
++        assert "hf_hub/" in request.headers["user-agent"]
++        assert request.extensions["timeout"] == {"connect": 5.0, "read": 60.0, "write": 60.0, "pool": 60.0}
++    assert seen[0].url.path.endswith("/revision/main")
++
++
++@pytest.mark.parametrize("error", [httpx2.ConnectError, httpx2.ReadTimeout, httpx2.ConnectTimeout])
++def test_unreachable_hub_returns_none(error, caplog):
++    def handler(request):
++        raise error("boom", request=request)
++
++    configure_hub_http(transport=httpx2.MockTransport(handler))
++    with caplog.at_level(logging.WARNING, logger="app.network"):
++        assert current_revision("acme-ml/ner-large") is None
++    assert [r.name for r in caplog.records if r.levelno == logging.WARNING] == ["app.network"]
++
++
++def test_missing_repo_raises():
++    def handler(request):
++        return httpx2.Response(404, headers={"X-Error-Code": "RepoNotFound"}, json={"error": "not found"})
++
++    configure_hub_http(transport=httpx2.MockTransport(handler))
++    with pytest.raises(RepositoryNotFoundError):
++        current_revision("acme-ml/does-not-exist")

@@ -1,0 +1,60 @@
+--- a/app/context.py
++++ b/app/context.py
+@@ -9,4 +9,16 @@
+ 
+ 
+ def build_context(retriever: BaseRetriever, question: str) -> str:
+-    raise NotImplementedError
++    """Numbered "[n] <source>" entries, one per source, at most MAX_SOURCES, in retriever order."""
++    docs = retriever.invoke(question, config={"tags": [TRACE_TAG]})
++    seen: set[str] = set()
++    entries: list[str] = []
++    for doc in docs:
++        source = doc.metadata.get("source")
++        if source in seen:
++            continue
++        seen.add(source)
++        entries.append(f"[{len(entries) + 1}] {source}\n{doc.page_content.strip()}")
++        if len(entries) == MAX_SOURCES:
++            break
++    return "\n\n".join(entries)
+--- /dev/null
++++ b/tests/test_context.py
+@@ -0,0 +1,37 @@
++from langchain_core.documents import Document
++
++from app.context import MAX_SOURCES, TRACE_TAG, build_context
++from app.kb import KeywordRetriever
++
++
++class TagRecordingRetriever(KeywordRetriever):
++    seen_tags: list[str] = []
++
++    def _get_relevant_documents(self, query, *, run_manager):
++        self.seen_tags.extend(run_manager.tags)
++        return super()._get_relevant_documents(query, run_manager=run_manager)
++
++
++def make_retriever(cls=KeywordRetriever):
++    docs = [
++        Document(page_content=f"  vpn note {i}  \n", metadata={"source": source})
++        for i, source in enumerate(["a.md", "a.md", "b.md", "c.md", "d.md"])
++    ]
++    return cls(docs=docs, k=5)
++
++
++def test_dedupes_limits_and_formats():
++    assert MAX_SOURCES == 3
++    assert build_context(make_retriever(), "vpn") == (
++        "[1] a.md\nvpn note 0\n\n[2] b.md\nvpn note 2\n\n[3] c.md\nvpn note 3"
++    )
++
++
++def test_empty_when_nothing_found():
++    assert build_context(make_retriever(), "kubernetes") == ""
++
++
++def test_lookup_carries_trace_tag():
++    retriever = make_retriever(TagRecordingRetriever)
++    build_context(retriever, "vpn")
++    assert TRACE_TAG in retriever.seen_tags

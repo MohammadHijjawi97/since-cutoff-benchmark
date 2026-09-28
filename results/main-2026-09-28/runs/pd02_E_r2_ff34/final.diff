@@ -1,0 +1,70 @@
+--- a/app/report.py
++++ b/app/report.py
+@@ -5,5 +5,18 @@
+ import pandas as pd
+ 
+ 
++def _format_amount(value: object) -> str:
++    """Accounting style: "12,500.00", "(634.20)" for negatives, "-" for zero, "" for missing."""
++    if pd.isna(value):
++        return ""
++    amount = round(float(value), 2)
++    if amount == 0:
++        # Also catches float residue such as 1e-13 left over from summing postings.
++        return "-"
++    text = f"{abs(amount):,.2f}"
++    return f"({text})" if amount < 0 else text
++
++
+ def format_for_display(table: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """Return a copy of the P&L table with every cell formatted as an accounting-style string."""
++    return table.map(_format_amount)
+--- /dev/null
++++ b/tests/test_report.py
+@@ -0,0 +1,45 @@
++from pathlib import Path
++
++import numpy as np
++import pandas as pd
++
++from app.ledger import load_ledger, monthly_pnl
++from app.report import format_for_display
++
++DATA = Path(__file__).parent / "data" / "ledger.csv"
++
++
++def test_format_for_display_accounting_style():
++    table = pd.DataFrame(
++        {"2026-07": [12500.0, -634.2, 0.0, np.nan], "2026-08": [1234567.891, -0.004, 1e-13, 5.0]},
++        index=["Revenue", "Refunds", "Travel", "Salaries"],
++    )
++    original = table.copy()
++
++    shown = format_for_display(table)
++
++    assert shown.loc["Revenue", "2026-07"] == "12,500.00"
++    assert shown.loc["Refunds", "2026-07"] == "(634.20)"
++    assert shown.loc["Travel", "2026-07"] == "-"
++    assert shown.loc["Salaries", "2026-07"] == ""
++    assert shown.loc["Revenue", "2026-08"] == "1,234,567.89"
++    assert shown.loc["Refunds", "2026-08"] == "-"
++    assert shown.loc["Travel", "2026-08"] == "-"
++    assert shown.loc["Salaries", "2026-08"] == "5.00"
++    pd.testing.assert_frame_equal(table, original)
++
++
++def test_format_for_display_keeps_labels_of_monthly_pnl():
++    table = monthly_pnl(load_ledger(DATA))
++    original = table.copy()
++
++    shown = format_for_display(table)
++
++    assert shown is not table
++    pd.testing.assert_index_equal(shown.index, table.index)
++    pd.testing.assert_index_equal(shown.columns, table.columns)
++    assert all(isinstance(v, str) for v in shown.to_numpy().ravel())
++    assert shown.loc["Revenue", "2026-07"] == "12,500.00"
++    assert shown.loc["Salaries", "2026-08"] == "(8,200.00)"
++    assert shown.loc["Travel", "2026-07"] == ""
++    pd.testing.assert_frame_equal(table, original)

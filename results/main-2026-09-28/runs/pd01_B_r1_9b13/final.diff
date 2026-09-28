@@ -1,0 +1,58 @@
+--- /dev/null
++++ b/_check.py
+@@ -0,0 +1,21 @@
++import io
++
++import pandas as pd
++
++from app.clean import clean_orders
++from app.load import load_orders
++
++csv = "sku,qty,note,price\n A1 ,2, hi ,1.5\nB2,,   ,2.0\n,3,,\n"
++df = load_orders(io.StringIO(csv))
++before = df.copy()
++out = clean_orders(df)
++print(df.dtypes.to_dict())
++print(out)
++print(out.dtypes.to_dict())
++pd.testing.assert_frame_equal(df, before)
++
++m = pd.DataFrame({"x": pd.Series([" a ", 5, None, ""], dtype=object), "qty": [1, None, 2, None]})
++m_before = m.copy()
++print(clean_orders(m))
++pd.testing.assert_frame_equal(m, m_before)
++print("OK")
+--- a/app/clean.py
++++ b/app/clean.py
+@@ -1,7 +1,30 @@
+ """Cleaning step of the orders ETL."""
+ 
++import numpy as np
+ import pandas as pd
+ 
+ 
++def _clean_text_value(value):
++    if isinstance(value, str):
++        value = value.strip()
++        return value if value else np.nan
++    return value
++
++
+ def clean_orders(df: pd.DataFrame) -> pd.DataFrame:
+-    raise NotImplementedError
++    """A copy of the orders frame with tidied text columns and missing qty set to 0."""
++    out = df.copy()
++
++    for col in out.columns:
++        s = out[col]
++        if isinstance(s.dtype, pd.StringDtype):
++            s = s.str.strip()
++            out[col] = s.mask(s == "")
++        elif s.dtype == object:
++            # Mixed/object columns: only touch the string values.
++            out[col] = s.map(_clean_text_value)
++
++    if "qty" in out.columns:
++        out["qty"] = out["qty"].fillna(0)
++
++    return out

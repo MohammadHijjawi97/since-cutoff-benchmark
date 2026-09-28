@@ -1,0 +1,13 @@
+Implement `build_context(retriever, question)` in app/context.py. It is called with any LangChain
+retriever (our KeywordRetriever in development, a vector-store retriever in production). Use the
+retriever to look up the documents for `question` and return the context block for the answer
+prompt:
+
+- one entry per source: skip a document whose metadata "source" has already been used;
+- at most MAX_SOURCES entries, in the order the retriever returned them;
+- entry n is "[n] <source>" on one line followed by the document text with surrounding whitespace
+  removed; entries are separated by one blank line;
+- return an empty string when nothing is found.
+
+The lookup must carry the tag TRACE_TAG so it can be found in our traces. Do not add dependencies.
+You can run the tests with `pytest`.

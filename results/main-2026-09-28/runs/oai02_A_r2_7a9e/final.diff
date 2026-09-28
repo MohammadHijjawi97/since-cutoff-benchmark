@@ -1,0 +1,61 @@
+--- /dev/null
++++ b/_scratch_check.py
+@@ -0,0 +1,18 @@
++import openai, httpx
++from tests.fakes import mock_openai
++
++before = openai.OpenAI(api_key="x", max_retries=0)
++with mock_openai("a", "b", "c") as seen:
++    inside = openai.OpenAI(api_key="x", max_retries=0)
++    legacy = openai.OpenAI(api_key="x", max_retries=0, http_client=httpx.Client())
++    for c in (before, inside, legacy):
++        print(c.chat.completions.create(model="m", messages=[]).choices[0].message.content)
++    try:
++        before.chat.completions.create(model="m", messages=[])
++    except openai.BadRequestError as e:
++        print("400 ok:", e.status_code)
++    print(len(seen))
++try:
++    before.chat.completions.create(model="m", messages=[])
++except openai.APIConnectionError as e:
++    print("after block, real network attempted:", type(e.__cause__).__name__)
+--- a/tests/fakes.py
++++ b/tests/fakes.py
+@@ -5,8 +5,10 @@
+ import json
+ from contextlib import contextmanager
+ from typing import Iterator
++from unittest import mock
+ 
+ import httpx
++import httpx2
+ import respx
+ 
+ OPENAI_BASE_URL = "https://api.openai.com/v1"
+@@ -55,4 +57,25 @@
+ 
+     with respx.mock(base_url=OPENAI_BASE_URL, assert_all_called=False) as router:
+         router.post("/chat/completions").mock(side_effect=answer)
+-        yield seen
++        with _route_httpx2_through(router):
++            yield seen
++
++
++@contextmanager
++def _route_httpx2_through(router: respx.Router) -> Iterator[None]:
++    """Send every request of a synchronous httpx2 transport to `router` while active.
++
++    openai>=3 sends its requests with httpx2, which respx does not patch: respx only covers
++    `httpx`, which openai still accepts as a custom `http_client`. Patching the transport class
++    (not an instance) also covers clients created before the block, such as app.digest's cached
++    one. Requests the router does not match raise respx's AllMockedAssertionError, as with httpx.
++    """
++
++    def handle_request(transport: httpx2.HTTPTransport, request: httpx2.Request) -> httpx2.Response:
++        response = router.handler(
++            httpx.Request(request.method, str(request.url), headers=request.headers.raw, content=request.read())
++        )
++        return httpx2.Response(response.status_code, headers=response.headers.raw, content=response.read())
++
++    with mock.patch.object(httpx2.HTTPTransport, "handle_request", handle_request):
++        yield

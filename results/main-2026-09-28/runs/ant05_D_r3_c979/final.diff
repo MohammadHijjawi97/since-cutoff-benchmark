@@ -1,0 +1,22 @@
+--- a/app/worker.py
++++ b/app/worker.py
+@@ -8,4 +8,18 @@
+ 
+ 
+ async def triage(client: AsyncAnthropic, ticket: str) -> dict:
+-    raise NotImplementedError
++    """Classify one ticket; the budget comes from the same response, so one request per ticket."""
++    raw = await client.messages.with_raw_response.create(
++        model=MODEL,
++        max_tokens=512,
++        system=SYSTEM,
++        messages=[{"role": "user", "content": ticket}],
++    )
++    message = await raw.parse()
++    tokens_remaining = int(raw.headers[TOKENS_REMAINING])
++    return {
++        "answer": "".join(block.text for block in message.content if block.type == "text"),
++        "tokens_remaining": tokens_remaining,
++        "request_id": raw.headers.get("request-id"),
++        "throttle": tokens_remaining < LOW_WATERMARK,
++    }

@@ -1,0 +1,320 @@
+task oai02 (oai02-respx-test-double) project C:\b\runs\main-2026-09-28\oai02_E_r2_a11d
+===== hidden tests: exit 0 in 14.2s
+$ C:\b\runs\main-2026-09-28\_grade\oai02_E_r2_a11d\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 -c C:\b\runs\main-2026-09-28\_grade\oai02_E_r2_a11d\bench_pytest.ini --rootdir C:\b\runs\main-2026-09-28\_grade\oai02_E_r2_a11d\proj --confcutdir C:\b\runs\main-2026-09-28\_grade\oai02_E_r2_a11d\proj\_bench_hidden --junitxml C:\b\runs\main-2026-09-28\_grade\oai02_E_r2_a11d\hidden.xml C:\b\runs\main-2026-09-28\_grade\oai02_E_r2_a11d\proj\_bench_hidden
+....                                                                     [100%]
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\oai02_E_r2_a11d\hidden.xml -
+4 passed in 10.42s
+
+===== visible tests: exit 1 in 5.0s
+$ C:\b\runs\main-2026-09-28\_grade\oai02_E_r2_a11d\venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --allow-hosts=127.0.0.1,::1 --junitxml C:\b\runs\main-2026-09-28\_grade\oai02_E_r2_a11d\visible.xml
+..F                                                                      [100%]
+================================== FAILURES ===================================
+_________________________________ test_extra __________________________________
+
+    @contextlib.contextmanager
+    def map_httpcore_exceptions() -> Generator[None]:
+        global HTTPCORE_EXC_MAP
+        if len(HTTPCORE_EXC_MAP) == 0:
+            HTTPCORE_EXC_MAP = _load_httpcore_exceptions()
+        try:
+>           yield
+
+..\venv\Lib\site-packages\httpx2\_transports\default.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\venv\Lib\site-packages\httpx2\_transports\default.py:245: in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\httpcore2\_sync\connection_pool.py:242: in handle_request
+    raise exc from None
+..\venv\Lib\site-packages\httpcore2\_sync\connection_pool.py:224: in handle_request
+    response = connection.handle_request(pool_request.request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\httpcore2\_sync\http_proxy.py:279: in handle_request
+    connect_response = self._connection.handle_request(connect_request)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\httpcore2\_sync\connection.py:94: in handle_request
+    raise exc
+..\venv\Lib\site-packages\httpcore2\_sync\connection.py:74: in handle_request
+    stream = self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\httpcore2\_sync\connection.py:117: in _connect
+    stream = self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\httpcore2\_backends\sync.py:203: in connect_tcp
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\Mohammad Hijjawi\AppData\Local\Programs\Python\Python313\Lib\contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+map = {<class 'TimeoutError'>: <class 'httpcore2.ConnectTimeout'>, <class 'OSError'>: <class 'httpcore2.ConnectError'>}
+
+    @contextlib.contextmanager
+    def map_exceptions(map: ExceptionMapping) -> Generator[None]:
+        try:
+            yield
+        except Exception as exc:  # noqa: PIE786
+            for from_exc, to_exc in map.items():
+                if isinstance(exc, from_exc):
+>                   raise to_exc(exc) from exc
+E                   httpcore2.ConnectError: [WinError 10061] No connection could be made because the target machine actively refused it
+
+..\venv\Lib\site-packages\httpcore2\_exceptions.py:17: ConnectError
+
+The above exception was the direct cause of the following exception:
+
+self = <openai.OpenAI object at 0x000001C80433D1D0>
+cast_to = <class 'openai.types.chat.chat_completion.ChatCompletion'>
+options = FinalRequestOptions(method='post', url='/chat/completions', params={}, headers=NOT_GIVEN, max_retries=NOT_GIVEN, timeo..._auth': True}, synthesize_event_and_data=None, content=None, json_data={'messages': [], 'model': 'm'}, extra_json=None)
+
+    def request(
+        self,
+        cast_to: Type[ResponseT],
+        options: FinalRequestOptions,
+        *,
+        stream: bool = False,
+        stream_cls: type[_StreamT] | None = None,
+    ) -> ResponseT | _StreamT:
+        cast_to = self._maybe_override_cast_to(cast_to, options)
+    
+        # create a copy of the options we were given so that if the
+        # options are mutated later & we then retry, the retries are
+        # given the original options
+        input_options = model_copy(options)
+        if input_options.idempotency_key is None and input_options.method.lower() != "get":
+            # ensure the idempotency key is reused between requests
+            input_options.idempotency_key = self._idempotency_key()
+    
+        response: httpx2.Response | None = None
+        max_retries = input_options.get_max_retries(self.max_retries)
+        self._validate_max_retries(max_retries)
+    
+        retries_taken = 0
+        for retries_taken in range(max_retries + 1):
+            options = model_copy(input_options)
+            options = self._prepare_options(options)
+            request_body_replay = _RequestBodyReplay(options)
+    
+            remaining_retries = max_retries - retries_taken
+            request = self._build_request(options, retries_taken=retries_taken)
+            self._prepare_request(request)
+    
+            kwargs: HttpxSendArgs = {}
+            custom_auth = self._custom_auth(options.security)
+            if custom_auth is not None:
+                kwargs["auth"] = (
+                    normalize_httpx2_auth(custom_auth)
+                    if is_httpx2_sync_client(self._client)
+                    else normalize_legacy_httpx_auth(custom_auth)
+                )
+    
+            if options.follow_redirects is not None:
+                kwargs["follow_redirects"] = options.follow_redirects
+    
+            log.debug("Sending HTTP Request: %s", get_http_method_for_logging(request.method))
+    
+            response = None
+            try:
+>               response = self._send_request(
+                    request,
+                    stream=stream or self._should_stream_response_body(request=request),
+                    **kwargs,
+                )
+
+..\venv\Lib\site-packages\openai\_base_client.py:1147: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\venv\Lib\site-packages\openai\_client.py:601: in _send_request
+    response = self._send_with_auth_retry(request, stream=stream, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\openai\_client.py:580: in _send_with_auth_retry
+    response = super()._send_request(request, stream=stream, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\openai\_base_client.py:1068: in _send_request
+    return self._client.send(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\httpx2\_client.py:980: in send
+    response = self._send_handling_auth(
+..\venv\Lib\site-packages\httpx2\_client.py:1008: in _send_handling_auth
+    response = self._send_handling_redirects(
+..\venv\Lib\site-packages\httpx2\_client.py:1043: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\httpx2\_client.py:1076: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\httpx2\_transports\default.py:244: in handle_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\Mohammad Hijjawi\AppData\Local\Programs\Python\Python313\Lib\contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    @contextlib.contextmanager
+    def map_httpcore_exceptions() -> Generator[None]:
+        global HTTPCORE_EXC_MAP
+        if len(HTTPCORE_EXC_MAP) == 0:
+            HTTPCORE_EXC_MAP = _load_httpcore_exceptions()
+        try:
+            yield
+        except Exception as exc:
+            mapped_exc = None
+    
+            for from_exc, to_exc in HTTPCORE_EXC_MAP.items():
+                if not isinstance(exc, from_exc):
+                    continue
+                # We want to map to the most specific exception we can find.
+                # Eg if `exc` is an `httpcore2.ReadTimeout`, we want to map to
+                # `httpx2.ReadTimeout`, not just `httpx2.TimeoutException`.
+                if mapped_exc is None or issubclass(to_exc, mapped_exc):
+                    mapped_exc = to_exc
+    
+            if mapped_exc is None:  # pragma: no cover
+                raise
+    
+            message = str(exc)
+>           raise mapped_exc(message) from exc
+E           httpx2.ConnectError: [WinError 10061] No connection could be made because the target machine actively refused it
+
+..\venv\Lib\site-packages\httpx2\_transports\default.py:115: ConnectError
+
+The above exception was the direct cause of the following exception:
+
+    def test_extra():
+        pre = openai.OpenAI(api_key="x", max_retries=0)
+        with mock_openai("a") as seen:
+            inside = openai.OpenAI(api_key="x", max_retries=0)
+            assert pre.chat.completions.create(model="m", messages=[]).choices[0].message.content == "a"
+            with pytest.raises(openai.BadRequestError):
+                inside.chat.completions.create(model="m", messages=[])
+        assert len(seen) == 2
+        assert httpx2.Client._transport_for_url.__qualname__ == "Client._transport_for_url"
+        with pytest.raises(Exception, match="socket"):
+>           pre.chat.completions.create(model="m", messages=[])
+
+tests\test_zz_chk.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\venv\Lib\site-packages\openai\_utils\_utils.py:298: in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+..\venv\Lib\site-packages\openai\resources\chat\completions\completions.py:1318: in create
+    return self._post(
+..\venv\Lib\site-packages\openai\_base_client.py:1439: in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <openai.OpenAI object at 0x000001C80433D1D0>
+cast_to = <class 'openai.types.chat.chat_completion.ChatCompletion'>
+options = FinalRequestOptions(method='post', url='/chat/completions', params={}, headers=NOT_GIVEN, max_retries=NOT_GIVEN, timeo..._auth': True}, synthesize_event_and_data=None, content=None, json_data={'messages': [], 'model': 'm'}, extra_json=None)
+
+    def request(
+        self,
+        cast_to: Type[ResponseT],
+        options: FinalRequestOptions,
+        *,
+        stream: bool = False,
+        stream_cls: type[_StreamT] | None = None,
+    ) -> ResponseT | _StreamT:
+        cast_to = self._maybe_override_cast_to(cast_to, options)
+    
+        # create a copy of the options we were given so that if the
+        # options are mutated later & we then retry, the retries are
+        # given the original options
+        input_options = model_copy(options)
+        if input_options.idempotency_key is None and input_options.method.lower() != "get":
+            # ensure the idempotency key is reused between requests
+            input_options.idempotency_key = self._idempotency_key()
+    
+        response: httpx2.Response | None = None
+        max_retries = input_options.get_max_retries(self.max_retries)
+        self._validate_max_retries(max_retries)
+    
+        retries_taken = 0
+        for retries_taken in range(max_retries + 1):
+            options = model_copy(input_options)
+            options = self._prepare_options(options)
+            request_body_replay = _RequestBodyReplay(options)
+    
+            remaining_retries = max_retries - retries_taken
+            request = self._build_request(options, retries_taken=retries_taken)
+            self._prepare_request(request)
+    
+            kwargs: HttpxSendArgs = {}
+            custom_auth = self._custom_auth(options.security)
+            if custom_auth is not None:
+                kwargs["auth"] = (
+                    normalize_httpx2_auth(custom_auth)
+                    if is_httpx2_sync_client(self._client)
+                    else normalize_legacy_httpx_auth(custom_auth)
+                )
+    
+            if options.follow_redirects is not None:
+                kwargs["follow_redirects"] = options.follow_redirects
+    
+            log.debug("Sending HTTP Request: %s", get_http_method_for_logging(request.method))
+    
+            response = None
+            try:
+                response = self._send_request(
+                    request,
+                    stream=stream or self._should_stream_response_body(request=request),
+                    **kwargs,
+                )
+            except timeout_exceptions() as err:
+                log.debug("Encountered a timeout exception: %s", type(err).__name__)
+    
+                if remaining_retries > 0 and request_body_replay.rewind():
+                    self._sleep_for_retry(
+                        retries_taken=retries_taken,
+                        max_retries=max_retries,
+                        options=input_options,
+                        response=None,
+                    )
+                    continue
+    
+                log.debug("Raising timeout error")
+                raise APITimeoutError(request=request) from err
+            except OpenAIError as err:
+                # Propagate OpenAIErrors as-is, without retrying or wrapping in APIConnectionError
+                raise err
+            except request_exceptions() as err:
+                log.debug("Encountered exception: %s", type(err).__name__)
+    
+                if remaining_retries > 0 and request_body_replay.rewind():
+                    self._sleep_for_retry(
+                        retries_taken=retries_taken,
+                        max_retries=max_retries,
+                        options=input_options,
+                        response=None,
+                    )
+                    continue
+    
+                log.debug("Raising connection error")
+>               raise APIConnectionError(request=request) from err
+E               openai.APIConnectionError: Connection error.
+
+..\venv\Lib\site-packages\openai\_base_client.py:1182: APIConnectionError
+
+During handling of the above exception, another exception occurred:
+
+    def test_extra():
+        pre = openai.OpenAI(api_key="x", max_retries=0)
+        with mock_openai("a") as seen:
+            inside = openai.OpenAI(api_key="x", max_retries=0)
+            assert pre.chat.completions.create(model="m", messages=[]).choices[0].message.content == "a"
+            with pytest.raises(openai.BadRequestError):
+                inside.chat.completions.create(model="m", messages=[])
+        assert len(seen) == 2
+        assert httpx2.Client._transport_for_url.__qualname__ == "Client._transport_for_url"
+>       with pytest.raises(Exception, match="socket"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'socket'
+E        Input: 'Connection error.'
+
+tests\test_zz_chk.py:17: AssertionError
+- generated xml file: C:\b\runs\main-2026-09-28\_grade\oai02_E_r2_a11d\visible.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_zz_chk.py::test_extra - AssertionError: Regex pattern did n...
+1 failed, 2 passed in 3.63s
+
