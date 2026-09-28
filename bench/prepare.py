@@ -157,8 +157,10 @@ def offline_checks(cfg: Config, *, download: bool, install_context7: bool) -> li
           and perms.get("blockReadsOutsideWorkingDirectories") is True)
     checks.append(_check("claude_settings.json matches plan B.2", ok,
                          ", ".join(f"{k} {v['sha256'][:12]}" for k, v in staged.items())))
-    base_leaks = conditions.claude_md_leaks(cfg, conditions.base_block() + conditions.context7_rule())
-    checks.append(_check("base block and Context7 rule hold no answer token", not base_leaks, str(base_leaks or "none")))
+    base_leaks = conditions.claude_md_leaks(
+        cfg, conditions.base_block() + conditions.context7_rule() + conditions.context7_rule(forced=True))
+    checks.append(_check("base block and Context7 rules (B, E) hold no answer token", not base_leaks,
+                         str(base_leaks or "none")))
 
     manifest = conditions.load_manifest(cfg)
     checks.append(_check("notes/MANIFEST.json frozen (needed for C and D)", bool(manifest and manifest.get("frozen")),

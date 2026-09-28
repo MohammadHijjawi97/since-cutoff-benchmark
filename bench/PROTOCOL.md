@@ -212,7 +212,7 @@ python -m bench grade main-<date>                          # only for runs made 
 python -m bench report main-<date>
 ```
 
-Seeds: pilot `20260928`, main `<to be fixed>` (recorded here before tagging).
+Seeds: pilot `20260928`, main `20260929` (fixed 2026-09-28, after the pilot and before the main plan was written).
 
 ## 11. Known gaps
 
@@ -369,3 +369,23 @@ Decisions:
 Pilot observations that are descriptive only (two tasks, excluded from every analysis):
 C/A cost ratio 0.51 [0.32, 0.81] and total tokens 0.52; ant01 cost per session was A
 $0.51–0.53, B $0.48–0.61, C $0.16–0.17 and D $0.10–0.18 (the reason is not analysed here).
+
+### 12.w Main-run notes (frozen 2026-09-28, before the main plan)
+
+Generated with the released `since-cutoff==0.4.1` (PyPI), `sync --yes --scope imported` with
+the default budget of 5 APIs per package, model `anthropic:claude-opus-5-5`, target
+`CLAUDE.md` (`bench.toml [notes]`); frozen, manifest sha256 `f7e0b28399773c60…`. Scope
+decision: `imported`, because every task repository uses its library but, by design
+(section 4), none of the changed APIs, so the default `used` scope writes notes for few
+tasks; `imported` is what a user starting new work against a pinned package would run. The
+tool's defaults are used as shipped and were not tuned to the tasks.
+
+Coverage (every `note_keys` regex matches the frozen notes), post-cutoff stratum: 5 of 17 —
+ant01, ant03, hf01, hf02, hf03. Partly matched: mcp01 (`FastMCP|MCPServer`, not
+`ToolError`). Not covered: ant02, ant04, ant05, hf04, mcp02, mcp04, mcp05, mcp06, oai01,
+oai02, oai03; the httpx → httpx2 dependency switch (ant04, hf04, oai01–03) is not a change
+to the package's own public API, so a static diff of that API does not report it. mcp05's
+five slots go to `ClientSession` changes because its code uses `ClientSession` (APIs the
+project uses rank first), which leaves `streamablehttp_client` sixth. Empty blocks: oai05,
+pd01–pd03 (no API change after the cutoff), so C equals A there. The report's per-task
+coverage column carries this into the wording rule of section 8.

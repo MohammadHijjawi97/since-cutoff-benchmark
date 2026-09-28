@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-27T19:08:11+00:00",
-  "harness_sha256": "caa7cade26f777122a32e38f487b52b55affe6bd0bbb33783e1db6c0692bcddf",
-  "config_sha256": "2dea0213bfa156b313ca5fd0c48e90b2c495d0c44ef0e1b4c5827f4ec8ececa2",
+  "generated_at": "2026-09-28T03:24:09+00:00",
+  "harness_sha256": "9227ebaf60e2e8c4855fd71792a0de25072ac71a01e5e656e03cde701a8d32a8",
+  "config_sha256": "06b0642dc85ab10c0b1c0a49f3349d469502c1318d70e7d1f30d3758f4e9f493",
   "tasks": {
     "ant01": {
       "id": "ant01-sampling-params",
@@ -311,5 +311,5 @@
     "pandas-2.3.2": "e3582a58008d3f5eac48940f71c4a0cb6c7ded6c25bb296211eaf283e1480133",
     "pandas-3.0.6": "31ee49a809c2387a5ea8929b15920d9bfac0051ba5e903bba1249cb8a0b4f438"
   },
-  "notes_manifest_sha256": null
+  "notes_manifest_sha256": "f7e0b28399773c602927bb79111eecf0d44040b88f5a009b084ebb1ec7c270f7"
 }

@@ -1,16 +1,16 @@
 {
   "schema": "since-cutoff-bench/notes@1",
-  "tool": "since-cutoff==0.4.0",
+  "tool": "since-cutoff==0.4.1",
   "model": "anthropic:claude-opus-5-5",
   "source": "generated",
-  "created_at": "2026-09-28T01:02:48+00:00",
+  "created_at": "2026-09-28T03:22:14+00:00",
   "frozen": true,
   "tasks": {
     "ant01": {
       "file": "ant01.md",
-      "sha256": "0037fc6ae92b5eb733e6b3b8209f34c88ed81f4561fe52aafdd69d9cb5bb5ed5",
-      "bytes": 1640,
-      "tokens_est": 410,
+      "sha256": "bed5c0d0f2f8ccfd932bf1a6f250d90622e6844749d096547464a76edb49aadb",
+      "bytes": 1865,
+      "tokens_est": 466,
       "empty": false,
       "note_keys": [
         "\\btemperature\\b"
@@ -22,7 +22,7 @@
       "covered": true,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -37,9 +37,9 @@
     },
     "ant02": {
       "file": "ant02.md",
-      "sha256": "0037fc6ae92b5eb733e6b3b8209f34c88ed81f4561fe52aafdd69d9cb5bb5ed5",
-      "bytes": 1640,
-      "tokens_est": 410,
+      "sha256": "bed5c0d0f2f8ccfd932bf1a6f250d90622e6844749d096547464a76edb49aadb",
+      "bytes": 1865,
+      "tokens_est": 466,
       "empty": false,
       "note_keys": [
         "\\.text\\(\\)|\\btext\\b[^\\n]{0,80}\\bmethod\\b"
@@ -49,7 +49,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -64,9 +64,9 @@
     },
     "ant03": {
       "file": "ant03.md",
-      "sha256": "19cfec7ee1eb6cf46c9227b279babe8c01fdf87cfacdc92af95e3cba67037dbb",
-      "bytes": 1701,
-      "tokens_est": 425,
+      "sha256": "c720d4c39d7e244ef5b03b45c6fd2cc0efc3de570fd039d70255f5fb9d94f19c",
+      "bytes": 2019,
+      "tokens_est": 505,
       "empty": false,
       "note_keys": [
         "\\boutput_format\\b"
@@ -78,7 +78,7 @@
       "covered": true,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -93,9 +93,9 @@
     },
     "ant04": {
       "file": "ant04.md",
-      "sha256": "e52488e16f76d8e8bb8503a89e68b0aa2ee8fb5930496d5c0d3343556a6b8438",
-      "bytes": 1640,
-      "tokens_est": 410,
+      "sha256": "9114d447c744ef1f5a8e28b3f91a56656aa113f556e8c60e21bf10b00a902aaf",
+      "bytes": 1865,
+      "tokens_est": 466,
       "empty": false,
       "note_keys": [
         "httpx2"
@@ -105,7 +105,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -120,9 +120,9 @@
     },
     "ant05": {
       "file": "ant05.md",
-      "sha256": "6eddf7b576a1f1bc2e114ce752893846bda19de887b0934369ea10703d0c61b1",
-      "bytes": 1602,
-      "tokens_est": 400,
+      "sha256": "0e5fd5e1af9290f91e60ccf96e28456125995142bf92031f0b5c70c70f887f2b",
+      "bytes": 1733,
+      "tokens_est": 433,
       "empty": false,
       "note_keys": [
         "\\bparse\\b[^\\n]{0,160}\\b(?:await|coroutine|async)\\b|\\b(?:await|coroutine|async)\\b[^\\n]{0,160}\\bparse\\b"
@@ -132,7 +132,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -147,9 +147,9 @@
     },
     "hf01": {
       "file": "hf01.md",
-      "sha256": "89c18f3b0237096266e848d779f4bddcf58e056bae6626a2596b46d0960fed39",
-      "bytes": 1874,
-      "tokens_est": 468,
+      "sha256": "974e0c8ad5e6a1fbec51368df1dbe4b6653d11c0f526ecd607ca020871ae06a5",
+      "bytes": 1771,
+      "tokens_est": 443,
       "empty": false,
       "note_keys": [
         "stop_sequences"
@@ -161,7 +161,7 @@
       "covered": true,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -176,9 +176,9 @@
     },
     "hf02": {
       "file": "hf02.md",
-      "sha256": "1687aa7b6145f1e41830580e343203e853c75ebcc5a37b30c1af1888536befb5",
-      "bytes": 1732,
-      "tokens_est": 433,
+      "sha256": "f3d1030b7d34745d735d558fed521eb5afbb88ed8c134696d3ce430fe9365cbf",
+      "bytes": 1772,
+      "tokens_est": 443,
       "empty": false,
       "note_keys": [
         "\\bupload_large_folder\\b"
@@ -190,7 +190,7 @@
       "covered": true,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -205,9 +205,9 @@
     },
     "hf03": {
       "file": "hf03.md",
-      "sha256": "63611f5c3bcea484605851c95d20f3c1979a091fe6bb4e6cf2be2bae0aca429b",
-      "bytes": 1721,
-      "tokens_est": 430,
+      "sha256": "d3a3a64aa08a4f1ad983005fa2d595aa7001e0e5231d21a4f96b6087fe87dd16",
+      "bytes": 1751,
+      "tokens_est": 438,
       "empty": false,
       "note_keys": [
         "\\blist_models\\b",
@@ -221,7 +221,7 @@
       "covered": true,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -236,9 +236,9 @@
     },
     "hf04": {
       "file": "hf04.md",
-      "sha256": "1687aa7b6145f1e41830580e343203e853c75ebcc5a37b30c1af1888536befb5",
-      "bytes": 1732,
-      "tokens_est": 433,
+      "sha256": "f3d1030b7d34745d735d558fed521eb5afbb88ed8c134696d3ce430fe9365cbf",
+      "bytes": 1772,
+      "tokens_est": 443,
       "empty": false,
       "note_keys": [
         "httpx2"
@@ -248,7 +248,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -263,7 +263,7 @@
     },
     "lc01": {
       "file": "lc01.md",
-      "sha256": "c2c59541cf4532f4bb69a0754590693a932f533b5d93cb7252afe87502487fb2",
+      "sha256": "1d1c9a01b5b2c6b6fc320ce03d8da105da332d78b2a3c58e7599dbdf95234e90",
       "bytes": 1141,
       "tokens_est": 285,
       "empty": false,
@@ -275,7 +275,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -290,7 +290,7 @@
     },
     "lc02": {
       "file": "lc02.md",
-      "sha256": "c2c59541cf4532f4bb69a0754590693a932f533b5d93cb7252afe87502487fb2",
+      "sha256": "1d1c9a01b5b2c6b6fc320ce03d8da105da332d78b2a3c58e7599dbdf95234e90",
       "bytes": 1141,
       "tokens_est": 285,
       "empty": false,
@@ -302,7 +302,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -317,20 +317,22 @@
     },
     "mcp01": {
       "file": "mcp01.md",
-      "sha256": "d6a01f6da048b1d5eefc9f333cc98c4f5d0121b00e0fff048e99752181c31772",
-      "bytes": 1578,
-      "tokens_est": 394,
+      "sha256": "bee4ad14fdc5b060570ede1ceaa8c88b8756a4a39530eae7121527936ff6ec97",
+      "bytes": 1702,
+      "tokens_est": 426,
       "empty": false,
       "note_keys": [
         "FastMCP|MCPServer",
         "ToolError"
       ],
-      "note_keys_found": [],
-      "coverage": 0.0,
+      "note_keys_found": [
+        "FastMCP|MCPServer"
+      ],
+      "coverage": 0.5,
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -345,9 +347,9 @@
     },
     "mcp02": {
       "file": "mcp02.md",
-      "sha256": "d6a01f6da048b1d5eefc9f333cc98c4f5d0121b00e0fff048e99752181c31772",
-      "bytes": 1578,
-      "tokens_est": 394,
+      "sha256": "bee4ad14fdc5b060570ede1ceaa8c88b8756a4a39530eae7121527936ff6ec97",
+      "bytes": 1702,
+      "tokens_est": 426,
       "empty": false,
       "note_keys": [
         "isError|is_error",
@@ -358,7 +360,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -373,9 +375,9 @@
     },
     "mcp04": {
       "file": "mcp04.md",
-      "sha256": "f5c722ac1a98a18fa165edea5c7c5a31d8f069ef7d9650e1168d04673bb1138c",
-      "bytes": 1533,
-      "tokens_est": 383,
+      "sha256": "49365aafb2caffaf10da16ced059d2661af3f4d83b789795dca6386694e5d626",
+      "bytes": 1715,
+      "tokens_est": 429,
       "empty": false,
       "note_keys": [
         "\\b(?:host|port)\\b[^\\n]{0,160}\\b(?:run|__init__|constructor|MCPServer|FastMCP)\\b|\\b(?:run|__init__|constructor|MCPServer|FastMCP)\\b[^\\n]{0,160}\\b(?:host|port)\\b"
@@ -385,7 +387,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -400,9 +402,9 @@
     },
     "mcp05": {
       "file": "mcp05.md",
-      "sha256": "b7cd57ae0636c1a06abace1639e1bdece4612743c8b5ab3ccdd8d6761482a24d",
-      "bytes": 1579,
-      "tokens_est": 395,
+      "sha256": "775d51f768ff1318a9946d5fa8d14908ddba7a4d7e250e4ac313c451462b982d",
+      "bytes": 1704,
+      "tokens_est": 426,
       "empty": false,
       "note_keys": [
         "streamablehttp_client"
@@ -412,7 +414,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -427,9 +429,9 @@
     },
     "mcp06": {
       "file": "mcp06.md",
-      "sha256": "b7cd57ae0636c1a06abace1639e1bdece4612743c8b5ab3ccdd8d6761482a24d",
-      "bytes": 1579,
-      "tokens_est": 395,
+      "sha256": "775d51f768ff1318a9946d5fa8d14908ddba7a4d7e250e4ac313c451462b982d",
+      "bytes": 1704,
+      "tokens_est": 426,
       "empty": false,
       "note_keys": [
         "create_connected_server_and_client_session"
@@ -439,7 +441,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -454,7 +456,7 @@
     },
     "oai01": {
       "file": "oai01.md",
-      "sha256": "10d4faf12d15666ae6ad12758b7e715d8964de0aae4dd1a084a547cd6fe2b632",
+      "sha256": "d6f2c09f65d2b3d0d52d872dc08a2bcfb7358c08491f72d4293df2b779be80be",
       "bytes": 1658,
       "tokens_est": 414,
       "empty": false,
@@ -466,7 +468,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -481,7 +483,7 @@
     },
     "oai02": {
       "file": "oai02.md",
-      "sha256": "ff6dda425cf2b824758891c3257f5f277fff9a8bb0c4f8e802b0447f630c5fe4",
+      "sha256": "4bea3b334c1698e36a736b277b58688f32c4586c87339e6bea7ca0f64226f844",
       "bytes": 1658,
       "tokens_est": 414,
       "empty": false,
@@ -493,7 +495,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -508,7 +510,7 @@
     },
     "oai03": {
       "file": "oai03.md",
-      "sha256": "10d4faf12d15666ae6ad12758b7e715d8964de0aae4dd1a084a547cd6fe2b632",
+      "sha256": "d6f2c09f65d2b3d0d52d872dc08a2bcfb7358c08491f72d4293df2b779be80be",
       "bytes": 1658,
       "tokens_est": 414,
       "empty": false,
@@ -521,7 +523,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -536,7 +538,7 @@
     },
     "oai04": {
       "file": "oai04.md",
-      "sha256": "10d4faf12d15666ae6ad12758b7e715d8964de0aae4dd1a084a547cd6fe2b632",
+      "sha256": "d6f2c09f65d2b3d0d52d872dc08a2bcfb7358c08491f72d4293df2b779be80be",
       "bytes": 1658,
       "tokens_est": 414,
       "empty": false,
@@ -546,7 +548,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -571,7 +573,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -599,7 +601,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -626,7 +628,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -654,7 +656,7 @@
       "covered": false,
       "exit_code": 0,
       "command": [
-        "C:\\b\\tools\\since-cutoff==0.4.0\\Scripts\\python.exe",
+        "C:\\b\\tools\\since-cutoff==0.4.1\\Scripts\\python.exe",
         "-m",
         "since_cutoff",
         "sync",
@@ -668,6 +670,6 @@
       ]
     }
   },
-  "frozen_at": "2026-09-28T01:02:48+00:00",
-  "manifest_sha256": "f0795703d6318fac17a3fc05670de29405a3811e0267e5d7ee77f3e8285de16c"
+  "frozen_at": "2026-09-28T03:22:14+00:00",
+  "manifest_sha256": "f7e0b28399773c602927bb79111eecf0d44040b88f5a009b084ebb1ec7c270f7"
 }
