@@ -1,7 +1,7 @@
 [project]
 name = "since-cutoff-benchmark"
 version = "0.1.0"
-description = "Private head-to-head benchmark harness for since-cutoff (plan section B)"
+description = "Head-to-head benchmark harness for since-cutoff: Claude Code alone, with Context7, with since-cutoff notes, or both"
 requires-python = ">=3.11"
 dependencies = []   # the harness uses the standard library only
 

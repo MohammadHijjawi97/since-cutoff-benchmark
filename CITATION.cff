@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this benchmark, its tasks or its results, please cite it as below."
+title: "since-cutoff head-to-head benchmark: Claude Code alone, with Context7, with since-cutoff notes, or both"
+type: dataset
+authors:
+  - family-names: Hijjawi
+    given-names: Mohammad
+    orcid: "https://orcid.org/0009-0001-3199-7769"
+repository-code: "https://github.com/MohammadHijjawi97/since-cutoff-benchmark"
+date-released: 2026-09-28
+keywords:
+  - large language models
+  - coding agents
+  - knowledge cutoff
+  - API evolution
+  - benchmark

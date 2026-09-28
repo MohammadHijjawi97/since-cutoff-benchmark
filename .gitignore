@@ -1,6 +1,8 @@
 .venv/
 __pycache__/
 *.pyc
-# per-study results are private until the main run is done; commit them deliberately
-results/
+.pytest_cache/
+# generation logs of the frozen notes (their commands and exit codes are in bench/notes/MANIFEST.json)
 bench/notes/*.log
+# local working files that are not part of the published record
+scratch/

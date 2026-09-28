@@ -1,0 +1,31 @@
+Data license: Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 Mohammad Hijjawi
+
+The following parts of this repository are licensed under the Creative Commons Attribution 4.0
+International License (CC BY 4.0):
+
+  results/             study records, transcripts, diffs, grading logs, reports and preflight records
+  bench/tasks/         benchmark tasks: instructions, starting repositories, hidden tests,
+                       reference, stale and extra solutions, validation records
+  bench/candidates/    candidate task that was not admitted
+  bench/dropped/       dropped tasks with their reasons and probes
+  bench/notes/         since-cutoff notes frozen for the main run
+  bench/notes-used/    since-cutoff notes generated with the default scope
+  review/              files removed from task repositories during the review
+
+You may share and adapt this material for any purpose, including commercially, provided you give
+appropriate credit, provide a link to the license, and indicate if changes were made.
+
+  Summary:    https://creativecommons.org/licenses/by/4.0/
+  Legal code: https://creativecommons.org/licenses/by/4.0/legalcode
+
+Suggested attribution: "since-cutoff head-to-head benchmark, Mohammad Hijjawi, 2026,
+https://github.com/MohammadHijjawi97/since-cutoff-benchmark, CC BY 4.0".
+
+Third-party material is not covered by this grant. The transcripts in results/ quote library
+source code and documentation returned by the agent's tools (for example files read from installed
+packages and Context7 results); that material remains under the license of its owner.
+
+Everything else in this repository, including the harness code in bench/*.py and tests/, is
+licensed under the MIT License in the LICENSE file.
