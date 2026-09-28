@@ -376,6 +376,8 @@ def execute(st: Study, entry: dict[str, Any], attempt: int, *, do_grade: bool = 
 
     lock = envs.load_lock(cfg, envs.spec_for(cfg, task, task.pinned).env_id)
     envs.build_venv(cfg, lock, venv)
+    envs.isolate_python(venv, tmp / "hf")
+    base["python_isolation"] = envs.ISOLATION_PTH  # absent from records made before PROTOCOL 12.u
     freeze_before = envs.pip_list(venv)
     stream_path, stderr_path = art / "stream.jsonl", art / "stderr.log"
     (art / "prompt.txt").write_text(task.prompt, encoding="utf-8")

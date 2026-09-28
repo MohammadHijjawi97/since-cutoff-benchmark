@@ -209,6 +209,31 @@ def cached_venv(cfg: Config, lock: dict[str, Any]) -> Path:
     return dest
 
 
+ISOLATION_PTH = "_hf_isolation.pth"
+
+
+def isolate_python(venv: Path, hf_home: Path) -> Path:
+    """Keep the maintainer's saved Hugging Face token away from every Python process of `venv`.
+
+    The claude process gets HF_HOME and HF_HUB_DISABLE_IMPLICIT_TOKEN, but the Bash tool starts
+    its commands without them (main run, 2026-09-28: huggingface_hub 2.0 in an agent's script
+    attached the token from ~/.cache/huggingface/token to a mocked request, and the transcript
+    printed it). A .pth line runs at interpreter start-up, before the agent's code, so every
+    python and pytest launched from the venv reads its token from an empty per-run folder,
+    however the shell was started. pip list does not see the file, so venv_modified is unchanged.
+    """
+    site = next(iter(sorted((venv / "Lib").glob("site-packages"))), None) or next(
+        iter(sorted((venv / "lib").glob("python*/site-packages"))), None)
+    if site is None:
+        raise RuntimeError(f"no site-packages in {venv}")
+    settings = {"HF_HOME": str(hf_home), "HF_TOKEN_PATH": str(hf_home / "token"),
+                "HF_STORED_TOKENS_PATH": str(hf_home / "stored_tokens"), "HF_HUB_DISABLE_IMPLICIT_TOKEN": "1"}
+    line = f"import os; os.environ.update({settings!r}); os.environ.pop('HF_TOKEN', None)\n"
+    path = site / ISOLATION_PTH
+    path.write_text(line, encoding="utf-8")
+    return path
+
+
 def pip_list(venv: Path) -> dict[str, str]:
     """name -> version of everything installed in the venv (pip itself included)."""
     p = subprocess.run([str(util.venv_python(venv)), "-m", "pip", "list", "--format=json",

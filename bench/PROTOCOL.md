@@ -401,3 +401,25 @@ coverage column carries this into the wording rule of section 8.
   processes are killed at the end of each session; none were left on 8765 after the batch);
   the confound is limited to what an agent sees while checking its work, and is reported as
   a known gap rather than changed mid-run.
+
+### 12.u Credential isolation fixed during the main run (2026-09-28, after 181 sessions)
+
+The secret scan run on the artifacts before publication (`python -m bench.secretscan`) found the
+maintainer's saved Hugging Face token in two hf04 transcripts (B r3, D r1). Cause: the claude
+process received `HF_HOME` (per-run folder) and `HF_HUB_DISABLE_IMPLICIT_TOKEN=1`, but the
+commands its Bash tool starts did not, so huggingface_hub 2.0 in an agent's own check script read
+`~/.cache/huggingface/token` and attached it to a request sent to an in-memory `MockTransport`;
+the script printed the request headers. No request left the machine in those two scripts, and
+grading was not affected (it runs outside the agent with its own isolated environment). The
+first 181 sessions include 40 on hf tasks during which the token was readable by the agent's
+Python processes.
+
+Changes, made before any further session: the run was stopped; every per-run venv now gets
+`_hf_isolation.pth` (bench/envs.py `isolate_python`), which sets `HF_HOME`, `HF_TOKEN_PATH`,
+`HF_STORED_TOKENS_PATH` and `HF_HUB_DISABLE_IMPLICIT_TOKEN` and drops `HF_TOKEN` at interpreter
+start-up for every python and pytest launched from the venv, whatever environment the shell
+passes (verified on the hf04 venv: without the file the token is found, with it none is; `pip
+list` is unchanged, so `venv_modified` is unaffected); records made after this carry
+`python_isolation`. The two transcripts were redacted in place (`<REDACTED:hf-token>`), a rescan
+finds nothing, and the maintainer was asked to revoke the token. The report lists the hf-task
+runs made before and after the change.
