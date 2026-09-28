@@ -15,7 +15,9 @@ since-cutoff writes short notes about library APIs that changed after a model's 
 into `AGENTS.md` or `CLAUDE.md`, from a static diff of the package's public API between the release
 current at the cutoff and the pinned release. The benchmark was designed and run by the author of
 since-cutoff. The protocol, tasks, notes and analysis code were committed and tagged before the main
-run, and every session's transcript is published here so each number can be checked.
+run (an unsigned git tag; see
+[what was fixed in advance](#what-was-fixed-in-advance-and-what-was-added-later)), and every
+session's transcript is published here so each number can be checked.
 
 A longer write-up is at <https://mohammadhijjawi97.github.io/since-cutoff/benchmark.html>.
 
@@ -121,9 +123,11 @@ The hidden tests are public now, so later models may have seen them.
   tokens (characters / 4); oai05, pd01, pd02 and pd03 have empty blocks.
 - Every session runs `claude -p --model claude-opus-5-5 --effort medium --output-format
   stream-json --verbose --max-turns 40 --max-budget-usd 3 --permission-mode dontAsk --tools
-  Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill --setting-sources project --strict-mcp-config
-  --no-session-persistence` with the arm's `--mcp-config`, in a fresh project folder with its own
-  `.venv` built offline from locked wheels, under a 900 s wall-clock limit. The permission settings
+  Bash,Read,Edit,Write,Glob,Grep,TodoWrite,Skill --settings
+  <runs>/<study>/_harness/claude_settings.json --setting-sources project --strict-mcp-config
+  --no-session-persistence` with the arm's `--mcp-config` (and `--allowedTools mcp__context7` in
+  B, D and E), in a fresh project folder with its own `.venv` built offline from locked wheels,
+  under a 900 s wall-clock limit. The permission settings
   ([`bench/claude_settings.json`](bench/claude_settings.json)) deny WebFetch, WebSearch, pip, uv,
   curl, wget, npm, npx and `git push`.
 - Order: each (task, repetition) pair is a block of five sessions, one per arm. Blocks and the arm
@@ -175,22 +179,24 @@ unmodified repo fails the hidden tests at the pinned version, the reference pass
 solution in `stale/` fails at the pinned version and passes at the cutoff-era version (inverted or
 adapted for the control strata, PROTOCOL section 4), declared extra solutions behave as declared,
 and no answer token appears in the repo or the instruction. Every task and hidden test was reviewed
-by a reviewer who wrote none of the tasks ([`REVIEW.md`](REVIEW.md)). Three planned tasks (ant06,
-mcp03, hf05) failed the premise check and are kept in [`bench/dropped/`](bench/dropped) with the
-reason and a runtime probe; `bench/candidates/hf05b` passes the gates but is not in the
-pre-registered catalogue and was not admitted.
+in a separate Claude Code session that did not write the tasks, following plan B.4; that session
+ran `claude-opus-5-5`, the model under test ([`REVIEW.md`](REVIEW.md)). Three planned tasks (the
+post-cutoff tasks ant06 and mcp03, and the control hf05) failed the premise check and are kept in
+[`bench/dropped/`](bench/dropped) with the reason and a runtime probe; `bench/candidates/hf05b`
+passes the gates but is not in the pre-registered catalogue and was not admitted.
 
 ## What was fixed in advance, and what was added later
 
 - **In the first harness commit** (`e8e7864`, 2026-09-27 19:19 UTC, before the first recorded model
   session, the model-call preflight at 00:21 UTC on 2026-09-28): the question, arms
   A-D, the 24 tasks, grading, the endpoints (PROTOCOL section 7), the decision rules including the
-  90% ceiling rule, the efficiency rule and the non-inferiority rule (section 8), and the pilot's
-  go/no-go rules (section 9). Sections 7 and 8 are unchanged since then except for the added C−E
-  row.
+  90% ceiling rule, the efficiency rule and the non-inferiority rule (section 8), the pilot's
+  go/no-go rules (section 9), and the bootstrap seed 20261001 with 10,000 resamples
+  (`bench/bench.toml`). Sections 7 and 8 are unchanged since then except for the added C−E row.
 - **Pilot** (tag [`pilot-2026-09-28`](https://github.com/MohammadHijjawi97/since-cutoff-benchmark/tree/pilot-2026-09-28)):
-  ant01 and mcp01 × A-D × 2 repetitions with since-cutoff 0.4.0 notes, 16 sessions, excluded from
-  every analysis ([`results/pilot-2026-09-28/report.md`](results/pilot-2026-09-28/report.md)).
+  ant01 and mcp01 × A-D × 2 repetitions with since-cutoff 0.4.0 notes, 16 sessions, pilot seed
+  20260928 fixed before the pilot, excluded from every analysis
+  ([`results/pilot-2026-09-28/report.md`](results/pilot-2026-09-28/report.md)).
 - **After the pilot, before the main run** (tag
   [`main-freeze-2026-09-28`](https://github.com/MohammadHijjawi97/since-cutoff-benchmark/tree/main-freeze-2026-09-28),
   commit `de23b80`, 03:24:52 UTC; the main plan was written at 03:25:13 UTC and the first session
@@ -198,21 +204,23 @@ pre-registered catalogue and was not admitted.
   rate below 80% adds a B-forced arm" fired (2 of 4 pilot sessions); the C−E claim row, with C−E,
   E−B and C−B reported as extra, unadjusted contrasts; since-cutoff 0.4.1 with `--scope imported`;
   the sensitivity analysis without the pilot-exposed tasks, with the rule that a claim counts as
-  supported only if it holds in both analyses; the seeds (plan 20260929; bootstrap 20261001, 10,000
-  resamples). `bench/PROTOCOL.md` at the tag has sha256
-  `c7ce737acc7c63fa0f2d19800175c0e4576a5dd6acc1376d0e842b1b37a6f621` (as stored in git); the tag
-  also freezes `bench/HASHES.json` (harness `9227ebaf60e2…`, configuration `06b0642dc85a…`, task,
-  hidden-test and env-lock hashes) and the notes manifest.
+  supported only if it holds in both analyses; the main plan seed (20260929). `bench/PROTOCOL.md`
+  at the tag has sha256 `c7ce737acc7c63fa0f2d19800175c0e4576a5dd6acc1376d0e842b1b37a6f621` (as
+  stored in git); the tag also freezes `bench/HASHES.json` (harness `9227ebaf60e2…`, configuration
+  `06b0642dc85a…`, task, hidden-test and env-lock hashes) and the notes manifest.
+- **How the freeze can be checked:** the freeze is an unsigned git tag in a repository that stayed
+  private, with no remote, until the results were published. Its times are the author's git
+  timestamps and cannot be checked independently.
 - **During the main run:** PROTOCOL sections 12.v and 12.u, the only changes to `PROTOCOL.md`
   after the tag.
 - **After the main run:** everything in this README that is not in the reports (the Context7 quota
-  counts, the split of runs before and after the credential fix), and the publication edits listed
-  under deviations, items 13 and 14.
+  counts, the split of runs before and after the credential fix), and the publication edits and
+  the note on the protocol text listed under deviations, items 14 and 15.
 
 ## Deviations and incidents
 
-Items 1-10 are recorded in [`bench/PROTOCOL.md`](bench/PROTOCOL.md); items 11-15 are not, and are
-recorded here.
+Items 1-10 are based on [`bench/PROTOCOL.md`](bench/PROTOCOL.md) (items 5, 9 and 10 add details
+found in the records); items 11-15 are not in it, and are recorded here.
 
 1. **17 post-cutoff tasks instead of 19** (section 4): ant06 and mcp03 (and the control hf05)
    failed the premise check. The pass-rate test therefore has less power than planned.
@@ -284,7 +292,9 @@ recorded here.
     final message of `hf04_D_r1_d017` quoted the first three characters after `hf_` of the same
     token; they were replaced with `<REDACTED:hf-token-prefix>` in that run's `record.json`,
     `stream.jsonl` and its line in `runs.jsonl`. The dummy credentials in `tests/test_runner.py`
-    were split into two string literals so the secret scan does not flag them (same values).
+    were split into two string literals so the secret scan does not flag them (same values). A
+    line naming the reviewer (a separate Claude Code session running `claude-opus-5-5`) was added
+    at the top of `REVIEW.md`; the review itself is unchanged.
     `python -m bench report main-2026-09-28` (with and without `--exclude-tasks ant01,mcp01`) on the
     edited records reproduces the committed reports except for the generation timestamp.
 15. **Protocol text not updated:** `PROTOCOL.md`'s title still says "DRAFT, not yet tagged", and it

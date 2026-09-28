@@ -1,5 +1,10 @@
 # Independent review of the benchmark tasks and hidden tests (2026-09-27)
 
+*Reviewer (this paragraph was added on 2026-09-28, while preparing publication; the review below is
+unchanged): the review was done in a separate Claude Code session that did not write the tasks,
+following plan B.4. That session ran `claude-opus-5-5`, the model under test. "I" below refers to
+that session.*
+
 Plan B.4 requires that someone other than the task authors reviews all hidden tests. This review covers every task
 in `bench/tasks/` (24), the three tasks dropped at validation (`bench/dropped/`), and a look at the unadmitted
 candidate `bench/candidates/hf05b`. I wrote none of the tasks.
